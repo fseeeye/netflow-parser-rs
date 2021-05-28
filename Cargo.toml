@@ -8,3 +8,6 @@ edition = "2018"
 
 [dependencies]
 nom = "6.1.2"
+
+[dev-dependencies]
+pcap-parser = "0.11.1"

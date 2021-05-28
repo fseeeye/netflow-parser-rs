@@ -31,6 +31,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "circular"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fc239e0f6cb375d2402d48afb92f76f5404fd1df208a41930ec81eda078bea"
+
+[[package]]
 name = "funty"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -73,6 +79,18 @@ name = "parsing-rs"
 version = "0.1.0"
 dependencies = [
  "nom",
+ "pcap-parser",
+]
+
+[[package]]
+name = "pcap-parser"
+version = "0.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b02dbff869a341d90be2efb64dd4d61681f7e981e07c5f1483d5e72ce4d5cf9a"
+dependencies = [
+ "circular",
+ "nom",
+ "rusticata-macros",
 ]
 
 [[package]]
@@ -80,6 +98,15 @@ name = "radium"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "941ba9d78d8e2f7ce474c015eea4d9c6d25b6a3327f9832ee29a4de27f91bbb8"
+
+[[package]]
+name = "rusticata-macros"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7390af60e66c44130b4c5ea85f2555b7ace835d73b4b889c704dc3cb4c0468c8"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "ryu"
