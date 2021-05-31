@@ -4,12 +4,13 @@ use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use std::fs::File;
 
-use protocols::{parse_packet, Packet};
+use protocols::parse_packet;
 
 fn main() {
-    let path = "/home/sl/pcap/ICS/modbus/mod_3.pcap";
+    let path = "/home/sl/pcap/ICS/modbus/modbus_test_data_part1.pcap";
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
+    let mut error_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
     loop {
         match reader.next() {
@@ -23,7 +24,16 @@ fn main() {
                     }
                     PcapBlockOwned::Legacy(_b) => {
                         // use linktype to parse b.data()
-                        println!("{:?}", _b);
+                        // println!("{:?}", _b);
+                        // println!("{:?}", _b.data);
+                        let result = parse_packet(&_b.data);
+                        match result {
+                            Ok((_, packet)) => println!("packet: {:?}", packet),
+                            Err(e) => {
+                                error_blocks += 1;
+                                println!("error: {:?}", e)
+                            }
+                        }
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
                 }
