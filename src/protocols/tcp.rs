@@ -1,10 +1,12 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
-use nom::number::complete::{be_u32, be_u16, u8};
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::IResult;
+
+use super::payload::L4Payload;
 
 #[derive(Debug, PartialEq)]
 pub struct TcpHeader {
@@ -26,7 +28,7 @@ pub struct Tcp<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-fn parse_bits_tcp_header(input: (&[u8], usize)) -> IResult<(&[u8], usize),  TcpHeader> {
+fn parse_bits_tcp_header(input: (&[u8], usize)) -> IResult<(&[u8], usize), TcpHeader> {
     let (input, src_port) = take_bits(16usize)(input)?;
     let (input, dst_port) = take_bits(16usize)(input)?;
     let (input, seq) = take_bits(32usize)(input)?;
@@ -49,8 +51,8 @@ fn parse_bits_tcp_header(input: (&[u8], usize)) -> IResult<(&[u8], usize),  TcpH
             flags,
             window_size,
             checksum,
-            urgent_pointer
-        }
+            urgent_pointer,
+        },
     ))
 }
 
@@ -66,11 +68,11 @@ pub fn parse_tcp(input: &[u8]) -> IResult<&[u8], Tcp> {
     } else {
         Ok((input, None))
     }?;
-    Ok((
-        input,
-        Tcp {
-            header,
-            options
-        }
-    ))
+    Ok((input, Tcp { header, options }))
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Packet<'a> {
+    header: Tcp<'a>,
+    payload: L4Payload<'a>,
 }

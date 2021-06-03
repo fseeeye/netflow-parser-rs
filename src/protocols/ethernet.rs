@@ -1,10 +1,12 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
-use nom::number::complete::{be_u32, be_u16, u8};
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::IResult;
+
+use super::payload::L2Payload;
 
 #[derive(Debug, PartialEq)]
 pub struct Ethernet<'a> {
@@ -22,7 +24,13 @@ pub fn parse_ethernet(input: &[u8]) -> IResult<&[u8], Ethernet> {
         Ethernet {
             dst_mac,
             src_mac,
-            link_type
-        }
+            link_type,
+        },
     ))
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Packet<'a> {
+    pub header: Ethernet<'a>,
+    pub payload: L2Payload<'a>,
 }

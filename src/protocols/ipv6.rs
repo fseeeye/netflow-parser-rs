@@ -1,10 +1,12 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
-use nom::number::complete::{be_u32, be_u16, u8};
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::IResult;
+
+use super::payload::L3Payload;
 
 #[derive(Debug, PartialEq)]
 pub struct Ipv6HeaderPrefix {
@@ -24,7 +26,9 @@ pub struct Ipv6<'a> {
     pub extension_headers: Option<&'a [u8]>,
 }
 
-fn parse_bits_ipv6_header_prefix(input: (&[u8], usize)) -> IResult<(&[u8], usize),  Ipv6HeaderPrefix> {
+fn parse_bits_ipv6_header_prefix(
+    input: (&[u8], usize),
+) -> IResult<(&[u8], usize), Ipv6HeaderPrefix> {
     let (input, version) = take_bits(4usize)(input)?;
     let (input, traffic_class) = take_bits(8usize)(input)?;
     let (input, flow_label) = take_bits(20usize)(input)?;
@@ -39,8 +43,8 @@ fn parse_bits_ipv6_header_prefix(input: (&[u8], usize)) -> IResult<(&[u8], usize
             flow_label,
             payload_length,
             next_header,
-            hop_limit
-        }
+            hop_limit,
+        },
     ))
 }
 
@@ -64,7 +68,13 @@ pub fn parse_ipv6(input: &[u8]) -> IResult<&[u8], Ipv6> {
             prefix,
             src_ip,
             dst_ip,
-            extension_headers
-        }
+            extension_headers,
+        },
     ))
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Packet<'a> {
+    header: Ipv6<'a>,
+    payload: L3Payload<'a>,
 }

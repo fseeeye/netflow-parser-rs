@@ -7,6 +7,8 @@ use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
 use nom::IResult;
 
+use super::payload::L3Payload;
+
 #[derive(Debug, PartialEq)]
 pub struct Ipv4Header {
     pub version: u8,
@@ -83,4 +85,10 @@ pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
         Ok((input, None))
     }?;
     Ok((input, Ipv4 { header, options }))
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Packet<'a> {
+    header: Ipv4<'a>,
+    payload: L3Payload<'a>,
 }

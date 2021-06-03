@@ -1,10 +1,12 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
-use nom::number::complete::{be_u32, be_u16, u8};
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::IResult;
+
+use super::payload::L4Payload;
 
 #[derive(Debug, PartialEq)]
 pub struct Udp {
@@ -25,7 +27,13 @@ pub fn parse_udp(input: &[u8]) -> IResult<&[u8], Udp> {
             src_port,
             dst_port,
             length,
-            checksum
-        }
+            checksum,
+        },
     ))
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Packet<'a> {
+    pub header: Udp,
+    pub payload: L4Payload<'a>,
 }
