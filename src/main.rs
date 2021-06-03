@@ -7,7 +7,7 @@ use std::fs::File;
 use protocols::parse_packet;
 
 fn main() {
-    let path = "/home/sl/pcap/ICS/modbus/modbus_test_data_part1.pcap";
+    let path = r"C:\Users\slnya\Documents\pcap\ICS\modbus\mod_3.pcap";
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
     let mut error_blocks = 0;

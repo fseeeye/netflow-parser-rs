@@ -1,9 +1,10 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
-use nom::number::complete::{be_u32, be_u16, u8};
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
+use nom::sequence::tuple;
 use nom::IResult;
 
 #[derive(Debug, PartialEq)]
@@ -29,20 +30,30 @@ pub struct Ipv4<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-fn parse_bits_ipv4_header(input: (&[u8], usize)) -> IResult<(&[u8], usize),  Ipv4Header> {
-    let (input, version) = take_bits(4usize)(input)?;
-    let (input, header_length) = take_bits(4usize)(input)?;
-    let (input, diff_service) = take_bits(6usize)(input)?;
-    let (input, ecn) = take_bits(2usize)(input)?;
-    let (input, total_length) = take_bits(16usize)(input)?;
-    let (input, id) = take_bits(16usize)(input)?;
-    let (input, flags) = take_bits(3usize)(input)?;
-    let (input, fragment_offset) = take_bits(13usize)(input)?;
-    let (input, ttl) = take_bits(8usize)(input)?;
-    let (input, protocol) = take_bits(8usize)(input)?;
-    let (input, checksum) = take_bits(16usize)(input)?;
-    let (input, src_ip) = take_bits(32usize)(input)?;
-    let (input, dst_ip) = take_bits(32usize)(input)?;
+fn parse_ipv4_header(input: &[u8]) -> IResult<&[u8], Ipv4Header> {
+    let (input, (version, header_length, diff_service, ecn)) =
+        bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
+            take_bits(4usize),
+            take_bits(4usize),
+            take_bits(6usize),
+            take_bits(2usize),
+        )))(input)?;
+    // let (input, version) = take_bits(4usize)(input)?;
+    // let (input, header_length) = take_bits(4usize)(input)?;
+    // let (input, diff_service) = take_bits(6usize)(input)?;
+    // let (input, ecn) = take_bits(2usize)(input)?;
+    let (input, total_length) = be_u16(input)?;
+    let (input, id) = be_u16(input)?;
+    let (input, (flags, fragment_offset)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
+        tuple((take_bits(3usize), take_bits(13usize))),
+    )(input)?;
+    // let (input, flags) = take_bits(3usize)(input)?;
+    // let (input, fragment_offset) = take_bits(13usize)(input)?;
+    let (input, ttl) = u8(input)?;
+    let (input, protocol) = u8(input)?;
+    let (input, checksum) = be_u16(input)?;
+    let (input, src_ip) = be_u32(input)?;
+    let (input, dst_ip) = be_u32(input)?;
     Ok((
         input,
         Ipv4Header {
@@ -58,13 +69,9 @@ fn parse_bits_ipv4_header(input: (&[u8], usize)) -> IResult<(&[u8], usize),  Ipv
             protocol,
             checksum,
             src_ip,
-            dst_ip
-        }
+            dst_ip,
+        },
     ))
-}
-
-fn parse_ipv4_header(input: &[u8]) -> IResult<&[u8], Ipv4Header> {
-    bits(parse_bits_ipv4_header)(input)
 }
 
 pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
@@ -75,11 +82,5 @@ pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
     } else {
         Ok((input, None))
     }?;
-    Ok((
-        input,
-        Ipv4 {
-            header,
-            options
-        }
-    ))
+    Ok((input, Ipv4 { header, options }))
 }
