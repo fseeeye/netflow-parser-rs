@@ -10,7 +10,7 @@ use nom::IResult;
 use super::payload::L3Payload;
 
 #[derive(Debug, PartialEq)]
-pub struct Ipv4Header {
+pub struct Ipv4<'a> {
     pub version: u8,
     pub header_length: u8,
     pub diff_service: u8,
@@ -24,15 +24,10 @@ pub struct Ipv4Header {
     pub checksum: u16,
     pub src_ip: u32,
     pub dst_ip: u32,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Ipv4<'a> {
-    pub header: Ipv4Header,
     pub options: Option<&'a [u8]>,
 }
 
-fn parse_ipv4_header(input: &[u8]) -> IResult<&[u8], Ipv4Header> {
+pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
     let (input, (version, header_length, diff_service, ecn)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
             take_bits(4usize),
@@ -56,9 +51,15 @@ fn parse_ipv4_header(input: &[u8]) -> IResult<&[u8], Ipv4Header> {
     let (input, checksum) = be_u16(input)?;
     let (input, src_ip) = be_u32(input)?;
     let (input, dst_ip) = be_u32(input)?;
+    let (input, options) = if (header_length * 4) > 20 {
+        let (input, options) = take(header_length * 4 - 20)(input)?;
+        Ok((input, Some(options)))
+    } else {
+        Ok((input, None))
+    }?;
     Ok((
         input,
-        Ipv4Header {
+        Ipv4 {
             version,
             header_length,
             diff_service,
@@ -72,20 +73,21 @@ fn parse_ipv4_header(input: &[u8]) -> IResult<&[u8], Ipv4Header> {
             checksum,
             src_ip,
             dst_ip,
+            options,
         },
     ))
 }
 
-pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
-    let (input, header) = parse_ipv4_header(input)?;
-    let (input, options) = if (header.header_length * 4) > 20 {
-        let (input, options) = take(header.header_length * 4 - 20)(input)?;
-        Ok((input, Some(options)))
-    } else {
-        Ok((input, None))
-    }?;
-    Ok((input, Ipv4 { header, options }))
-}
+// pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
+//     let (input, header) = parse_ipv4_header(input)?;
+//     let (input, options) = if (header.header_length * 4) > 20 {
+//         let (input, options) = take(header.header_length * 4 - 20)(input)?;
+//         Ok((input, Some(options)))
+//     } else {
+//         Ok((input, None))
+//     }?;
+//     Ok((input, Ipv4 { header, options }))
+// }
 
 #[derive(Debug, PartialEq)]
 pub struct Packet<'a> {

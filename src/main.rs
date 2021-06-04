@@ -1,12 +1,8 @@
-mod error;
-mod layers;
 mod protocols;
 
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use std::fs::File;
-
-use layers::parse_packet;
 
 fn main() {
     let path = r"C:\Users\slnya\Documents\pcap\ICS\modbus\mod_3.pcap";
@@ -27,9 +23,9 @@ fn main() {
                         // use linktype to parse b.data()
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
-                        let packet = parse_packet(&_b.data);
+                        // let packet = parse_packet(&_b.data);
 
-                        println!("packet: {:?}", packet);
+                        println!("packet: {:?}", _b.data);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
                 }
