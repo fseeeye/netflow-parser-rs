@@ -10,6 +10,6 @@ pub enum Error {
 pub enum L2Payload<'a> {
     Ipv4(ipv4::Packet<'a>),
     Ipv6(ipv6::Packet<'a>),
-    Unknown,
+    Unknown(&'a [u8]),
     Error(Error),
 }

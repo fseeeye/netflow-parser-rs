@@ -94,8 +94,8 @@ fn parse_ipv4_payload<'a>(input: &'a [u8], header: &Ipv4) -> (&'a [u8], L3Payloa
             Ok((input, tcp)) => (input, L3Payload::Tcp(tcp)),
             Err(_) => (input, L3Payload::Error(ErrorL3::Tcp)),
         },
-        0x11 => (input, L3Payload::Unknown),
-        _ => (input, L3Payload::Unknown),
+        0x11 => (input, L3Payload::Unknown(input)),
+        _ => (input, L3Payload::Unknown(input)),
     }
 }
 

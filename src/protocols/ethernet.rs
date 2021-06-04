@@ -49,9 +49,9 @@ fn parse_ethernet_payload<'a>(input: &'a [u8], _header: &Ethernet) -> (&'a [u8],
                 Ok((input, ipv4)) => (input, L2Payload::Ipv4(ipv4)),
                 Err(_) => (input, L2Payload::Error(l2::Error::Ipv4)),
             },
-            _ => (input, L2Payload::Unknown),
+            _ => (input, L2Payload::Unknown(input)),
         },
-        Err(_) => (input, L2Payload::Unknown),
+        Err(_) => (input, L2Payload::Unknown(input)),
     }
 }
 

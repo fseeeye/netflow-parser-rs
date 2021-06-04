@@ -94,7 +94,7 @@ fn parse_tcp_payload<'a>(input: &'a [u8], header: &Tcp) -> (&'a [u8], L4Payload<
             Err(_) => (input, L4Payload::Error(l4::Error::Modbus)),
         };
     }
-    (input, L4Payload::Unknown)
+    (input, L4Payload::Unknown(input))
 }
 
 pub fn parse_tcp_packet<'a>(input: &'a [u8]) -> nom::IResult<&'a [u8], Packet<'a>> {
