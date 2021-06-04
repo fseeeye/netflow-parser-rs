@@ -6,3 +6,6 @@ pub mod tcp;
 pub mod udp;
 
 mod payload;
+mod traits;
+
+pub use traits::PacketTrait;
