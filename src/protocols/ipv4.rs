@@ -27,7 +27,7 @@ pub struct Ipv4<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
+fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
     let (input, (version, header_length, diff_service, ecn)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
             take_bits(4usize),
@@ -78,19 +78,35 @@ pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
     ))
 }
 
-// pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
-//     let (input, header) = parse_ipv4_header(input)?;
-//     let (input, options) = if (header.header_length * 4) > 20 {
-//         let (input, options) = take(header.header_length * 4 - 20)(input)?;
-//         Ok((input, Some(options)))
-//     } else {
-//         Ok((input, None))
-//     }?;
-//     Ok((input, Ipv4 { header, options }))
-// }
-
 #[derive(Debug, PartialEq)]
 pub struct Packet<'a> {
     header: Ipv4<'a>,
     payload: L3Payload<'a>,
+}
+
+use super::payload::l3::Error as ErrorL3;
+
+fn parse_ipv4_payload<'a>(input: &'a [u8], header: &Ipv4) -> (&'a [u8], L3Payload<'a>) {
+    use super::tcp::parse_tcp_packet;
+
+    match header.protocol {
+        0x06 => match parse_tcp_packet(input) {
+            Ok((input, tcp)) => (input, L3Payload::Tcp(tcp)),
+            Err(e) => (input, L3Payload::Error(e)),
+        },
+        0x11 => (input, L3Payload::Unknown),
+        _ => (input, L3Payload::Unknown),
+    }
+}
+
+use super::payload::l2::Error as ErrorL2;
+
+pub fn parse_ipv4_packet<'a>(input: &'a [u8]) -> Result<(&'a [u8], Packet<'a>), ErrorL2> {
+    match parse_ipv4(input) {
+        Ok((input, header)) => {
+            let (input, payload) = parse_ipv4_payload(input, &header);
+            Ok((input, Packet { header, payload }))
+        }
+        Err(_) => Err(ErrorL2::Ipv4),
+    }
 }

@@ -25,7 +25,7 @@ pub struct Ipv6<'a> {
 fn parse_ipv6(input: &[u8]) -> IResult<&[u8], Ipv6> {
     let (input, (version, traffic_class, flow_label)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
-            take_bits::<_, u8, _, _>(4usize),
+            take_bits(4usize),
             take_bits(8usize),
             take_bits(20usize),
         )))(input)?;

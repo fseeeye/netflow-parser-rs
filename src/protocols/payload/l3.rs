@@ -10,6 +10,6 @@ pub enum Error {
 pub enum L3Payload<'a> {
     Tcp(tcp::Packet<'a>),
     Udp(udp::Packet<'a>),
-    Unknown(&'a [u8]),
+    Unknown,
     Error(Error),
 }

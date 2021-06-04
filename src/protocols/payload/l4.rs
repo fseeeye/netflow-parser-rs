@@ -9,6 +9,6 @@ pub enum Error {
 #[derive(Debug, PartialEq)]
 pub enum L4Payload<'a> {
     Modbus(modbus::ModbusPacket<'a>),
-    Unknown(&'a [u8]),
+    Unknown,
     Error(Error),
 }
