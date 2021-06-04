@@ -97,15 +97,9 @@ fn parse_tcp_payload<'a>(input: &'a [u8], header: &Tcp) -> (&'a [u8], L4Payload<
     (input, L4Payload::Unknown)
 }
 
-use super::payload::l3::Error as ErrorL3;
-
-pub fn parse_tcp_packet<'a>(input: &'a [u8]) -> Result<(&'a [u8], Packet<'a>), ErrorL3> {
-    match parse_tcp(input) {
-        Ok((input, header)) => {
-            let (input, payload) = parse_tcp_payload(input, &header);
-            let packet = Packet { header, payload };
-            Ok((input, packet))
-        }
-        Err(_) => Err(ErrorL3::Tcp),
-    }
+pub fn parse_tcp_packet<'a>(input: &'a [u8]) -> nom::IResult<&'a [u8], Packet<'a>> {
+    let (input, header) = parse_tcp(input)?;
+    let (input, payload) = parse_tcp_payload(input, &header);
+    let packet = Packet { header, payload };
+    Ok((input, packet))
 }

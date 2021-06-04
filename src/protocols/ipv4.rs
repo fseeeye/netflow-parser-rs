@@ -92,21 +92,15 @@ fn parse_ipv4_payload<'a>(input: &'a [u8], header: &Ipv4) -> (&'a [u8], L3Payloa
     match header.protocol {
         0x06 => match parse_tcp_packet(input) {
             Ok((input, tcp)) => (input, L3Payload::Tcp(tcp)),
-            Err(e) => (input, L3Payload::Error(e)),
+            Err(_) => (input, L3Payload::Error(ErrorL3::Tcp)),
         },
         0x11 => (input, L3Payload::Unknown),
         _ => (input, L3Payload::Unknown),
     }
 }
 
-use super::payload::l2::Error as ErrorL2;
-
-pub fn parse_ipv4_packet<'a>(input: &'a [u8]) -> Result<(&'a [u8], Packet<'a>), ErrorL2> {
-    match parse_ipv4(input) {
-        Ok((input, header)) => {
-            let (input, payload) = parse_ipv4_payload(input, &header);
-            Ok((input, Packet { header, payload }))
-        }
-        Err(_) => Err(ErrorL2::Ipv4),
-    }
+pub fn parse_ipv4_packet<'a>(input: &'a [u8]) -> nom::IResult<&[u8], Packet<'a>> {
+    let (input, header) = parse_ipv4(input)?;
+    let (input, payload) = parse_ipv4_payload(input, &header);
+    Ok((input, Packet { header, payload }))
 }
