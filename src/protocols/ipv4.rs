@@ -27,7 +27,7 @@ pub struct Ipv4<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
+pub fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
     let (input, (version, header_length, diff_service, ecn)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
             take_bits(4usize),
@@ -35,17 +35,11 @@ fn parse_ipv4(input: &[u8]) -> IResult<&[u8], Ipv4> {
             take_bits(6usize),
             take_bits(2usize),
         )))(input)?;
-    // let (input, version) = take_bits(4usize)(input)?;
-    // let (input, header_length) = take_bits(4usize)(input)?;
-    // let (input, diff_service) = take_bits(6usize)(input)?;
-    // let (input, ecn) = take_bits(2usize)(input)?;
     let (input, total_length) = be_u16(input)?;
     let (input, id) = be_u16(input)?;
     let (input, (flags, fragment_offset)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
         tuple((take_bits(3usize), take_bits(13usize))),
     )(input)?;
-    // let (input, flags) = take_bits(3usize)(input)?;
-    // let (input, fragment_offset) = take_bits(13usize)(input)?;
     let (input, ttl) = u8(input)?;
     let (input, protocol) = u8(input)?;
     let (input, checksum) = be_u16(input)?;
