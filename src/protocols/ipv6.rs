@@ -22,16 +22,13 @@ pub struct Ipv6<'a> {
     pub extension_headers: Option<&'a [u8]>,
 }
 
-fn parse_ipv6(input: &[u8]) -> IResult<&[u8], Ipv6> {
+pub fn parse_ipv6(input: &[u8]) -> IResult<&[u8], Ipv6> {
     let (input, (version, traffic_class, flow_label)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
             take_bits(4usize),
             take_bits(8usize),
             take_bits(20usize),
         )))(input)?;
-    // let (input, version) = take_bits(4usize)(input)?;
-    // let (input, traffic_class) = take_bits(8usize)(input)?;
-    // let (input, flow_label) = take_bits(20usize)(input)?;
     let (input, payload_length) = be_u16(input)?;
     let (input, next_header) = u8(input)?;
     let (input, hop_limit) = u8(input)?;
