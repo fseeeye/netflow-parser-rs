@@ -1,17 +1,18 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
-use nom::number::complete::{be_u32, be_u16, u8};
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::IResult;
 
 #[derive(Debug, PartialEq)]
-pub struct MBAPHeader {
+pub struct Header {
     pub transaction_id: u16,
     pub protocol_id: u16,
     pub length: u16,
     pub unit_id: u8,
+    pub function_code: u8,
 }
 
 #[derive(Debug, PartialEq)]
@@ -34,100 +35,101 @@ pub struct WriteFileRecordSubRequest<'a> {
 #[derive(Debug, PartialEq)]
 pub enum Request<'a> {
     ReadCoils {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     ReadDiscreInputs {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     ReadHoldingRegisters {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     ReadInputRegisters {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     WriteSingleCoil {
-         output_address: u16,
-         output_value: u16,
+        output_address: u16,
+        output_value: u16,
     },
     WriteSingleRegister {
-         register_address: u16,
-         register_value: u16,
+        register_address: u16,
+        register_value: u16,
     },
     WriteMultipleCoils {
-         start_address: u16,
-         output_count: u16,
-         byte_count: u8,
-         output_values: Vec<u8>,
+        start_address: u16,
+        output_count: u16,
+        byte_count: u8,
+        output_values: Vec<u8>,
     },
     WriteMultipleRegisters {
-         start_address: u16,
-         output_count: u16,
-         byte_count: u8,
-         output_values: Vec<u16>,
+        start_address: u16,
+        output_count: u16,
+        byte_count: u8,
+        output_values: Vec<u16>,
     },
     Eof {},
     ReadFileRecord {
-         byte_count: u8,
-         sub_requests: Vec<ReadFileRecordSubRequest>,
+        byte_count: u8,
+        sub_requests: Vec<ReadFileRecordSubRequest>,
     },
     WriteFileRecord {
-         byte_count: u8,
-         sub_requests: Vec<WriteFileRecordSubRequest<'a>>,
+        byte_count: u8,
+        sub_requests: Vec<WriteFileRecordSubRequest<'a>>,
     },
     MaskWriteRegister {
-         ref_address: u16,
-         and_mask: u16,
-         or_mask: u16,
+        ref_address: u16,
+        and_mask: u16,
+        or_mask: u16,
     },
     ReadWriteMultipleRegisters {
-         read_start_address: u16,
-         read_count: u16,
-         write_start_address: u16,
-         write_count: u16,
-         write_byte_count: u8,
-         write_register_values: &'a [u8],
+        read_start_address: u16,
+        read_count: u16,
+        write_start_address: u16,
+        write_count: u16,
+        write_byte_count: u8,
+        write_register_values: &'a [u8],
     },
     ReadFIFOQueue {
-         fifo_pointer_address: u16,
-    }
+        fifo_pointer_address: u16,
+    },
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Payload<'a> {
     Request(Request<'a>),
-    Exception {
-         exception_code: u8,
-    }
+    Exception { exception_code: u8 },
 }
 
 #[derive(Debug, PartialEq)]
 pub struct ModbusPacket<'a> {
-    pub header: MBAPHeader,
-    pub function_code: u8,
+    pub header: Header,
     pub payload: Payload<'a>,
 }
 
-pub fn parse_mbap_header(input: &[u8]) -> IResult<&[u8], MBAPHeader> {
+pub fn parse_header(input: &[u8]) -> IResult<&[u8], Header> {
     let (input, transaction_id) = be_u16(input)?;
     let (input, protocol_id) = be_u16(input)?;
     let (input, length) = be_u16(input)?;
     let (input, unit_id) = u8(input)?;
+    let (input, function_code) = u8(input)?;
     Ok((
         input,
-        MBAPHeader {
+        Header {
             transaction_id,
             protocol_id,
             length,
-            unit_id
-        }
+            unit_id,
+            function_code,
+        },
     ))
 }
 
-pub fn parse_read_file_record_sub_request(input: &[u8]) -> IResult<&[u8], ReadFileRecordSubRequest> {
+pub fn parse_read_file_record_sub_request(
+    input: &[u8],
+) -> IResult<&[u8], ReadFileRecordSubRequest> {
     let (input, ref_type) = u8(input)?;
     let (input, file_number) = be_u16(input)?;
     let (input, record_number) = be_u16(input)?;
@@ -138,12 +140,14 @@ pub fn parse_read_file_record_sub_request(input: &[u8]) -> IResult<&[u8], ReadFi
             ref_type,
             file_number,
             record_number,
-            record_length
-        }
+            record_length,
+        },
     ))
 }
 
-pub fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFileRecordSubRequest> {
+pub fn parse_write_file_record_sub_request(
+    input: &[u8],
+) -> IResult<&[u8], WriteFileRecordSubRequest> {
     let (input, ref_type) = u8(input)?;
     let (input, file_number) = be_u16(input)?;
     let (input, record_number) = be_u16(input)?;
@@ -156,8 +160,8 @@ pub fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], Write
             file_number,
             record_number,
             record_length,
-            record_data
-        }
+            record_data,
+        },
     ))
 }
 
@@ -168,8 +172,8 @@ fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Request> {
         input,
         Request::ReadCoils {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -180,8 +184,8 @@ fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Request> {
         input,
         Request::ReadDiscreInputs {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -192,8 +196,8 @@ fn parse_read_holding_registers(input: &[u8]) -> IResult<&[u8], Request> {
         input,
         Request::ReadHoldingRegisters {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -204,8 +208,8 @@ fn parse_read_input_registers(input: &[u8]) -> IResult<&[u8], Request> {
         input,
         Request::ReadInputRegisters {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -216,8 +220,8 @@ fn parse_write_single_coil(input: &[u8]) -> IResult<&[u8], Request> {
         input,
         Request::WriteSingleCoil {
             output_address,
-            output_value
-        }
+            output_value,
+        },
     ))
 }
 
@@ -228,8 +232,8 @@ fn parse_write_single_register(input: &[u8]) -> IResult<&[u8], Request> {
         input,
         Request::WriteSingleRegister {
             register_address,
-            register_value
-        }
+            register_value,
+        },
     ))
 }
 
@@ -244,8 +248,8 @@ fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Request> {
             start_address,
             output_count,
             byte_count,
-            output_values
-        }
+            output_values,
+        },
     ))
 }
 
@@ -260,40 +264,43 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Request> {
             start_address,
             output_count,
             byte_count,
-            output_values
-        }
+            output_values,
+        },
     ))
 }
 
 fn parse_eof(input: &[u8]) -> IResult<&[u8], Request> {
-     let (input, _) = eof(input)?;
-     Ok((
-         input,
-         Request::Eof {}
-     ))
+    let (input, _) = eof(input)?;
+    Ok((input, Request::Eof {}))
 }
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Request> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_read_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(
+        parse_read_file_record_sub_request,
+        (byte_count as usize / 7 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         Request::ReadFileRecord {
             byte_count,
-            sub_requests
-        }
+            sub_requests,
+        },
     ))
 }
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Request> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_write_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(
+        parse_write_file_record_sub_request,
+        (byte_count as usize / 7 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         Request::WriteFileRecord {
             byte_count,
-            sub_requests
-        }
+            sub_requests,
+        },
     ))
 }
 
@@ -306,8 +313,8 @@ fn parse_mask_write_register(input: &[u8]) -> IResult<&[u8], Request> {
         Request::MaskWriteRegister {
             ref_address,
             and_mask,
-            or_mask
-        }
+            or_mask,
+        },
     ))
 }
 
@@ -326,8 +333,8 @@ fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Request> 
             write_start_address,
             write_count,
             write_byte_count,
-            write_register_values
-        }
+            write_register_values,
+        },
     ))
 }
 
@@ -336,8 +343,8 @@ fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Request> {
     Ok((
         input,
         Request::ReadFIFOQueue {
-            fifo_pointer_address
-        }
+            fifo_pointer_address,
+        },
     ))
 }
 
@@ -360,43 +367,36 @@ pub fn parse_request(input: &[u8], function_code: u8) -> IResult<&[u8], Request>
         0x16 => parse_mask_write_register(input),
         0x17 => parse_read_write_multiple_registers(input),
         0x18 => parse_read_fifo_queue(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, request))
 }
 
 fn parse_exception(input: &[u8]) -> IResult<&[u8], Payload> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Payload::Exception {
-            exception_code
-        }
-    ))
+    Ok((input, Payload::Exception { exception_code }))
 }
 
-pub fn parse_payload(input: &[u8], function_code: u8) -> IResult<&[u8], Payload> {
-    let (input, payload) = match function_code & 0b10000000 {
+pub fn parse_payload<'a>(input: &'a [u8], header: &Header) -> IResult<&'a [u8], Payload<'a>> {
+    let (input, payload) = match header.function_code & 0b1000_0000 {
         0x0 => {
-            let (input, request) = parse_request(input, function_code)?;
+            let (input, request) = parse_request(input, header.function_code)?;
             Ok((input, Payload::Request(request)))
-        },
+        }
         0x01 => parse_exception(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, payload))
 }
 
 pub fn parse_modbus_packet(input: &[u8]) -> IResult<&[u8], ModbusPacket> {
-    let (input, header) = parse_mbap_header(input)?;
-    let (input, function_code) = u8(input)?;
-    let (input, payload) = parse_payload(input, function_code)?;
-    Ok((
-        input,
-        ModbusPacket {
-            header,
-            function_code,
-            payload
-        }
-    ))
+    let (input, header) = parse_header(input)?;
+    let (input, payload) = parse_payload(input, &header)?;
+    Ok((input, ModbusPacket { header, payload }))
 }
