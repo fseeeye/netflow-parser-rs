@@ -4,6 +4,7 @@ use nom::bytes::complete::{tag, take};
 use nom::combinator::eof;
 use nom::multi::count;
 use nom::number::complete::{be_u16, be_u32, u8};
+use nom::sequence::tuple;
 use nom::IResult;
 
 #[derive(Debug, PartialEq)]
@@ -348,8 +349,8 @@ fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Request> {
     ))
 }
 
-pub fn parse_request(input: &[u8], function_code: u8) -> IResult<&[u8], Request> {
-    let (input, request) = match function_code {
+pub fn parse_request<'a>(input: &'a [u8], header: &Header) -> IResult<&'a [u8], Request<'a>> {
+    let (input, request) = match header.function_code {
         0x01 => parse_read_coils(input),
         0x02 => parse_read_discre_inputs(input),
         0x03 => parse_read_holding_registers(input),
@@ -383,7 +384,7 @@ fn parse_exception(input: &[u8]) -> IResult<&[u8], Payload> {
 pub fn parse_payload<'a>(input: &'a [u8], header: &Header) -> IResult<&'a [u8], Payload<'a>> {
     let (input, payload) = match header.function_code & 0b1000_0000 {
         0x0 => {
-            let (input, request) = parse_request(input, header.function_code)?;
+            let (input, request) = parse_request(input, &header)?;
             Ok((input, Payload::Request(request)))
         }
         0x01 => parse_exception(input),
