@@ -3,10 +3,10 @@ use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use std::fs::File;
 
 use protocols::PacketTrait;
-use protocols::parsers::parser_context::ParserContext;
+// use protocols::parsers::parser_context::ParserContext;
 
 fn main() {
-    let path = r"/Users/fseeeye/Desktop/pcap/ICS/modbus/mod_3.pcap";
+    let path = r"/Users/fseeeye/Desktop/pcap/ICS/modbus/mod_1.pcap";
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
@@ -21,13 +21,13 @@ fn main() {
                         // save hdr.network (linktype)
                     }
                     PcapBlockOwned::Legacy(_b) => {
-                        use protocols::parsers::ethernet;
+                        use protocols::parsers::ethernet::EthernetPacket;
                         // use linktype to parse b.data()
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
-                        let mut context: ParserContext = ParserContext::new().unwrap();
-                        match ethernet::EthernetPacket::parse(&_b.data, &mut context) {
+                        // let mut context: ParserContext = ParserContext::new().unwrap();
+                        match EthernetPacket::parse(&_b.data) {
                             Ok((_input, packet)) => {
                                 println!("packet: {:?}", packet);
                             }

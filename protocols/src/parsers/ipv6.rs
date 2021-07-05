@@ -7,11 +7,16 @@ use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::traits::PacketTrait; // changed
-use super::parser_context::ParserContext; // added
+use crate::PacketTrait;
 
 #[derive(Debug, PartialEq)]
-pub struct Ipv6<'a> {
+pub struct Ipv6Packet<'a> {
+    header: Ipv6Header<'a>,
+    payload: Ipv6Payload<'a>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Ipv6Header<'a> {
     pub version: u8,
     pub traffic_class: u8,
     pub flow_label: u32,
@@ -23,13 +28,8 @@ pub struct Ipv6<'a> {
     pub extension_headers: Option<&'a [u8]>,
 }
 
-use super::{tcp, udp}; // changed
-
-#[derive(Debug, PartialEq)]
-pub enum Ipv6PayloadError {
-    Tcp,
-    Udp,
-}
+use super::tcp;
+use super::udp;
 
 #[derive(Debug, PartialEq)]
 pub enum Ipv6Payload<'a> {
@@ -40,17 +40,17 @@ pub enum Ipv6Payload<'a> {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Ipv6Packet<'a> {
-    header: Ipv6<'a>,
-    payload: Ipv6Payload<'a>,
+pub enum Ipv6PayloadError {
+    Tcp,
+    Udp,
 }
 
 impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
-    type Header = Ipv6<'a>;
+    type Header = Ipv6Header<'a>;
     type Payload = Ipv6Payload<'a>;
-	type PayloadError = Ipv6PayloadError;
-	
-	fn parse_header(input: &'a [u8], _context: &mut ParserContext) -> IResult<&'a [u8], Self::Header> {
+    type PayloadError = Ipv6PayloadError;
+
+    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, (version, traffic_class, flow_label)) =
             bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
                 take_bits(4usize),
@@ -70,7 +70,7 @@ impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
         }?;
         Ok((
             input,
-            Self::Header {
+            Ipv6Header {
                 version,
                 traffic_class,
                 flow_label,
@@ -84,10 +84,13 @@ impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
         ))
     }
 
-	fn parse_payload(input: &'a [u8], _header: &Self::Header, context: &mut ParserContext) -> IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
         unimplemented!();
     }
-	fn parse(input: &'a [u8], context: &mut ParserContext) -> nom::IResult<&'a [u8], Self> {
-        unimplemented!();
+
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = Self::parse_header(input)?;
+        let (input, payload) = Self::parse_payload(input, &header)?;
+        Ok((input, Self { header, payload }))
     }
 }

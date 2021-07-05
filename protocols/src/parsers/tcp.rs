@@ -7,11 +7,15 @@ use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::traits::PacketTrait; // changed
-use super::parser_context::ParserContext; // added
+use crate::PacketTrait;
 
 #[derive(Debug, PartialEq)]
-pub struct Tcp<'a> {
+pub struct TcpPacket<'a> {
+    header: TcpHeader<'a>,
+    payload: TcpPayload<'a>,
+}
+#[derive(Debug, PartialEq)]
+pub struct TcpHeader<'a> {
     pub src_port: u16,
     pub dst_port: u16,
     pub seq: u32,
@@ -25,32 +29,29 @@ pub struct Tcp<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-use crate::parsers::modbus; // changed
-
-#[derive(Debug, PartialEq)]
-pub enum TcpPayloadError {
-    Modbus,
-}
+use super::modbus_req::ModbusReqPacket;
+use super::modbus_rsp::ModbusRspPacket;
 
 #[derive(Debug, PartialEq)]
 pub enum TcpPayload<'a> {
-    Modbus(modbus::ModbusPacket<'a>),
+    ModbusReq(ModbusReqPacket<'a>),
+    ModbusRsp(ModbusRspPacket<'a>),
     Unknown(&'a [u8]),
     Error(TcpPayloadError),
 }
 
 #[derive(Debug, PartialEq)]
-pub struct TcpPacket<'a> {
-    header: Tcp<'a>,
-    payload: TcpPayload<'a>,
+pub enum TcpPayloadError {
+    ModbusReq,
+    ModbusRsp
 }
 
 impl<'a> PacketTrait<'a> for TcpPacket<'a> {
-    type Header = Tcp<'a>;
+    type Header = TcpHeader<'a>;
     type Payload = TcpPayload<'a>;
-	type PayloadError = TcpPayloadError;
-	
-	fn parse_header(input: &'a [u8], _context: &mut ParserContext) -> IResult<&'a [u8], Self::Header> {
+    type PayloadError = TcpPayloadError;
+
+    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, src_port) = be_u16(input)?;
         let (input, dst_port) = be_u16(input)?;
         let (input, seq) = be_u32(input)?;
@@ -71,12 +72,9 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
             Ok((input, None))
         }?;
 
-        _context.src_port = Some(src_port); // added
-        _context.dst_port = Some(dst_port); // added
-
         Ok((
             input,
-            Self::Header {
+            TcpHeader {
                 src_port,
                 dst_port,
                 seq,
@@ -92,20 +90,25 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
         ))
     }
 
-	fn parse_payload(input: &'a [u8], _header: &Self::Header, context: &mut ParserContext) -> IResult<&'a [u8], Self::Payload> {
-        use super::modbus::ModbusPacket;
-        if _header.src_port == 502 || _header.dst_port == 502 { // warning: used _header
-            return match ModbusPacket::parse(input, context) {
-                Ok((input, modbus)) => Ok((input, Self::Payload::Modbus(modbus))),
-                Err(_) => Ok((input, Self::Payload::Error(Self::PayloadError::Modbus))),
-            };
+    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+        match _header.src_port {
+            502 => match ModbusRspPacket::parse(input) {
+                Ok((input, modbus_rsp)) => Ok((input, TcpPayload::ModbusRsp(modbus_rsp))),
+                Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusRsp))),
+            },
+            _ => match _header.dst_port {
+                502 => match ModbusReqPacket::parse(input) {
+                    Ok((input, modbus_req)) => Ok((input, TcpPayload::ModbusReq(modbus_req))),
+                    Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq))),
+                },
+                _ => Ok((input, TcpPayload::Unknown(input)))
+            }
         }
-        Ok((input, Self::Payload::Unknown(input)))
     }
-    
-	fn parse(input: &'a [u8], context: &mut ParserContext) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input, context)?;
-        let (input, payload) = Self::parse_payload(input, &header, context)?;
+
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = Self::parse_header(input)?;
+        let (input, payload) = Self::parse_payload(input, &header)?;
         Ok((input, Self { header, payload }))
     }
 }

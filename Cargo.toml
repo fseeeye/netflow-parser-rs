@@ -13,6 +13,7 @@ members = [
 [dependencies]
 protocols = {path = "protocols"}
 pcap-parser = "0.11.1"
+nom = "6.1.2" # test
 
 [[example]]
 name = "pcap_tester"

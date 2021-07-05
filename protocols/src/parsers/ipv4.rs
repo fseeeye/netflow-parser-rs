@@ -7,11 +7,16 @@ use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
 use nom::IResult;
 
-use crate::traits::PacketTrait; // changed
-use super::parser_context::ParserContext; // added
+use crate::PacketTrait;
 
 #[derive(Debug, PartialEq)]
-pub struct Ipv4<'a> {
+pub struct Ipv4Packet<'a> {
+    header: Ipv4Header<'a>,
+    payload: Ipv4Payload<'a>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Ipv4Header<'a> {
     pub version: u8,
     pub header_length: u8,
     pub diff_service: u8,
@@ -28,7 +33,16 @@ pub struct Ipv4<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-use super::{tcp, udp}; // changed
+use super::tcp::TcpPacket;
+use super::udp::UdpPacket;
+
+#[derive(Debug, PartialEq)]
+pub enum Ipv4Payload<'a> {
+    Tcp(TcpPacket<'a>),
+    Udp(UdpPacket<'a>),
+    Unknown(&'a [u8]),
+    Error(Ipv4PayloadError),
+}
 
 #[derive(Debug, PartialEq)]
 pub enum Ipv4PayloadError {
@@ -36,26 +50,12 @@ pub enum Ipv4PayloadError {
     Udp,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum Ipv4Payload<'a> {
-    Tcp(tcp::TcpPacket<'a>),
-    Udp(udp::UdpPacket<'a>),
-    Unknown(&'a [u8]),
-    Error(Ipv4PayloadError),
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Ipv4Packet<'a> {
-    header: Ipv4<'a>,
-    payload: Ipv4Payload<'a>,
-}
-
 impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
-    type Header = Ipv4<'a>;
+    type Header = Ipv4Header<'a>;
     type Payload = Ipv4Payload<'a>;
     type PayloadError = Ipv4PayloadError;
 
-    fn parse_header(input: &'a [u8], _context: &mut ParserContext) -> nom::IResult<&'a [u8], Self::Header> {
+    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, (version, header_length, diff_service, ecn)) =
             bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
                 take_bits(4usize),
@@ -81,7 +81,7 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
         }?;
         Ok((
             input,
-            Self::Header {
+            Ipv4Header {
                 version,
                 header_length,
                 diff_service,
@@ -100,22 +100,24 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
         ))
     }
 
-    fn parse_payload(input: &'a [u8], header: &Self::Header, context: &mut ParserContext) -> nom::IResult<&'a [u8], Self::Payload> {
-        use super::tcp::TcpPacket;
-
-        match header.protocol {
-            0x06 => match TcpPacket::parse(input, context) {
-                Ok((input, tcp)) => Ok((input, Self::Payload::Tcp(tcp))),
-                Err(_) => Ok((input, Self::Payload::Error(Self::PayloadError::Tcp))),
+    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+        match _header.protocol {
+            // ref: https://www.ietf.org/rfc/rfc790.txt
+            0x06 => match TcpPacket::parse(input) {
+                Ok((input, tcp)) => Ok((input, Ipv4Payload::Tcp(tcp))),
+                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Tcp))),
             },
-            0x11 => Ok((input, Self::Payload::Unknown(input))),
-            _ => Ok((input, Self::Payload::Unknown(input))),
+            0x11 => match UdpPacket::parse(input) {
+                Ok((input, udp)) => Ok((input, Ipv4Payload::Udp(udp))),
+                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Udp))),
+            },
+            _ => Ok((input, Ipv4Payload::Unknown(input))),
         }
     }
 
-    fn parse(input: &'a [u8], context: &mut ParserContext) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input, context)?;
-        let (input, payload) = Self::parse_payload(input, &header, context)?;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = Self::parse_header(input)?;
+        let (input, payload) = Self::parse_payload(input, &header)?;
         Ok((input, Self { header, payload }))
     }
 }
