@@ -1,10 +1,10 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
-use nom::number::complete::{be_u32, be_u16, u8};
 use nom::IResult;
 
 use crate::PacketTrait;
@@ -12,13 +12,13 @@ use crate::PacketTrait;
 #[derive(Debug, PartialEq)]
 pub struct ModbusReqPacket<'a> {
     pub header: ModbusReqHeader<'a>,
-    pub payload: ModbusReqPayload<'a>
+    pub payload: ModbusReqPayload<'a>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct ModbusReqHeader<'a> {
     pub mbap_header: MbapHeader,
-    pub pdu: PDU<'a>
+    pub pdu: PDU<'a>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -40,15 +40,15 @@ fn parse_mbap_header(input: &[u8]) -> nom::IResult<&[u8], MbapHeader> {
             transaction_id,
             protocol_id,
             length,
-            unit_id
-        }
+            unit_id,
+        },
     ))
 }
 
 #[derive(Debug, PartialEq)]
 pub struct PDU<'a> {
     pub function_code: u8,
-    pub data: Data<'a>
+    pub data: Data<'a>,
 }
 
 fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
@@ -71,80 +71,83 @@ fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
         0x16 => parse_mask_write_register(input),
         0x17 => parse_read_write_multiple_registers(input),
         0x18 => parse_read_fifo_queue(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((
         input,
         PDU {
             function_code,
-            data
-        }
+            data,
+        },
     ))
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Data<'a> {
     ReadCoils {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     ReadDiscreInputs {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     ReadHoldingRegisters {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     ReadInputRegisters {
-         start_address: u16,
-         count: u16,
+        start_address: u16,
+        count: u16,
     },
     WriteSingleCoil {
-         output_address: u16,
-         output_value: u16,
+        output_address: u16,
+        output_value: u16,
     },
     WriteSingleRegister {
-         register_address: u16,
-         register_value: u16,
+        register_address: u16,
+        register_value: u16,
     },
     WriteMultipleCoils {
-         start_address: u16,
-         output_count: u16,
-         byte_count: u8,
-         output_values: Vec<u8>,
+        start_address: u16,
+        output_count: u16,
+        byte_count: u8,
+        output_values: Vec<u8>,
     },
     WriteMultipleRegisters {
-         start_address: u16,
-         output_count: u16,
-         byte_count: u8,
-         output_values: Vec<u16>,
+        start_address: u16,
+        output_count: u16,
+        byte_count: u8,
+        output_values: Vec<u16>,
     },
     Eof {},
     ReadFileRecord {
-         byte_count: u8,
-         sub_requests: Vec<ReadFileRecordSubRequest>,
+        byte_count: u8,
+        sub_requests: Vec<ReadFileRecordSubRequest>,
     },
     WriteFileRecord {
-         byte_count: u8,
-         sub_requests: Vec<WriteFileRecordSubRequest<'a>>,
+        byte_count: u8,
+        sub_requests: Vec<WriteFileRecordSubRequest<'a>>,
     },
     MaskWriteRegister {
-         ref_address: u16,
-         and_mask: u16,
-         or_mask: u16,
+        ref_address: u16,
+        and_mask: u16,
+        or_mask: u16,
     },
     ReadWriteMultipleRegisters {
-         read_start_address: u16,
-         read_count: u16,
-         write_start_address: u16,
-         write_count: u16,
-         write_byte_count: u8,
-         write_register_values: &'a [u8]
+        read_start_address: u16,
+        read_count: u16,
+        write_start_address: u16,
+        write_count: u16,
+        write_byte_count: u8,
+        write_register_values: &'a [u8],
     },
     ReadFIFOQueue {
-         fifo_pointer_address: u16,
-    }
+        fifo_pointer_address: u16,
+    },
 }
 
 fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
@@ -154,8 +157,8 @@ fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadCoils {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -166,8 +169,8 @@ fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadDiscreInputs {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -178,8 +181,8 @@ fn parse_read_holding_registers(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadHoldingRegisters {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -190,8 +193,8 @@ fn parse_read_input_registers(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadInputRegisters {
             start_address,
-            count
-        }
+            count,
+        },
     ))
 }
 
@@ -202,8 +205,8 @@ fn parse_write_single_coil(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::WriteSingleCoil {
             output_address,
-            output_value
-        }
+            output_value,
+        },
     ))
 }
 
@@ -214,8 +217,8 @@ fn parse_write_single_register(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::WriteSingleRegister {
             register_address,
-            register_value
-        }
+            register_value,
+        },
     ))
 }
 
@@ -230,8 +233,8 @@ fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Data> {
             start_address,
             output_count,
             byte_count,
-            output_values
-        }
+            output_values,
+        },
     ))
 }
 
@@ -246,41 +249,43 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
             start_address,
             output_count,
             byte_count,
-            output_values
-        }
+            output_values,
+        },
     ))
 }
 
-// fix
 fn parse_eof(input: &[u8]) -> IResult<&[u8], Data> {
-     let (input, _) = eof(input)?;
-     Ok((
-         input,
-         Data::Eof {}
-     ))
+    let (input, _) = eof(input)?;
+    Ok((input, Data::Eof {}))
 }
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_read_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(
+        parse_read_file_record_sub_request,
+        (byte_count as usize / 7 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         Data::ReadFileRecord {
             byte_count,
-            sub_requests
-        }
+            sub_requests,
+        },
     ))
 }
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_write_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(
+        parse_write_file_record_sub_request,
+        (byte_count as usize / 7 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         Data::WriteFileRecord {
             byte_count,
-            sub_requests
-        }
+            sub_requests,
+        },
     ))
 }
 
@@ -293,8 +298,8 @@ fn parse_mask_write_register(input: &[u8]) -> IResult<&[u8], Data> {
         Data::MaskWriteRegister {
             ref_address,
             and_mask,
-            or_mask
-        }
+            or_mask,
+        },
     ))
 }
 
@@ -313,8 +318,8 @@ fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
             write_start_address,
             write_count,
             write_byte_count,
-            write_register_values
-        }
+            write_register_values,
+        },
     ))
 }
 
@@ -323,8 +328,8 @@ fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Data> {
     Ok((
         input,
         Data::ReadFIFOQueue {
-            fifo_pointer_address
-        }
+            fifo_pointer_address,
+        },
     ))
 }
 
@@ -347,8 +352,8 @@ fn parse_read_file_record_sub_request(input: &[u8]) -> IResult<&[u8], ReadFileRe
             ref_type,
             file_number,
             record_number,
-            record_length
-        }
+            record_length,
+        },
     ))
 }
 
@@ -374,8 +379,8 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
             file_number,
             record_number,
             record_length,
-            record_data
-        }
+            record_data,
+        },
     ))
 }
 
@@ -401,20 +406,17 @@ impl<'a> PacketTrait<'a> for ModbusReqPacket<'a> {
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, mbap_header) = parse_mbap_header(input)?;
         let (input, pdu) = parse_pdu(input)?;
-        Ok((
-            input,
-            ModbusReqHeader {
-                mbap_header,
-                pdu
-            }
-        ))
+        Ok((input, ModbusReqHeader { mbap_header, pdu }))
     }
 
-    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(
+        input: &'a [u8],
+        _header: &Self::Header,
+    ) -> nom::IResult<&'a [u8], Self::Payload> {
         match input.len() {
             0 => match eof::parse_eof_packet(input) {
-                    Ok((input, eof)) => Ok((input, ModbusReqPayload::Eof(eof))),
-                    Err(_) => Ok((input, ModbusReqPayload::Error(ModbusReqPayloadError::Eof)))
+                Ok((input, eof)) => Ok((input, ModbusReqPayload::Eof(eof))),
+                Err(_) => Ok((input, ModbusReqPayload::Error(ModbusReqPayloadError::Eof))),
             },
             _ => Ok((input, ModbusReqPayload::Unknown(input))),
         }
@@ -426,4 +428,3 @@ impl<'a> PacketTrait<'a> for ModbusReqPacket<'a> {
         Ok((input, Self { header, payload }))
     }
 }
-

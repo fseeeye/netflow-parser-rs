@@ -1,10 +1,10 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::{tag, take};
-use nom::multi::count;
 use nom::combinator::eof;
+use nom::multi::count;
+use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
-use nom::number::complete::{be_u32, be_u16, u8};
 use nom::IResult;
 
 use crate::PacketTrait;
@@ -12,13 +12,13 @@ use crate::PacketTrait;
 #[derive(Debug, PartialEq)]
 pub struct ModbusRspPacket<'a> {
     pub header: ModbusRspHeader<'a>,
-    pub payload: ModbusRspPayload<'a>
+    pub payload: ModbusRspPayload<'a>,
 }
 
 #[derive(Debug, PartialEq)]
 pub struct ModbusRspHeader<'a> {
     pub mbap_header: MbapHeader,
-    pub pdu: PDU<'a>
+    pub pdu: PDU<'a>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -40,15 +40,15 @@ fn parse_mbap_header(input: &[u8]) -> nom::IResult<&[u8], MbapHeader> {
             transaction_id,
             protocol_id,
             length,
-            unit_id
-        }
+            unit_id,
+        },
     ))
 }
 
 #[derive(Debug, PartialEq)]
 pub struct PDU<'a> {
     pub function_code: u8,
-    pub data: Data<'a>
+    pub data: Data<'a>,
 }
 
 fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
@@ -60,12 +60,12 @@ fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
         0x04 => parse_read_input_registers(input),
         0x05 => parse_write_single_coil(input),
         0x06 => parse_write_single_register(input),
-        0x07 => parse_eof(input), // fix
-        0x0b => parse_eof(input), // fix
-        0x0c => parse_eof(input), // fix
+        0x07 => parse_eof(input),
+        0x0b => parse_eof(input),
+        0x0c => parse_eof(input),
         0x0f => parse_write_multiple_coils(input),
         0x10 => parse_write_multiple_registers(input),
-        0x11 => parse_eof(input), // fix
+        0x11 => parse_eof(input),
         0x14 => parse_read_file_record(input),
         0x15 => parse_write_file_record(input),
         0x16 => parse_mask_write_register(input),
@@ -77,84 +77,87 @@ fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
         0x84 => parse_read_input_registers_exc(input),
         0x85 => parse_write_single_coil_exc(input),
         0x86 => parse_write_single_register_exc(input),
-        0x87 => parse_eof(input), // fix
-        0x8b => parse_eof(input), // fix
-        0x8c => parse_eof(input), // fix
+        0x87 => parse_eof(input),
+        0x8b => parse_eof(input),
+        0x8c => parse_eof(input),
         0x8f => parse_write_multiple_coils_exc(input),
         0x90 => parse_write_multiple_registers_exc(input),
-        0x91 => parse_eof(input), // fix
+        0x91 => parse_eof(input),
         0x94 => parse_read_file_record_exc(input),
         0x95 => parse_write_file_record_exc(input),
         0x96 => parse_mask_write_register_exc(input),
         0x97 => parse_read_write_multiple_registers_exc(input),
         0x98 => parse_read_fifo_queue_exc(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((
         input,
         PDU {
             function_code,
-            data
-        }
+            data,
+        },
     ))
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Data<'a> {
     ReadCoils {
-         byte_count: u8,
-         coil_status: Vec<u8>,
+        byte_count: u8,
+        coil_status: Vec<u8>,
     },
     ReadDiscreInputs {
-         byte_count: u8,
-         coil_status: Vec<u8>,
+        byte_count: u8,
+        coil_status: Vec<u8>,
     },
     ReadHoldingRegisters {
-         byte_count: u8,
-         coil_status: Vec<u16>,
+        byte_count: u8,
+        coil_status: Vec<u16>,
     },
     ReadInputRegisters {
-         byte_count: u8,
-         coil_status: Vec<u16>,
+        byte_count: u8,
+        coil_status: Vec<u16>,
     },
     WriteSingleCoil {
-         output_address: u16,
-         output_value: u16,
+        output_address: u16,
+        output_value: u16,
     },
     WriteSingleRegister {
-         register_address: u16,
-         register_value: u16,
+        register_address: u16,
+        register_value: u16,
     },
     WriteMultipleCoils {
-         start_address: u16,
-         output_count: u16,
+        start_address: u16,
+        output_count: u16,
     },
     WriteMultipleRegisters {
-         start_address: u16,
-         output_count: u16,
+        start_address: u16,
+        output_count: u16,
     },
     Eof {},
     ReadFileRecord {
-         byte_count: u8,
-         sub_requests: Vec<ReadFileRecordSubRequest<'a>>,
+        byte_count: u8,
+        sub_requests: Vec<ReadFileRecordSubRequest<'a>>,
     },
     WriteFileRecord {
-         byte_count: u8,
-         sub_requests: Vec<WriteFileRecordSubRequest<'a>>,
+        byte_count: u8,
+        sub_requests: Vec<WriteFileRecordSubRequest<'a>>,
     },
     MaskWriteRegister {
-         ref_address: u16,
-         and_mask: u16,
-         or_mask: u16,
+        ref_address: u16,
+        and_mask: u16,
+        or_mask: u16,
     },
     ReadWriteMultipleRegisters {
-         byte_count: u8,
-         read_registers_value: &'a [u8],
+        byte_count: u8,
+        read_registers_value: &'a [u8],
     },
     ReadFIFOQueue {
-         byte_count: u16,
-         fifo_count: u16,
-         fifo_value_register: &'a [u8],
+        byte_count: u16,
+        fifo_count: u16,
+        fifo_value_register: &'a [u8],
     },
     ReadCoilsExc {
         exception_code: u8,
@@ -164,37 +167,37 @@ pub enum Data<'a> {
     },
     ReadHoldingRegistersExc {
         exception_code: u8,
-   },
-   ReadInputRegistersExc {
+    },
+    ReadInputRegistersExc {
         exception_code: u8,
-   },
-   WriteSingleCoilExc {
+    },
+    WriteSingleCoilExc {
         exception_code: u8,
-   },
-   WriteSingleRegisterExc {
+    },
+    WriteSingleRegisterExc {
         exception_code: u8,
-   },
-   WriteMultipleCoilsExc {
+    },
+    WriteMultipleCoilsExc {
         exception_code: u8,
-   },
-   WriteMultipleRegistersExc {
+    },
+    WriteMultipleRegistersExc {
         exception_code: u8,
-   },
-   ReadFileRecordExc {
+    },
+    ReadFileRecordExc {
         exception_code: u8,
-   },
-   WriteFileRecordExc {
+    },
+    WriteFileRecordExc {
         exception_code: u8,
-   },
-   MaskWriteRegisterExc {
+    },
+    MaskWriteRegisterExc {
         exception_code: u8,
-   },
-   ReadWriteMultipleRegistersExc {
+    },
+    ReadWriteMultipleRegistersExc {
         exception_code: u8,
-   },
-   ReadFIFOQueueExc {
+    },
+    ReadFIFOQueueExc {
         exception_code: u8,
-   },
+    },
 }
 
 fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
@@ -204,8 +207,8 @@ fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadCoils {
             byte_count,
-            coil_status
-        }
+            coil_status,
+        },
     ))
 }
 
@@ -216,8 +219,8 @@ fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadDiscreInputs {
             byte_count,
-            coil_status
-        }
+            coil_status,
+        },
     ))
 }
 
@@ -228,8 +231,8 @@ fn parse_read_holding_registers(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadHoldingRegisters {
             byte_count,
-            coil_status
-        }
+            coil_status,
+        },
     ))
 }
 
@@ -240,8 +243,8 @@ fn parse_read_input_registers(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadInputRegisters {
             byte_count,
-            coil_status
-        }
+            coil_status,
+        },
     ))
 }
 
@@ -252,8 +255,8 @@ fn parse_write_single_coil(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::WriteSingleCoil {
             output_address,
-            output_value
-        }
+            output_value,
+        },
     ))
 }
 
@@ -264,8 +267,8 @@ fn parse_write_single_register(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::WriteSingleRegister {
             register_address,
-            register_value
-        }
+            register_value,
+        },
     ))
 }
 
@@ -276,8 +279,8 @@ fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::WriteMultipleCoils {
             start_address,
-            output_count
-        }
+            output_count,
+        },
     ))
 }
 
@@ -288,41 +291,43 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::WriteMultipleRegisters {
             start_address,
-            output_count
-        }
+            output_count,
+        },
     ))
 }
 
-// fix
 fn parse_eof(input: &[u8]) -> IResult<&[u8], Data> {
-     let (input, _) = eof(input)?;
-     Ok((
-         input,
-         Data::Eof {}
-     ))
+    let (input, _) = eof(input)?;
+    Ok((input, Data::Eof {}))
 }
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_read_file_record_sub_request, (byte_count as usize / 4 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(
+        parse_read_file_record_sub_request,
+        (byte_count as usize / 4 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         Data::ReadFileRecord {
             byte_count,
-            sub_requests
-        }
+            sub_requests,
+        },
     ))
 }
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_write_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(
+        parse_write_file_record_sub_request,
+        (byte_count as usize / 7 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         Data::WriteFileRecord {
             byte_count,
-            sub_requests
-        }
+            sub_requests,
+        },
     ))
 }
 
@@ -335,8 +340,8 @@ fn parse_mask_write_register(input: &[u8]) -> IResult<&[u8], Data> {
         Data::MaskWriteRegister {
             ref_address,
             and_mask,
-            or_mask
-        }
+            or_mask,
+        },
     ))
 }
 
@@ -347,8 +352,8 @@ fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
         input,
         Data::ReadWriteMultipleRegisters {
             byte_count,
-            read_registers_value
-        }
+            read_registers_value,
+        },
     ))
 }
 
@@ -361,139 +366,77 @@ fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Data> {
         Data::ReadFIFOQueue {
             byte_count,
             fifo_count,
-            fifo_value_register
-        }
+            fifo_value_register,
+        },
     ))
 }
 
 fn parse_read_coils_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadDiscreInputsExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::ReadDiscreInputsExc { exception_code }))
 }
 
 fn parse_read_discre_inputs_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadDiscreInputsExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::ReadDiscreInputsExc { exception_code }))
 }
 
 fn parse_read_holding_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadHoldingRegistersExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::ReadHoldingRegistersExc { exception_code }))
 }
 
 fn parse_read_input_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadInputRegistersExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::ReadInputRegistersExc { exception_code }))
 }
 
 fn parse_write_single_coil_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::WriteSingleCoilExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::WriteSingleCoilExc { exception_code }))
 }
 
 fn parse_write_single_register_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::WriteSingleRegisterExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::WriteSingleRegisterExc { exception_code }))
 }
 
 fn parse_write_multiple_coils_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::WriteMultipleCoilsExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::WriteMultipleCoilsExc { exception_code }))
 }
 
 fn parse_write_multiple_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::WriteMultipleRegistersExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::WriteMultipleRegistersExc { exception_code }))
 }
 
 fn parse_read_file_record_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadFileRecordExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::ReadFileRecordExc { exception_code }))
 }
 
 fn parse_write_file_record_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::WriteFileRecordExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::WriteFileRecordExc { exception_code }))
 }
 
 fn parse_mask_write_register_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::MaskWriteRegisterExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::MaskWriteRegisterExc { exception_code }))
 }
 
 fn parse_read_write_multiple_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
     Ok((
         input,
-        Data::ReadWriteMultipleRegistersExc {
-            exception_code
-        }
+        Data::ReadWriteMultipleRegistersExc { exception_code },
     ))
 }
 
 fn parse_read_fifo_queue_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadFIFOQueueExc {
-            exception_code
-        }
-    ))
+    Ok((input, Data::ReadFIFOQueueExc { exception_code }))
 }
 
 #[derive(Debug, PartialEq)]
@@ -512,8 +455,8 @@ fn parse_read_file_record_sub_request(input: &[u8]) -> IResult<&[u8], ReadFileRe
         ReadFileRecordSubRequest {
             file_rsp_len,
             ref_type,
-            record_data
-        }
+            record_data,
+        },
     ))
 }
 
@@ -539,8 +482,8 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
             file_number,
             record_number,
             record_length,
-            record_data
-        }
+            record_data,
+        },
     ))
 }
 
@@ -566,20 +509,17 @@ impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, mbap_header) = parse_mbap_header(input)?;
         let (input, pdu) = parse_pdu(input)?;
-        Ok((
-            input,
-            ModbusRspHeader {
-                mbap_header,
-                pdu
-            }
-        ))
+        Ok((input, ModbusRspHeader { mbap_header, pdu }))
     }
 
-    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(
+        input: &'a [u8],
+        _header: &Self::Header,
+    ) -> nom::IResult<&'a [u8], Self::Payload> {
         match input.len() {
             0 => match eof::parse_eof_packet(input) {
-                    Ok((input, eof)) => Ok((input, ModbusRspPayload::Eof(eof))),
-                    Err(_) => Ok((input, ModbusRspPayload::Error(ModbusRspPayloadError::Eof)))
+                Ok((input, eof)) => Ok((input, ModbusRspPayload::Eof(eof))),
+                Err(_) => Ok((input, ModbusRspPayload::Error(ModbusRspPayloadError::Eof))),
             },
             _ => Ok((input, ModbusRspPayload::Unknown(input))),
         }
@@ -591,4 +531,3 @@ impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
         Ok((input, Self { header, payload }))
     }
 }
-

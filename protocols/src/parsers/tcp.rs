@@ -43,7 +43,7 @@ pub enum TcpPayload<'a> {
 #[derive(Debug, PartialEq)]
 pub enum TcpPayloadError {
     ModbusReq,
-    ModbusRsp
+    ModbusRsp,
 }
 
 impl<'a> PacketTrait<'a> for TcpPacket<'a> {
@@ -90,7 +90,10 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
         ))
     }
 
-    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(
+        input: &'a [u8],
+        _header: &Self::Header,
+    ) -> nom::IResult<&'a [u8], Self::Payload> {
         match _header.src_port {
             502 => match ModbusRspPacket::parse(input) {
                 Ok((input, modbus_rsp)) => Ok((input, TcpPayload::ModbusRsp(modbus_rsp))),
@@ -101,8 +104,8 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
                     Ok((input, modbus_req)) => Ok((input, TcpPayload::ModbusReq(modbus_req))),
                     Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq))),
                 },
-                _ => Ok((input, TcpPayload::Unknown(input)))
-            }
+                _ => Ok((input, TcpPayload::Unknown(input))),
+            },
         }
     }
 

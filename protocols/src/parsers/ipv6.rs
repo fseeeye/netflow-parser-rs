@@ -84,7 +84,10 @@ impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
         ))
     }
 
-    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(
+        input: &'a [u8],
+        _header: &Self::Header,
+    ) -> nom::IResult<&'a [u8], Self::Payload> {
         unimplemented!();
     }
 

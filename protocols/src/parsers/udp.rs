@@ -37,7 +37,7 @@ pub enum UdpPayload<'a> {
 #[derive(Debug, PartialEq)]
 pub enum UdpPayloadError {
     ModbusReq,
-    ModbusRsp
+    ModbusRsp,
 }
 
 impl<'a> PacketTrait<'a> for UdpPacket<'a> {
@@ -61,7 +61,10 @@ impl<'a> PacketTrait<'a> for UdpPacket<'a> {
         ))
     }
 
-    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(
+        input: &'a [u8],
+        _header: &Self::Header,
+    ) -> nom::IResult<&'a [u8], Self::Payload> {
         unimplemented!();
     }
 

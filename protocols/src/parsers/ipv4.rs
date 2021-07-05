@@ -65,9 +65,11 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
             )))(input)?;
         let (input, total_length) = be_u16(input)?;
         let (input, id) = be_u16(input)?;
-        let (input, (flags, fragment_offset)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
-            tuple((take_bits(3usize), take_bits(13usize))),
-        )(input)?;
+        let (input, (flags, fragment_offset)) =
+            bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
+                take_bits(3usize),
+                take_bits(13usize),
+            )))(input)?;
         let (input, ttl) = u8(input)?;
         let (input, protocol) = u8(input)?;
         let (input, checksum) = be_u16(input)?;
@@ -100,7 +102,10 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
         ))
     }
 
-    fn parse_payload(input: &'a [u8], _header: &Self::Header) -> nom::IResult<&'a [u8], Self::Payload> {
+    fn parse_payload(
+        input: &'a [u8],
+        _header: &Self::Header,
+    ) -> nom::IResult<&'a [u8], Self::Payload> {
         match _header.protocol {
             // ref: https://www.ietf.org/rfc/rfc790.txt
             0x06 => match TcpPacket::parse(input) {
