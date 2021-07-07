@@ -384,11 +384,11 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
     ))
 }
 
-use super::eof;
+use super::eof::EofPacket;
 
 #[derive(Debug, PartialEq)]
 pub enum ModbusReqPayload<'a> {
-    Eof(eof::EofPacket<'a>),
+    Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
     Error(ModbusReqPayloadError),
 }
@@ -414,7 +414,7 @@ impl<'a> PacketTrait<'a> for ModbusReqPacket<'a> {
         _header: &Self::Header,
     ) -> nom::IResult<&'a [u8], Self::Payload> {
         match input.len() {
-            0 => match eof::parse_eof_packet(input) {
+            0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, ModbusReqPayload::Eof(eof))),
                 Err(_) => Ok((input, ModbusReqPayload::Error(ModbusReqPayloadError::Eof))),
             },

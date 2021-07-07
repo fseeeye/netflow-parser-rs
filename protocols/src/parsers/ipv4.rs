@@ -33,6 +33,7 @@ pub struct Ipv4Header<'a> {
     pub options: Option<&'a [u8]>,
 }
 
+use super::eof::EofPacket;
 use super::tcp::TcpPacket;
 use super::udp::UdpPacket;
 
@@ -40,6 +41,7 @@ use super::udp::UdpPacket;
 pub enum Ipv4Payload<'a> {
     Tcp(TcpPacket<'a>),
     Udp(UdpPacket<'a>),
+    Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
     Error(Ipv4PayloadError),
 }
@@ -48,6 +50,7 @@ pub enum Ipv4Payload<'a> {
 pub enum Ipv4PayloadError {
     Tcp,
     Udp,
+    Eof,
 }
 
 impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
@@ -106,17 +109,23 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
         input: &'a [u8],
         _header: &Self::Header,
     ) -> nom::IResult<&'a [u8], Self::Payload> {
-        match _header.protocol {
-            // ref: https://www.ietf.org/rfc/rfc790.txt
-            0x06 => match TcpPacket::parse(input) {
-                Ok((input, tcp)) => Ok((input, Ipv4Payload::Tcp(tcp))),
-                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Tcp))),
+        match input.len() {
+            0 => match EofPacket::parse(input) {
+                Ok((input, eof)) => Ok((input, Ipv4Payload::Eof(eof))),
+                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Eof))),
             },
-            0x11 => match UdpPacket::parse(input) {
-                Ok((input, udp)) => Ok((input, Ipv4Payload::Udp(udp))),
-                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Udp))),
+            _ => match _header.protocol {
+                // ref: https://www.ietf.org/rfc/rfc790.txt
+                0x06 => match TcpPacket::parse(input) {
+                    Ok((input, tcp)) => Ok((input, Ipv4Payload::Tcp(tcp))),
+                    Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Tcp))),
+                },
+                0x11 => match UdpPacket::parse(input) {
+                    Ok((input, udp)) => Ok((input, Ipv4Payload::Udp(udp))),
+                    Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Udp))),
+                },
+                _ => Ok((input, Ipv4Payload::Unknown(input))),
             },
-            _ => Ok((input, Ipv4Payload::Unknown(input))),
         }
     }
 

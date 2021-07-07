@@ -23,6 +23,7 @@ pub struct EthernetHeader<'a> {
     pub link_type: u16,
 }
 
+use super::eof::EofPacket;
 use super::ipv4::Ipv4Packet;
 use super::ipv6::Ipv6Packet;
 
@@ -30,6 +31,7 @@ use super::ipv6::Ipv6Packet;
 pub enum EthernetPayload<'a> {
     Ipv4(Ipv4Packet<'a>),
     Ipv6(Ipv6Packet<'a>),
+    Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
     Error(EthernetPayloadError),
 }
@@ -38,6 +40,7 @@ pub enum EthernetPayload<'a> {
 pub enum EthernetPayloadError {
     Ipv4,
     Ipv6,
+    Eof,
     Empty,
 }
 
@@ -70,16 +73,23 @@ impl<'a> PacketTrait<'a> for EthernetPacket<'a> {
             }
             _ => return Ok((input, EthernetPayload::Error(EthernetPayloadError::Empty))),
         };
-        match version >> 4 {
-            0x04 => match Ipv4Packet::parse(input) {
-                Ok((input, ipv4)) => Ok((input, EthernetPayload::Ipv4(ipv4))),
-                Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv4))),
+
+        match input.len() {
+            0 => match EofPacket::parse(input) {
+                Ok((input, eof)) => Ok((input, EthernetPayload::Eof(eof))),
+                Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Eof))),
             },
-            0x06 => match Ipv6Packet::parse(input) {
-                Ok((input, ipv6)) => Ok((input, EthernetPayload::Ipv6(ipv6))),
-                Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv6))),
+            _ => match version >> 4 {
+                0x04 => match Ipv4Packet::parse(input) {
+                    Ok((input, ipv4)) => Ok((input, EthernetPayload::Ipv4(ipv4))),
+                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv4))),
+                },
+                0x06 => match Ipv6Packet::parse(input) {
+                    Ok((input, ipv6)) => Ok((input, EthernetPayload::Ipv6(ipv6))),
+                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv6))),
+                },
+                _ => Ok((input, EthernetPayload::Unknown(input))),
             },
-            _ => Ok((input, EthernetPayload::Unknown(input))),
         }
     }
     fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {

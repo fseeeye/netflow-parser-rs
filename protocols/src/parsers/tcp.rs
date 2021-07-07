@@ -29,6 +29,7 @@ pub struct TcpHeader<'a> {
     pub options: Option<&'a [u8]>,
 }
 
+use super::eof::EofPacket;
 use super::modbus_req::ModbusReqPacket;
 use super::modbus_rsp::ModbusRspPacket;
 
@@ -36,6 +37,7 @@ use super::modbus_rsp::ModbusRspPacket;
 pub enum TcpPayload<'a> {
     ModbusReq(ModbusReqPacket<'a>),
     ModbusRsp(ModbusRspPacket<'a>),
+    Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
     Error(TcpPayloadError),
 }
@@ -44,6 +46,7 @@ pub enum TcpPayload<'a> {
 pub enum TcpPayloadError {
     ModbusReq,
     ModbusRsp,
+    Eof,
 }
 
 impl<'a> PacketTrait<'a> for TcpPacket<'a> {
@@ -94,17 +97,23 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
         input: &'a [u8],
         _header: &Self::Header,
     ) -> nom::IResult<&'a [u8], Self::Payload> {
-        match _header.src_port {
-            502 => match ModbusRspPacket::parse(input) {
-                Ok((input, modbus_rsp)) => Ok((input, TcpPayload::ModbusRsp(modbus_rsp))),
-                Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusRsp))),
+        match input.len() {
+            0 => match EofPacket::parse(input) {
+                Ok((input, eof)) => Ok((input, TcpPayload::Eof(eof))),
+                Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::Eof))),
             },
-            _ => match _header.dst_port {
-                502 => match ModbusReqPacket::parse(input) {
-                    Ok((input, modbus_req)) => Ok((input, TcpPayload::ModbusReq(modbus_req))),
-                    Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq))),
+            _ => match _header.src_port {
+                502 => match ModbusRspPacket::parse(input) {
+                    Ok((input, modbus_rsp)) => Ok((input, TcpPayload::ModbusRsp(modbus_rsp))),
+                    Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusRsp))),
                 },
-                _ => Ok((input, TcpPayload::Unknown(input))),
+                _ => match _header.dst_port {
+                    502 => match ModbusReqPacket::parse(input) {
+                        Ok((input, modbus_req)) => Ok((input, TcpPayload::ModbusReq(modbus_req))),
+                        Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq))),
+                    },
+                    _ => Ok((input, TcpPayload::Unknown(input))),
+                },
             },
         }
     }
