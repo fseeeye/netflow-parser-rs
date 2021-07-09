@@ -43,20 +43,21 @@ pub enum Ipv4Payload<'a> {
     Udp(UdpPacket<'a>),
     Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
-    Error(Ipv4PayloadError),
+    Error(Ipv4PayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Ipv4PayloadError {
-    Tcp,
-    Udp,
-    Eof,
+pub enum Ipv4PayloadError<'a> {
+    Tcp(&'a [u8]),
+    Udp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
     type Header = Ipv4Header<'a>;
     type Payload = Ipv4Payload<'a>;
-    type PayloadError = Ipv4PayloadError;
+    type PayloadError = Ipv4PayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, (version, header_length, diff_service, ecn)) =
@@ -112,17 +113,17 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, Ipv4Payload::Eof(eof))),
-                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Eof))),
+                Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Eof(input)))),
             },
             _ => match _header.protocol {
                 // ref: https://www.ietf.org/rfc/rfc790.txt
                 0x06 => match TcpPacket::parse(input) {
                     Ok((input, tcp)) => Ok((input, Ipv4Payload::Tcp(tcp))),
-                    Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Tcp))),
+                    Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Tcp(input)))),
                 },
                 0x11 => match UdpPacket::parse(input) {
                     Ok((input, udp)) => Ok((input, Ipv4Payload::Udp(udp))),
-                    Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Udp))),
+                    Err(_) => Ok((input, Ipv4Payload::Error(Ipv4PayloadError::Udp(input)))),
                 },
                 _ => Ok((input, Ipv4Payload::Unknown(input))),
             },

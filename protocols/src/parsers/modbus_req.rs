@@ -53,29 +53,7 @@ pub struct PDU<'a> {
 
 fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
     let (input, function_code) = u8(input)?;
-    let (input, data) = match function_code {
-        0x01 => parse_read_coils(input),
-        0x02 => parse_read_discre_inputs(input),
-        0x03 => parse_read_holding_registers(input),
-        0x04 => parse_read_input_registers(input),
-        0x05 => parse_write_single_coil(input),
-        0x06 => parse_write_single_register(input),
-        0x07 => parse_eof(input),
-        0x0b => parse_eof(input),
-        0x0c => parse_eof(input),
-        0x0f => parse_write_multiple_coils(input),
-        0x10 => parse_write_multiple_registers(input),
-        0x11 => parse_eof(input),
-        0x14 => parse_read_file_record(input),
-        0x15 => parse_write_file_record(input),
-        0x16 => parse_mask_write_register(input),
-        0x17 => parse_read_write_multiple_registers(input),
-        0x18 => parse_read_fifo_queue(input),
-        _ => Err(nom::Err::Error(nom::error::Error::new(
-            input,
-            nom::error::ErrorKind::Verify,
-        ))),
-    }?;
+    let (input, data) = parse_data(input, function_code)?;
     Ok((
         input,
         PDU {
@@ -148,6 +126,33 @@ pub enum Data<'a> {
     ReadFIFOQueue {
         fifo_pointer_address: u16,
     },
+}
+
+fn parse_data(input: &[u8], function_code: u8) -> IResult<&[u8], Data> {
+    let (input, data) = match function_code {
+        0x01 => parse_read_coils(input),
+        0x02 => parse_read_discre_inputs(input),
+        0x03 => parse_read_holding_registers(input),
+        0x04 => parse_read_input_registers(input),
+        0x05 => parse_write_single_coil(input),
+        0x06 => parse_write_single_register(input),
+        0x07 => parse_eof(input),
+        0x0b => parse_eof(input),
+        0x0c => parse_eof(input),
+        0x0f => parse_write_multiple_coils(input),
+        0x10 => parse_write_multiple_registers(input),
+        0x11 => parse_eof(input),
+        0x14 => parse_read_file_record(input),
+        0x15 => parse_write_file_record(input),
+        0x16 => parse_mask_write_register(input),
+        0x17 => parse_read_write_multiple_registers(input),
+        0x18 => parse_read_fifo_queue(input),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
+    }?;
+    Ok((input, data))
 }
 
 fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
@@ -390,18 +395,19 @@ use super::eof::EofPacket;
 pub enum ModbusReqPayload<'a> {
     Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
-    Error(ModbusReqPayloadError),
+    Error(ModbusReqPayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum ModbusReqPayloadError {
-    Eof,
+pub enum ModbusReqPayloadError<'a> {
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for ModbusReqPacket<'a> {
     type Header = ModbusReqHeader<'a>;
     type Payload = ModbusReqPayload<'a>;
-    type PayloadError = ModbusReqPayloadError;
+    type PayloadError = ModbusReqPayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, mbap_header) = parse_mbap_header(input)?;
@@ -416,7 +422,7 @@ impl<'a> PacketTrait<'a> for ModbusReqPacket<'a> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, ModbusReqPayload::Eof(eof))),
-                Err(_) => Ok((input, ModbusReqPayload::Error(ModbusReqPayloadError::Eof))),
+                Err(_) => Ok((input, ModbusReqPayload::Error(ModbusReqPayloadError::Eof(input)))),
             },
             _ => Ok((input, ModbusReqPayload::Unknown(input))),
         }

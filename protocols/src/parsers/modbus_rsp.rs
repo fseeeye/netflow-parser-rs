@@ -493,18 +493,19 @@ use super::eof::EofPacket;
 pub enum ModbusRspPayload<'a> {
     Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
-    Error(ModbusRspPayloadError),
+    Error(ModbusRspPayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum ModbusRspPayloadError {
-    Eof,
+pub enum ModbusRspPayloadError<'a> {
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
     type Header = ModbusRspHeader<'a>;
     type Payload = ModbusRspPayload<'a>;
-    type PayloadError = ModbusRspPayloadError;
+    type PayloadError = ModbusRspPayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, mbap_header) = parse_mbap_header(input)?;
@@ -519,7 +520,7 @@ impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, ModbusRspPayload::Eof(eof))),
-                Err(_) => Ok((input, ModbusRspPayload::Error(ModbusRspPayloadError::Eof))),
+                Err(_) => Ok((input, ModbusRspPayload::Error(ModbusRspPayloadError::Eof(input)))),
             },
             _ => Ok((input, ModbusRspPayload::Unknown(input))),
         }

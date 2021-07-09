@@ -33,21 +33,21 @@ pub enum EthernetPayload<'a> {
     Ipv6(Ipv6Packet<'a>),
     Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
-    Error(EthernetPayloadError),
+    Error(EthernetPayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum EthernetPayloadError {
-    Ipv4,
-    Ipv6,
-    Eof,
-    Empty,
+pub enum EthernetPayloadError<'a> {
+    Ipv4(&'a [u8]),
+    Ipv6(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for EthernetPacket<'a> {
     type Header = EthernetHeader<'a>;
     type Payload = EthernetPayload<'a>;
-    type PayloadError = EthernetPayloadError;
+    type PayloadError = EthernetPayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, dst_mac) = take(6usize)(input)?;
@@ -62,6 +62,7 @@ impl<'a> PacketTrait<'a> for EthernetPacket<'a> {
             },
         ))
     }
+
     fn parse_payload(
         input: &'a [u8],
         _header: &Self::Header,
@@ -69,29 +70,30 @@ impl<'a> PacketTrait<'a> for EthernetPacket<'a> {
         let (input, version) = match peek(u8)(input) {
             Ok((input, version)) => (input, version),
             Err(nom::Err::Error((input, _))) => {
-                return Ok((input, EthernetPayload::Error(EthernetPayloadError::Empty)))
+                return Ok((input, EthernetPayload::Error(EthernetPayloadError::NomPeek(input))))
             }
-            _ => return Ok((input, EthernetPayload::Error(EthernetPayloadError::Empty))),
+            _ => return Ok((input, EthernetPayload::Error(EthernetPayloadError::NomPeek(input)))),
         };
 
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, EthernetPayload::Eof(eof))),
-                Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Eof))),
+                Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Eof(input)))),
             },
             _ => match version >> 4 {
                 0x04 => match Ipv4Packet::parse(input) {
                     Ok((input, ipv4)) => Ok((input, EthernetPayload::Ipv4(ipv4))),
-                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv4))),
+                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv4(input)))),
                 },
                 0x06 => match Ipv6Packet::parse(input) {
                     Ok((input, ipv6)) => Ok((input, EthernetPayload::Ipv6(ipv6))),
-                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv6))),
+                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv6(input)))),
                 },
                 _ => Ok((input, EthernetPayload::Unknown(input))),
             },
         }
     }
+    
     fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
         let (input, header) = Self::parse_header(input)?;
         let (input, payload) = Self::parse_payload(input, &header)?;

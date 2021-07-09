@@ -36,19 +36,21 @@ pub enum Ipv6Payload<'a> {
     Tcp(tcp::TcpPacket<'a>),
     Udp(udp::UdpPacket<'a>),
     Unknown(&'a [u8]),
-    Error(Ipv6PayloadError),
+    Error(Ipv6PayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Ipv6PayloadError {
-    Tcp,
-    Udp,
+pub enum Ipv6PayloadError<'a> {
+    Tcp(&'a [u8]),
+    Udp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
     type Header = Ipv6Header<'a>;
     type Payload = Ipv6Payload<'a>;
-    type PayloadError = Ipv6PayloadError;
+    type PayloadError = Ipv6PayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, (version, traffic_class, flow_label)) =

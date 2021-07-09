@@ -39,20 +39,21 @@ pub enum TcpPayload<'a> {
     ModbusRsp(ModbusRspPacket<'a>),
     Eof(EofPacket<'a>),
     Unknown(&'a [u8]),
-    Error(TcpPayloadError),
+    Error(TcpPayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum TcpPayloadError {
-    ModbusReq,
-    ModbusRsp,
-    Eof,
+pub enum TcpPayloadError<'a> {
+    ModbusReq(&'a [u8]),
+    ModbusRsp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for TcpPacket<'a> {
     type Header = TcpHeader<'a>;
     type Payload = TcpPayload<'a>;
-    type PayloadError = TcpPayloadError;
+    type PayloadError = TcpPayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, src_port) = be_u16(input)?;
@@ -100,17 +101,17 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, TcpPayload::Eof(eof))),
-                Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::Eof))),
+                Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::Eof(input)))),
             },
             _ => match _header.src_port {
                 502 => match ModbusRspPacket::parse(input) {
                     Ok((input, modbus_rsp)) => Ok((input, TcpPayload::ModbusRsp(modbus_rsp))),
-                    Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusRsp))),
+                    Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusRsp(input)))),
                 },
                 _ => match _header.dst_port {
                     502 => match ModbusReqPacket::parse(input) {
                         Ok((input, modbus_req)) => Ok((input, TcpPayload::ModbusReq(modbus_req))),
-                        Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq))),
+                        Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq(input)))),
                     },
                     _ => Ok((input, TcpPayload::Unknown(input))),
                 },

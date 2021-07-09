@@ -31,19 +31,21 @@ pub enum UdpPayload<'a> {
     ModbusReq(modbus_req::ModbusReqPacket<'a>),
     ModbusRsp(modbus_rsp::ModbusRspPacket<'a>),
     Unknown(&'a [u8]),
-    Error(UdpPayloadError),
+    Error(UdpPayloadError<'a>),
 }
 
 #[derive(Debug, PartialEq)]
-pub enum UdpPayloadError {
-    ModbusReq,
-    ModbusRsp,
+pub enum UdpPayloadError<'a> {
+    ModbusReq(&'a [u8]),
+    ModbusRsp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PacketTrait<'a> for UdpPacket<'a> {
     type Header = UdpHeader;
     type Payload = UdpPayload<'a>;
-    type PayloadError = UdpPayloadError;
+    type PayloadError = UdpPayloadError<'a>;
 
     fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
         let (input, src_port) = be_u16(input)?;
