@@ -1,19 +1,18 @@
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
+
 use std::fs::File;
 
 use protocols::PacketTrait;
-// use protocols::parsers::parser_context::ParserContext;
 
-fn main() {
-    let path = r"/Users/fseeeye/Desktop/pcap/ICS/modbus/mod_1.pcap";
+pub fn parse_pcap(path: &str) {
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
     loop {
         match reader.next() {
             Ok((offset, block)) => {
-                println!("got new block");
+                println!("[-] Block No.{}", num_blocks);
                 num_blocks += 1;
                 match block {
                     PcapBlockOwned::LegacyHeader(_hdr) => {
@@ -21,12 +20,12 @@ fn main() {
                         // save hdr.network (linktype)
                     }
                     PcapBlockOwned::Legacy(_b) => {
-                        use protocols::parsers::ethernet::EthernetPacket;
+                        // use protocols::parsers::ethernet::EthernetPacket;
+                        use protocols::parsers_ts::ethernet::EthernetPacket;
                         // use linktype to parse b.data()
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
-                        // let mut context: ParserContext = ParserContext::new().unwrap();
                         match EthernetPacket::parse(&_b.data) {
                             Ok((_input, packet)) => {
                                 println!("packet: {:?}", packet);
@@ -47,5 +46,5 @@ fn main() {
             Err(e) => panic!("error while reading: {:?}", e),
         }
     }
-    println!("number of blocks: {:?}", num_blocks);
+    println!("[-] number of blocks: {:?}\n", num_blocks);
 }

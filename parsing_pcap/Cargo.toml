@@ -1,0 +1,15 @@
+[package]
+name = "parsing_pcap"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# parsing-rs
+protocols = { path = "../protocols", version = "0.2.0"}
+# others
+pcap-parser = "0.11.1"
+clap = { version = "2.33", features = ["yaml"] }
+colored = "2"
+walkdir = "2.3.2"

@@ -1,4 +1,5 @@
 pub mod parsers;
+pub mod parsers_ts;
 
 mod traits;
 
