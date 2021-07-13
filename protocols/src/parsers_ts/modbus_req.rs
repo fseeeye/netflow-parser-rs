@@ -1,11 +1,20 @@
+#[allow(unused)]
 use nom::bits::bits;
+#[allow(unused)]
 use nom::bits::complete::take as take_bits;
+#[allow(unused)]
 use nom::bytes::complete::{tag, take};
+#[allow(unused)]
 use nom::combinator::{eof, map, peek};
-use nom::error::ErrorKind;
+#[allow(unused)]
+use nom::error::{ErrorKind, Error};
+#[allow(unused)]
 use nom::multi::count;
+#[allow(unused)]
 use nom::number::complete::{be_u16, be_u32, u8};
+#[allow(unused)]
 use nom::sequence::tuple;
+#[allow(unused)]
 use nom::IResult;
 
 use crate::PacketTrait;
@@ -209,7 +218,7 @@ pub fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], Write
     let (input, file_number) = be_u16(input)?;
     let (input, record_number) = be_u16(input)?;
     let (input, record_length) = be_u16(input)?;
-    let (input, record_data) = take((record_length * 2))(input)?;
+    let (input, record_data) = take(record_length as usize * 2 as usize)(input)?;
     Ok((
         input,
         WriteFileRecordSubRequest {
@@ -322,7 +331,7 @@ fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, start_address) = be_u16(input)?;
     let (input, output_count) = be_u16(input)?;
     let (input, byte_count) = u8(input)?;
-    let (input, output_values) = count(u8, byte_count as usize)(input)?;
+    let (input, output_values) = count(u8, byte_count as usize as usize)(input)?;
     Ok((
         input,
         Data::WriteMultipleCoils {
@@ -338,7 +347,7 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, start_address) = be_u16(input)?;
     let (input, output_count) = be_u16(input)?;
     let (input, byte_count) = u8(input)?;
-    let (input, output_values) = count(be_u16, byte_count as usize)(input)?;
+    let (input, output_values) = count(be_u16, byte_count as usize as usize)(input)?;
     Ok((
         input,
         Data::WriteMultipleRegisters {
@@ -360,7 +369,7 @@ fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_read_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(parse_read_file_record_sub_request, byte_count as usize / 7 as usize as usize)(input)?;
     Ok((
         input,
         Data::ReadFileRecord {
@@ -372,7 +381,7 @@ fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_write_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(parse_write_file_record_sub_request, byte_count as usize / 7 as usize as usize)(input)?;
     Ok((
         input,
         Data::WriteFileRecord {
@@ -402,7 +411,7 @@ fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, write_start_address) = be_u16(input)?;
     let (input, write_count) = be_u16(input)?;
     let (input, write_byte_count) = u8(input)?;
-    let (input, write_register_values) = take((write_count * 2))(input)?;
+    let (input, write_register_values) = take(write_count as usize * 2 as usize)(input)?;
     Ok((
         input,
         Data::ReadWriteMultipleRegisters {
@@ -439,7 +448,7 @@ pub fn parse_data(input: &[u8], function_code: u8) -> IResult<&[u8], Data> {
         0x0c => parse_get_comm_event_log(input),
         0x0f => parse_write_multiple_coils(input),
         0x10 => parse_write_multiple_registers(input),
-        0x0c => parse_report_server_id(input),
+        0x11 => parse_report_server_id(input),
         0x14 => parse_read_file_record(input),
         0x15 => parse_write_file_record(input),
         0x16 => parse_mask_write_register(input),

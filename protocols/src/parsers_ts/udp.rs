@@ -1,11 +1,20 @@
+#[allow(unused)]
 use nom::bits::bits;
+#[allow(unused)]
 use nom::bits::complete::take as take_bits;
+#[allow(unused)]
 use nom::bytes::complete::{tag, take};
+#[allow(unused)]
 use nom::combinator::{eof, map, peek};
-use nom::error::ErrorKind;
+#[allow(unused)]
+use nom::error::{ErrorKind, Error};
+#[allow(unused)]
 use nom::multi::count;
+#[allow(unused)]
 use nom::number::complete::{be_u16, be_u32, u8};
+#[allow(unused)]
 use nom::sequence::tuple;
+#[allow(unused)]
 use nom::IResult;
 
 use crate::PacketTrait;

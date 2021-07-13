@@ -1,11 +1,20 @@
+#[allow(unused)]
 use nom::bits::bits;
+#[allow(unused)]
 use nom::bits::complete::take as take_bits;
+#[allow(unused)]
 use nom::bytes::complete::{tag, take};
+#[allow(unused)]
 use nom::combinator::{eof, map, peek};
-use nom::error::ErrorKind;
+#[allow(unused)]
+use nom::error::{ErrorKind, Error};
+#[allow(unused)]
 use nom::multi::count;
+#[allow(unused)]
 use nom::number::complete::{be_u16, be_u32, u8};
+#[allow(unused)]
 use nom::sequence::tuple;
+#[allow(unused)]
 use nom::IResult;
 
 use crate::PacketTrait;
@@ -253,7 +262,7 @@ pub fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], Write
     let (input, file_number) = be_u16(input)?;
     let (input, record_number) = be_u16(input)?;
     let (input, record_length) = be_u16(input)?;
-    let (input, record_data) = take((record_length * 2))(input)?;
+    let (input, record_data) = take(record_length as usize * 2 as usize)(input)?;
     Ok((
         input,
         WriteFileRecordSubRequest {
@@ -268,7 +277,7 @@ pub fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], Write
 
 fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, coil_status) = count(u8, byte_count as usize)(input)?;
+    let (input, coil_status) = count(u8, byte_count as usize as usize)(input)?;
     Ok((
         input,
         Data::ReadCoils {
@@ -290,7 +299,7 @@ fn parse_read_coils_exc(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, coil_status) = count(u8, byte_count as usize)(input)?;
+    let (input, coil_status) = bits::<_, _, Error<(&[u8], usize)>, Error<&[u8]>, _>(count::<_, u8, _, _>(take_bits(1usize), byte_count as usize * 8 as usize))(input)?;
     Ok((
         input,
         Data::ReadDiscreInputs {
@@ -312,7 +321,7 @@ fn parse_read_discre_inputs_exc(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_holding_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, coil_status) = count(be_u16, (byte_count as usize / 2 as usize) as usize)(input)?;
+    let (input, coil_status) = count(be_u16, byte_count as usize / 2 as usize as usize)(input)?;
     Ok((
         input,
         Data::ReadHoldingRegisters {
@@ -334,7 +343,7 @@ fn parse_read_holding_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_input_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, coil_status) = count(be_u16, (byte_count as usize / 2 as usize) as usize)(input)?;
+    let (input, coil_status) = count(be_u16, byte_count as usize / 2 as usize as usize)(input)?;
     Ok((
         input,
         Data::ReadInputRegisters {
@@ -425,7 +434,7 @@ fn parse_get_comm_event_log(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, status) = be_u16(input)?;
     let (input, event_count) = be_u16(input)?;
     let (input, message_count) = be_u16(input)?;
-    let (input, events) = count(u8, (byte_count as usize - 6 as usize) as usize)(input)?;
+    let (input, events) = count(u8, byte_count as usize - 6 as usize as usize)(input)?;
     Ok((
         input,
         Data::GetCommEventLog {
@@ -484,7 +493,7 @@ fn parse_write_multiple_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, record_data) = take(byte_count)(input)?;
+    let (input, record_data) = take(byte_count as usize)(input)?;
     Ok((
         input,
         Data::ReportServerID {
@@ -496,7 +505,7 @@ fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_read_file_record_rsp_sub_request, (byte_count as usize / 4 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(parse_read_file_record_rsp_sub_request, byte_count as usize / 4 as usize as usize)(input)?;
     Ok((
         input,
         Data::ReadFileRecord {
@@ -518,7 +527,7 @@ fn parse_read_file_record_exc(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(parse_write_file_record_sub_request, (byte_count as usize / 7 as usize) as usize)(input)?;
+    let (input, sub_requests) = count(parse_write_file_record_sub_request, byte_count as usize / 7 as usize as usize)(input)?;
     Ok((
         input,
         Data::WriteFileRecord {
@@ -564,7 +573,7 @@ fn parse_mask_write_register_exc(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, read_registers_value) = take(byte_count)(input)?;
+    let (input, read_registers_value) = take(byte_count as usize)(input)?;
     Ok((
         input,
         Data::ReadWriteMultipleRegisters {
@@ -587,7 +596,7 @@ fn parse_read_write_multiple_registers_exc(input: &[u8]) -> IResult<&[u8], Data>
 fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = be_u16(input)?;
     let (input, fifo_count) = be_u16(input)?;
-    let (input, fifo_value_register) = take((fifo_count * 2))(input)?;
+    let (input, fifo_value_register) = take(fifo_count as usize * 2 as usize)(input)?;
     Ok((
         input,
         Data::ReadFIFOQueue {

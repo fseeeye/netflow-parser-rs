@@ -1,11 +1,11 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
-use nom::bytes::complete::{tag, take};
+use nom::bytes::complete::{take};
 use nom::combinator::eof;
 use nom::multi::count;
-use nom::number::complete::{be_u16, be_u32, u8};
-use nom::sequence::tuple;
+use nom::number::complete::{be_u16, u8};
 use nom::IResult;
+use nom::error::Error;
 
 use crate::PacketTrait;
 
@@ -214,7 +214,7 @@ fn parse_read_coils(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, coil_status) = count(u8, byte_count as usize)(input)?;
+    let (input, coil_status) = bits::<_, _, Error<(&[u8], usize)>, Error<&[u8]>, _>(count::<_, u8, _, _>(take_bits(1usize), byte_count as usize * 8usize))(input)?;
     Ok((
         input,
         Data::ReadDiscreInputs {
@@ -360,7 +360,7 @@ fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
 fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = be_u16(input)?;
     let (input, fifo_count) = be_u16(input)?;
-    let (input, fifo_value_register) = take((fifo_count * 2))(input)?;
+    let (input, fifo_value_register) = take(fifo_count * 2)(input)?;
     Ok((
         input,
         Data::ReadFIFOQueue {
@@ -474,7 +474,7 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
     let (input, file_number) = be_u16(input)?;
     let (input, record_number) = be_u16(input)?;
     let (input, record_length) = be_u16(input)?;
-    let (input, record_data) = take((record_length * 2))(input)?;
+    let (input, record_data) = take(record_length * 2)(input)?;
     Ok((
         input,
         WriteFileRecordSubRequest {

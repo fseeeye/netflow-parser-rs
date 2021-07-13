@@ -1,11 +1,4 @@
-use nom::bits::bits;
-use nom::bits::complete::take as take_bits;
-use nom::bytes::complete::{tag, take};
-use nom::combinator::eof;
-use nom::multi::count;
-use nom::number::complete::{be_u16, be_u32, u8};
-use nom::sequence::tuple;
-use nom::IResult;
+use nom::number::complete::{be_u16};
 
 use crate::PacketTrait;
 
@@ -64,7 +57,7 @@ impl<'a> PacketTrait<'a> for UdpPacket<'a> {
     }
 
     fn parse_payload(
-        input: &'a [u8],
+        _input: &'a [u8],
         _header: &Self::Header,
     ) -> nom::IResult<&'a [u8], Self::Payload> {
         unimplemented!();

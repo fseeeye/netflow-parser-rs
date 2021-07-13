@@ -10,3 +10,6 @@ args:
         multiple: true
         takes_value: true
         help: Sets the paths of pcap files.
+    - ts:
+        short: T
+        help: Use lib generating by typescript.
