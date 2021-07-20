@@ -4,7 +4,8 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, be_u32, u8};
 use nom::sequence::tuple;
 
-use crate::PacketTrait;
+use crate::types::LayerType;
+use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]
 pub struct Ipv4Packet<'a> {
@@ -52,11 +53,15 @@ pub enum Ipv4PayloadError<'a> {
 }
 
 impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
-    type Header = Ipv4Header<'a>;
-    type Payload = Ipv4Payload<'a>;
-    type PayloadError = Ipv4PayloadError<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = Ipv4Header::parse(input)?;
+        let (input, payload) = Ipv4Payload::parse(input, &header)?;
+        Ok((input, Self { header, payload }))
+    }
+}
 
-    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
+impl<'a> HeaderTrait<'a> for Ipv4Header<'a> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
         let (input, (version, header_length, diff_service, ecn)) =
             bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
                 take_bits(4usize),
@@ -103,10 +108,18 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
         ))
     }
 
-    fn parse_payload(
+    fn get_type(&self) -> LayerType {
+        return LayerType::Ipv4;
+    }
+}
+
+impl<'a> PayloadTrait<'a> for Ipv4Payload<'a> {
+    type Header = Ipv4Header<'a>;
+
+    fn parse(
         input: &'a [u8],
         _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self::Payload> {
+    ) -> nom::IResult<&'a [u8], Self> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, Ipv4Payload::Eof(eof))),
@@ -125,11 +138,5 @@ impl<'a> PacketTrait<'a> for Ipv4Packet<'a> {
                 _ => Ok((input, Ipv4Payload::Unknown(input))),
             },
         }
-    }
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input)?;
-        let (input, payload) = Self::parse_payload(input, &header)?;
-        Ok((input, Self { header, payload }))
     }
 }

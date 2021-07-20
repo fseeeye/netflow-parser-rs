@@ -1,6 +1,6 @@
 pub mod parsers;
-pub mod parsers_ts;
+pub mod types;
 
 mod traits;
 
-pub use traits::PacketTrait;
+pub use traits::*;

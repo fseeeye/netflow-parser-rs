@@ -4,7 +4,8 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, u8};
 use nom::sequence::tuple;
 
-use crate::PacketTrait;
+use crate::types::LayerType;
+use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]
 pub struct Ipv6Packet<'a> {
@@ -45,11 +46,15 @@ pub enum Ipv6PayloadError<'a> {
 }
 
 impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
-    type Header = Ipv6Header<'a>;
-    type Payload = Ipv6Payload<'a>;
-    type PayloadError = Ipv6PayloadError<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = Ipv6Header::parse(input)?;
+        let (input, payload) = Ipv6Payload::parse(input, &header)?;
+        Ok((input, Self { header, payload }))
+    }
+}
 
-    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
+impl<'a> HeaderTrait<'a> for Ipv6Header<'a> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
         let (input, (version, traffic_class, flow_label)) =
             bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
                 take_bits(4usize),
@@ -83,16 +88,19 @@ impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
         ))
     }
 
-    fn parse_payload(
+    fn get_type(&self) -> LayerType {
+        return LayerType::Ipv6
+    }
+}
+
+impl<'a> PayloadTrait<'a> for Ipv6Payload<'a> {
+    type Header = Ipv6Header<'a>;
+
+    fn parse(
         _input: &'a [u8],
         _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self::Payload> {
+    ) -> nom::IResult<&'a [u8], Self> {
         unimplemented!();
     }
 
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input)?;
-        let (input, payload) = Self::parse_payload(input, &header)?;
-        Ok((input, Self { header, payload }))
-    }
 }

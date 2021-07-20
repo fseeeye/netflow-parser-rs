@@ -1,6 +1,7 @@
 use nom::number::complete::{be_u16};
 
-use crate::PacketTrait;
+use crate::types::LayerType;
+use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]
 pub struct UdpPacket<'a> {
@@ -36,11 +37,15 @@ pub enum UdpPayloadError<'a> {
 }
 
 impl<'a> PacketTrait<'a> for UdpPacket<'a> {
-    type Header = UdpHeader;
-    type Payload = UdpPayload<'a>;
-    type PayloadError = UdpPayloadError<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = UdpHeader::parse(input)?;
+        let (input, payload) = UdpPayload::parse(input, &header)?;
+        Ok((input, Self { header, payload }))
+    }
+}
 
-    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
+impl<'a> HeaderTrait<'a> for UdpHeader {
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
         let (input, src_port) = be_u16(input)?;
         let (input, dst_port) = be_u16(input)?;
         let (input, length) = be_u16(input)?;
@@ -56,16 +61,18 @@ impl<'a> PacketTrait<'a> for UdpPacket<'a> {
         ))
     }
 
-    fn parse_payload(
+    fn get_type(&self) -> LayerType {
+        return LayerType::Udp;
+    }
+}
+
+impl<'a> PayloadTrait<'a> for UdpPayload<'a> {
+    type Header = UdpHeader;
+
+    fn parse(
         _input: &'a [u8],
         _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self::Payload> {
+    ) -> nom::IResult<&'a [u8], Self> {
         unimplemented!();
-    }
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input)?;
-        let (input, payload) = Self::parse_payload(input, &header)?;
-        Ok((input, Self { header, payload }))
-    }
+    }    
 }

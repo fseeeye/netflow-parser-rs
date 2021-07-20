@@ -4,13 +4,15 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, be_u32};
 use nom::sequence::tuple;
 
-use crate::PacketTrait;
+use crate::types::LayerType;
+use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]
 pub struct TcpPacket<'a> {
     header: TcpHeader<'a>,
     payload: TcpPayload<'a>,
 }
+
 #[derive(Debug, PartialEq)]
 pub struct TcpHeader<'a> {
     pub src_port: u16,
@@ -48,11 +50,15 @@ pub enum TcpPayloadError<'a> {
 }
 
 impl<'a> PacketTrait<'a> for TcpPacket<'a> {
-    type Header = TcpHeader<'a>;
-    type Payload = TcpPayload<'a>;
-    type PayloadError = TcpPayloadError<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = TcpHeader::parse(input)?;
+        let (input, payload) = TcpPayload::parse(input, &header)?;
+        Ok((input, Self { header, payload }))
+    }
+}
 
-    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
+impl<'a> HeaderTrait<'a> for TcpHeader<'a> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
         let (input, src_port) = be_u16(input)?;
         let (input, dst_port) = be_u16(input)?;
         let (input, seq) = be_u32(input)?;
@@ -91,10 +97,18 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
         ))
     }
 
-    fn parse_payload(
+    fn get_type(&self) -> LayerType {
+        return LayerType::Tcp
+    }
+}
+
+impl<'a> PayloadTrait<'a> for TcpPayload<'a> {
+    type Header = TcpHeader<'a>;
+
+    fn parse(
         input: &'a [u8],
         _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self::Payload> {
+    ) -> nom::IResult<&'a [u8], Self> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, TcpPayload::Eof(eof))),
@@ -114,11 +128,5 @@ impl<'a> PacketTrait<'a> for TcpPacket<'a> {
                 },
             },
         }
-    }
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input)?;
-        let (input, payload) = Self::parse_payload(input, &header)?;
-        Ok((input, Self { header, payload }))
     }
 }

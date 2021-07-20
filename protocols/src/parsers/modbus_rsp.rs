@@ -7,7 +7,8 @@ use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 use nom::error::Error;
 
-use crate::PacketTrait;
+use crate::types::LayerType;
+use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]
 pub struct ModbusRspPacket<'a> {
@@ -503,20 +504,32 @@ pub enum ModbusRspPayloadError<'a> {
 }
 
 impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
-    type Header = ModbusRspHeader<'a>;
-    type Payload = ModbusRspPayload<'a>;
-    type PayloadError = ModbusRspPayloadError<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = ModbusRspHeader::parse(input)?;
+        let (input, payload) = ModbusRspPayload::parse(input, &header)?;
+        Ok((input, Self { header, payload }))
+    }
+}
 
-    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
+impl<'a> HeaderTrait<'a> for ModbusRspHeader<'a> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
         let (input, mbap_header) = parse_mbap_header(input)?;
         let (input, pdu) = parse_pdu(input)?;
         Ok((input, ModbusRspHeader { mbap_header, pdu }))
     }
 
-    fn parse_payload(
+    fn get_type(&self) -> LayerType {
+        return LayerType::ModbusRsp
+    }
+}
+
+impl<'a> PayloadTrait<'a> for ModbusRspPayload<'a> {
+    type Header = ModbusRspHeader<'a>;
+
+    fn parse(
         input: &'a [u8],
         _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self::Payload> {
+    ) -> nom::IResult<&'a [u8], Self> {
         match input.len() {
             0 => match EofPacket::parse(input) {
                 Ok((input, eof)) => Ok((input, ModbusRspPayload::Eof(eof))),
@@ -524,11 +537,5 @@ impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
             },
             _ => Ok((input, ModbusRspPayload::Unknown(input))),
         }
-    }
-
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input)?;
-        let (input, payload) = Self::parse_payload(input, &header)?;
-        Ok((input, Self { header, payload }))
     }
 }

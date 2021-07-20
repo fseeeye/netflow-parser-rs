@@ -2,10 +2,12 @@ use nom::bytes::complete::take;
 use nom::combinator::peek;
 use nom::number::complete::{be_u16, u8};
 
-use crate::PacketTrait;
+use crate::types::LayerType;
+use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]
-pub struct EthernetPacket<'a> {
+pub struct EthernetPacket<'a>
+{
     pub header: EthernetHeader<'a>,
     pub payload: EthernetPayload<'a>,
 }
@@ -26,6 +28,7 @@ pub enum EthernetPayload<'a> {
     Ipv4(Ipv4Packet<'a>),
     Ipv6(Ipv6Packet<'a>),
     Eof(EofPacket<'a>),
+    // Packet(Box<dyn PacketTrait<'a>>),
     Unknown(&'a [u8]),
     Error(EthernetPayloadError<'a>),
 }
@@ -39,11 +42,15 @@ pub enum EthernetPayloadError<'a> {
 }
 
 impl<'a> PacketTrait<'a> for EthernetPacket<'a> {
-    type Header = EthernetHeader<'a>;
-    type Payload = EthernetPayload<'a>;
-    type PayloadError = EthernetPayloadError<'a>;
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
+        let (input, header) = EthernetHeader::parse(input)?;
+        let (input, payload) = EthernetPayload::parse(input, &header)?;
+        Ok((input, Self { header, payload }))
+    }
+}
 
-    fn parse_header(input: &'a [u8]) -> nom::IResult<&'a [u8], Self::Header> {
+impl<'a> HeaderTrait<'a> for EthernetHeader<'a> {
+    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], EthernetHeader> {
         let (input, dst_mac) = take(6usize)(input)?;
         let (input, src_mac) = take(6usize)(input)?;
         let (input, link_type) = be_u16(input)?;
@@ -57,40 +64,44 @@ impl<'a> PacketTrait<'a> for EthernetPacket<'a> {
         ))
     }
 
-    fn parse_payload(
+    fn get_type(&self) -> LayerType{
+        return LayerType::Ethernet;
+    }
+}
+
+impl<'a> PayloadTrait<'a> for EthernetPayload<'a> {
+    type Header = EthernetHeader<'a>;
+
+    fn parse(
         input: &'a [u8],
-        _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self::Payload> {
+        _header: &EthernetHeader,
+    ) -> nom::IResult<&'a [u8], Self> {
         let (input, version) = match peek(u8)(input) {
             Ok((input, version)) => (input, version),
             Err(nom::Err::Error((input, _))) => {
-                return Ok((input, EthernetPayload::Error(EthernetPayloadError::NomPeek(input))))
+                return Ok((input, Self::Error(EthernetPayloadError::NomPeek(input))))
             }
-            _ => return Ok((input, EthernetPayload::Error(EthernetPayloadError::NomPeek(input)))),
+            _ => return Ok((input, Self::Error(EthernetPayloadError::NomPeek(input)))),
         };
 
         match input.len() {
             0 => match EofPacket::parse(input) {
-                Ok((input, eof)) => Ok((input, EthernetPayload::Eof(eof))),
-                Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Eof(input)))),
+                Ok((input, eof)) => Ok((input, Self::Eof(eof))),
+                Err(_) => Ok((input, Self::Error(EthernetPayloadError::Eof(input)))),
             },
             _ => match version >> 4 {
                 0x04 => match Ipv4Packet::parse(input) {
-                    Ok((input, ipv4)) => Ok((input, EthernetPayload::Ipv4(ipv4))),
-                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv4(input)))),
+                    Ok((input, ipv4)) => {
+                        Ok((input, Self::Ipv4(ipv4)))
+                    },
+                    Err(_) => Ok((input, Self::Error(EthernetPayloadError::Ipv4(input)))),
                 },
                 0x06 => match Ipv6Packet::parse(input) {
-                    Ok((input, ipv6)) => Ok((input, EthernetPayload::Ipv6(ipv6))),
-                    Err(_) => Ok((input, EthernetPayload::Error(EthernetPayloadError::Ipv6(input)))),
+                    Ok((input, ipv6)) => Ok((input, Self::Ipv6(ipv6))),
+                    Err(_) => Ok((input, Self::Error(EthernetPayloadError::Ipv6(input)))),
                 },
-                _ => Ok((input, EthernetPayload::Unknown(input))),
+                _ => Ok((input, Self::Unknown(input))),
             },
         }
-    }
-    
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Self::parse_header(input)?;
-        let (input, payload) = Self::parse_payload(input, &header)?;
-        Ok((input, Self { header, payload }))
     }
 }
