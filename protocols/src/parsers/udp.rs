@@ -1,47 +1,14 @@
 use nom::number::complete::{be_u16};
 
-use crate::types::LayerType;
-use crate::{PacketTrait, HeaderTrait, PayloadTrait};
+use crate::layer_type::LayerType;
+use crate::{HeaderTrait, PayloadTrait};
 
-#[derive(Debug, PartialEq)]
-pub struct UdpPacket<'a> {
-    pub header: UdpHeader,
-    pub payload: UdpPayload<'a>,
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct UdpHeader {
     pub src_port: u16,
     pub dst_port: u16,
     pub length: u16,
     pub checksum: u16,
-}
-
-use super::modbus_req;
-use super::modbus_rsp;
-
-#[derive(Debug, PartialEq)]
-pub enum UdpPayload<'a> {
-    ModbusReq(modbus_req::ModbusReqPacket<'a>),
-    ModbusRsp(modbus_rsp::ModbusRspPacket<'a>),
-    Unknown(&'a [u8]),
-    Error(UdpPayloadError<'a>),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum UdpPayloadError<'a> {
-    ModbusReq(&'a [u8]),
-    ModbusRsp(&'a [u8]),
-    Eof(&'a [u8]),
-    NomPeek(&'a [u8]),
-}
-
-impl<'a> PacketTrait<'a> for UdpPacket<'a> {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = UdpHeader::parse(input)?;
-        let (input, payload) = UdpPayload::parse(input, &header)?;
-        Ok((input, Self { header, payload }))
-    }
 }
 
 impl<'a> HeaderTrait<'a> for UdpHeader {
@@ -64,6 +31,27 @@ impl<'a> HeaderTrait<'a> for UdpHeader {
     fn get_type(&self) -> LayerType {
         return LayerType::Udp;
     }
+}
+
+use super::modbus_req::ModbusReqHeader;
+use super::modbus_rsp::ModbusRspHeader;
+use super::eof::EofHeader;
+
+#[derive(Debug, PartialEq)]
+pub enum UdpPayload<'a> {
+    ModbusReq(ModbusReqHeader<'a>),
+    ModbusRsp(ModbusRspHeader<'a>),
+    Eof(EofHeader),
+    Unknown(&'a [u8]),
+    Error(UdpPayloadError<'a>),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum UdpPayloadError<'a> {
+    ModbusReq(&'a [u8]),
+    ModbusRsp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PayloadTrait<'a> for UdpPayload<'a> {

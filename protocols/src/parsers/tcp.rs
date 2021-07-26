@@ -4,16 +4,40 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, be_u32};
 use nom::sequence::tuple;
 
-use crate::types::LayerType;
-use crate::{PacketTrait, HeaderTrait, PayloadTrait};
+use crate::layer_type::LayerType;
+use crate::{HeaderTrait, PayloadTrait};
 
-#[derive(Debug, PartialEq)]
-pub struct TcpPacket<'a> {
-    header: TcpHeader<'a>,
-    payload: TcpPayload<'a>,
-}
+// TCP Header Format
+//
+//
+//    0                   1                   2                   3
+//    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |          Source Port          |       Destination Port        |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |                        Sequence Number                        |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |                    Acknowledgment Number                      |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |  Data |           |U|A|P|R|S|F|                               |
+//   | Offset| Reserved  |R|C|S|S|Y|I|            Window             |
+//   |       |           |G|K|H|T|N|N|                               |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |           Checksum            |         Urgent Pointer        |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |                    Options                    |    Padding    |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//   |                             data                              |
+//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// TCP Flags:
+//    URG:  Urgent Pointer field significant
+//    ACK:  Acknowledgment field significant
+//    PSH:  Push Function
+//    RST:  Reset the connection
+//    SYN:  Synchronize sequence numbers
+//    FIN:  No more data from sender
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct TcpHeader<'a> {
     pub src_port: u16,
     pub dst_port: u16,
@@ -26,35 +50,6 @@ pub struct TcpHeader<'a> {
     pub checksum: u16,
     pub urgent_pointer: u16,
     pub options: Option<&'a [u8]>,
-}
-
-use super::eof::EofPacket;
-use super::modbus_req::ModbusReqPacket;
-use super::modbus_rsp::ModbusRspPacket;
-
-#[derive(Debug, PartialEq)]
-pub enum TcpPayload<'a> {
-    ModbusReq(ModbusReqPacket<'a>),
-    ModbusRsp(ModbusRspPacket<'a>),
-    Eof(EofPacket<'a>),
-    Unknown(&'a [u8]),
-    Error(TcpPayloadError<'a>),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum TcpPayloadError<'a> {
-    ModbusReq(&'a [u8]),
-    ModbusRsp(&'a [u8]),
-    Eof(&'a [u8]),
-    NomPeek(&'a [u8]),
-}
-
-impl<'a> PacketTrait<'a> for TcpPacket<'a> {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = TcpHeader::parse(input)?;
-        let (input, payload) = TcpPayload::parse(input, &header)?;
-        Ok((input, Self { header, payload }))
-    }
 }
 
 impl<'a> HeaderTrait<'a> for TcpHeader<'a> {
@@ -102,6 +97,27 @@ impl<'a> HeaderTrait<'a> for TcpHeader<'a> {
     }
 }
 
+use super::eof::EofHeader;
+use super::modbus_req::ModbusReqHeader;
+use super::modbus_rsp::ModbusRspHeader;
+
+#[derive(Debug, PartialEq)]
+pub enum TcpPayload<'a> {
+    ModbusReq(ModbusReqHeader<'a>),
+    ModbusRsp(ModbusRspHeader<'a>),
+    Eof(EofHeader),
+    Unknown(&'a [u8]),
+    Error(TcpPayloadError<'a>),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum TcpPayloadError<'a> {
+    ModbusReq(&'a [u8]),
+    ModbusRsp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
+}
+
 impl<'a> PayloadTrait<'a> for TcpPayload<'a> {
     type Header = TcpHeader<'a>;
 
@@ -110,17 +126,17 @@ impl<'a> PayloadTrait<'a> for TcpPayload<'a> {
         _header: &Self::Header,
     ) -> nom::IResult<&'a [u8], Self> {
         match input.len() {
-            0 => match EofPacket::parse(input) {
+            0 => match EofHeader::parse(input) {
                 Ok((input, eof)) => Ok((input, TcpPayload::Eof(eof))),
                 Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::Eof(input)))),
             },
             _ => match _header.src_port {
-                502 => match ModbusRspPacket::parse(input) {
+                502 => match ModbusRspHeader::parse(input) {
                     Ok((input, modbus_rsp)) => Ok((input, TcpPayload::ModbusRsp(modbus_rsp))),
                     Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusRsp(input)))),
                 },
                 _ => match _header.dst_port {
-                    502 => match ModbusReqPacket::parse(input) {
+                    502 => match ModbusReqHeader::parse(input) {
                         Ok((input, modbus_req)) => Ok((input, TcpPayload::ModbusReq(modbus_req))),
                         Err(_) => Ok((input, TcpPayload::Error(TcpPayloadError::ModbusReq(input)))),
                     },

@@ -7,22 +7,16 @@ use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 use nom::error::Error;
 
-use crate::types::LayerType;
-use crate::{PacketTrait, HeaderTrait, PayloadTrait};
+use crate::layer_type::LayerType;
+use crate::{HeaderTrait, PayloadTrait};
 
-#[derive(Debug, PartialEq)]
-pub struct ModbusRspPacket<'a> {
-    pub header: ModbusRspHeader<'a>,
-    pub payload: ModbusRspPayload<'a>,
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ModbusRspHeader<'a> {
     pub mbap_header: MbapHeader,
     pub pdu: PDU<'a>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct MbapHeader {
     pub transaction_id: u16,
     pub protocol_id: u16,
@@ -46,7 +40,7 @@ fn parse_mbap_header(input: &[u8]) -> nom::IResult<&[u8], MbapHeader> {
     ))
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct PDU<'a> {
     pub function_code: u8,
     pub data: Data<'a>,
@@ -103,7 +97,7 @@ fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
     ))
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Data<'a> {
     ReadCoils {
         byte_count: u8,
@@ -440,7 +434,7 @@ fn parse_read_fifo_queue_exc(input: &[u8]) -> IResult<&[u8], Data> {
     Ok((input, Data::ReadFIFOQueueExc { exception_code }))
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ReadFileRecordSubRequest<'a> {
     pub file_rsp_len: u8,
     pub ref_type: u8,
@@ -461,7 +455,7 @@ fn parse_read_file_record_sub_request(input: &[u8]) -> IResult<&[u8], ReadFileRe
     ))
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct WriteFileRecordSubRequest<'a> {
     pub ref_type: u8,
     pub file_number: u16,
@@ -488,11 +482,11 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
     ))
 }
 
-use super::eof::EofPacket;
+use super::eof::EofHeader;
 
 #[derive(Debug, PartialEq)]
 pub enum ModbusRspPayload<'a> {
-    Eof(EofPacket<'a>),
+    Eof(EofHeader),
     Unknown(&'a [u8]),
     Error(ModbusRspPayloadError<'a>),
 }
@@ -501,14 +495,6 @@ pub enum ModbusRspPayload<'a> {
 pub enum ModbusRspPayloadError<'a> {
     Eof(&'a [u8]),
     NomPeek(&'a [u8]),
-}
-
-impl<'a> PacketTrait<'a> for ModbusRspPacket<'a> {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = ModbusRspHeader::parse(input)?;
-        let (input, payload) = ModbusRspPayload::parse(input, &header)?;
-        Ok((input, Self { header, payload }))
-    }
 }
 
 impl<'a> HeaderTrait<'a> for ModbusRspHeader<'a> {
@@ -531,7 +517,7 @@ impl<'a> PayloadTrait<'a> for ModbusRspPayload<'a> {
         _header: &Self::Header,
     ) -> nom::IResult<&'a [u8], Self> {
         match input.len() {
-            0 => match EofPacket::parse(input) {
+            0 => match EofHeader::parse(input) {
                 Ok((input, eof)) => Ok((input, ModbusRspPayload::Eof(eof))),
                 Err(_) => Ok((input, ModbusRspPayload::Error(ModbusRspPayloadError::Eof(input)))),
             },

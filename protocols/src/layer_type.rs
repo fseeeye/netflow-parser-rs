@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq)]
+use crate::errors::ParseError;
+
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum LayerType {
     Eof,
     Ethernet,
@@ -8,5 +10,5 @@ pub enum LayerType {
     ModbusRsp,
     Tcp,
     Udp,
-    None
+    Error(ParseError),
 }

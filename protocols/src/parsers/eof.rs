@@ -2,7 +2,7 @@ use nom::combinator::eof;
 use nom::error::{Error, ErrorKind};
 use nom::Err;
 
-use crate::types::LayerType;
+use crate::layer_type::LayerType;
 use crate::{PacketTrait, HeaderTrait, PayloadTrait};
 
 #[derive(Debug, PartialEq)]

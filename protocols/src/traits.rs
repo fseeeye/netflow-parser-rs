@@ -1,4 +1,4 @@
-use crate::types::LayerType;
+use crate::layer_type::LayerType;
 
 /// Package Trait Usage:
 /// ```

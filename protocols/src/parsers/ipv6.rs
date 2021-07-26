@@ -4,16 +4,10 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, u8};
 use nom::sequence::tuple;
 
-use crate::types::LayerType;
-use crate::{PacketTrait, HeaderTrait, PayloadTrait};
+use crate::layer_type::LayerType;
+use crate::{HeaderTrait, PayloadTrait};
 
-#[derive(Debug, PartialEq)]
-pub struct Ipv6Packet<'a> {
-    header: Ipv6Header<'a>,
-    payload: Ipv6Payload<'a>,
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Ipv6Header<'a> {
     pub version: u8,
     pub traffic_class: u8,
@@ -24,33 +18,6 @@ pub struct Ipv6Header<'a> {
     pub src_ip: &'a [u8],
     pub dst_ip: &'a [u8],
     pub extension_headers: Option<&'a [u8]>,
-}
-
-use super::tcp;
-use super::udp;
-
-#[derive(Debug, PartialEq)]
-pub enum Ipv6Payload<'a> {
-    Tcp(tcp::TcpPacket<'a>),
-    Udp(udp::UdpPacket<'a>),
-    Unknown(&'a [u8]),
-    Error(Ipv6PayloadError<'a>),
-}
-
-#[derive(Debug, PartialEq)]
-pub enum Ipv6PayloadError<'a> {
-    Tcp(&'a [u8]),
-    Udp(&'a [u8]),
-    Eof(&'a [u8]),
-    NomPeek(&'a [u8]),
-}
-
-impl<'a> PacketTrait<'a> for Ipv6Packet<'a> {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = Ipv6Header::parse(input)?;
-        let (input, payload) = Ipv6Payload::parse(input, &header)?;
-        Ok((input, Self { header, payload }))
-    }
 }
 
 impl<'a> HeaderTrait<'a> for Ipv6Header<'a> {
@@ -91,6 +58,27 @@ impl<'a> HeaderTrait<'a> for Ipv6Header<'a> {
     fn get_type(&self) -> LayerType {
         return LayerType::Ipv6
     }
+}
+
+use super::tcp::TcpHeader;
+use super::udp::UdpHeader;
+use super::eof::EofHeader;
+
+#[derive(Debug, PartialEq)]
+pub enum Ipv6Payload<'a> {
+    Tcp(TcpHeader<'a>),
+    Udp(UdpHeader),
+    Eof(EofHeader),
+    Unknown(&'a [u8]),
+    Error(Ipv6PayloadError<'a>),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Ipv6PayloadError<'a> {
+    Tcp(&'a [u8]),
+    Udp(&'a [u8]),
+    Eof(&'a [u8]),
+    NomPeek(&'a [u8]),
 }
 
 impl<'a> PayloadTrait<'a> for Ipv6Payload<'a> {
