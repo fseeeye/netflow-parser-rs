@@ -1,56 +1,38 @@
 use nom::combinator::eof;
-use nom::error::{Error, ErrorKind};
 use nom::Err;
 
+use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::{PacketTrait, HeaderTrait, PayloadTrait};
+use crate::Layer;
 
-#[derive(Debug, PartialEq)]
-pub struct EofPacket<'a> {
-    header: EofHeader,
-    payload: EofPayload<'a>,
-}
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct EofHeader;
-impl<'a> HeaderTrait<'a> for EofHeader {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        Ok((input, Self{}))
-    }
 
-    fn get_type(&self) -> LayerType {
-        return LayerType::Eof;
-    }
+pub fn parse_eof_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
+    let (input, header) = parse_eof_header(input)?;
+    let next = parse_eof_payload(input, &header);
+    let layer = Layer::Eof(header);
+
+    Ok((
+        input,
+        (
+            layer,
+            next
+        )
+    ))
 }
 
-#[derive(Debug, PartialEq)]
-pub enum EofPayload<'a>{
-    End(),
-    NotEnd(&'a [u8]),
+fn parse_eof_header(input: &[u8]) -> nom::IResult<&[u8], EofHeader> {
+    Ok((input, EofHeader{}))
 }
 
-impl<'a> PayloadTrait<'a> for EofPayload<'a> {
-    type Header = EofHeader;
-
-    fn parse(
-        input: &'a [u8],
-        _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self> {
-        match eof(input) {
-            Ok((input, _nullstr)) => Ok((input, Self::End())),
-            Err(Err::Error((input, _))) => Ok((input, Self::NotEnd(input))),
-            _ => Err(Err::Failure(Error::new(input, ErrorKind::Verify))),
-        }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct EofPayloadError;
-
-impl<'a> PacketTrait<'a> for EofPacket<'a> {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, header) = EofHeader::parse(input)?;
-        let (input, payload) = EofPayload::parse(input, &header)?;
-        Ok((input, Self { header, payload }))
+fn parse_eof_payload(
+    input: &[u8],
+    _header: &EofHeader,
+) -> Option<LayerType> {
+    match eof(input) {
+        Ok((_input, _nullstr)) => None,
+        Err(Err::Error((_input, _))) => Some(LayerType::Error(ParseError::NotEndPayload)),
+        _ => Some(LayerType::Error(ParseError::ParsingPayload)),
     }
 }

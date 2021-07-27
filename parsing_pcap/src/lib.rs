@@ -59,9 +59,9 @@ fn parse_ethernet_packet(input: &[u8]) {
 
     packet.parse(parsers_map);
     println!("layers: {:?}", packet.get_layers());
-    if let Some(&Layer::Ethernet(eth)) = packet.get_layer(LayerType::Ethernet) {
-        println!("Eth layer: {:?}", eth);
-        println!("Eth layer - dst_mac: {:?}", eth.dst_mac);
-        println!("Eth layer - src_mac: {:?}", eth.src_mac);
-    }
+    // if let Some(&Layer::Ethernet(eth)) = packet.get_layer(LayerType::Ethernet) {
+    //     println!("Eth layer: {:?}", eth);
+    //     println!("Eth layer - dst_mac: {:?}", eth.dst_mac);
+    //     println!("Eth layer - src_mac: {:?}", eth.src_mac);
+    // }
 }

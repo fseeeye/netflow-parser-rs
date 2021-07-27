@@ -7,8 +7,9 @@ use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 use nom::error::Error;
 
+use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::{HeaderTrait, PayloadTrait};
+use crate::Layer;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ModbusRspHeader<'a> {
@@ -482,46 +483,32 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
     ))
 }
 
-use super::eof::EofHeader;
+pub fn parse_modbus_rsp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
+    let (input, header) = parse_modbus_rsp_header(input)?;
+    let next = parse_modbus_rsp_payload(input, &header);
+    let layer = Layer::ModbusRsp(header);
 
-#[derive(Debug, PartialEq)]
-pub enum ModbusRspPayload<'a> {
-    Eof(EofHeader),
-    Unknown(&'a [u8]),
-    Error(ModbusRspPayloadError<'a>),
+    Ok((
+        input,
+        (
+            layer,
+            next
+        )
+    ))
 }
 
-#[derive(Debug, PartialEq)]
-pub enum ModbusRspPayloadError<'a> {
-    Eof(&'a [u8]),
-    NomPeek(&'a [u8]),
+fn parse_modbus_rsp_header(input: &[u8]) -> nom::IResult<&[u8], ModbusRspHeader> {
+    let (input, mbap_header) = parse_mbap_header(input)?;
+    let (input, pdu) = parse_pdu(input)?;
+    Ok((input, ModbusRspHeader { mbap_header, pdu }))
 }
 
-impl<'a> HeaderTrait<'a> for ModbusRspHeader<'a> {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, mbap_header) = parse_mbap_header(input)?;
-        let (input, pdu) = parse_pdu(input)?;
-        Ok((input, ModbusRspHeader { mbap_header, pdu }))
-    }
-
-    fn get_type(&self) -> LayerType {
-        return LayerType::ModbusRsp
-    }
-}
-
-impl<'a> PayloadTrait<'a> for ModbusRspPayload<'a> {
-    type Header = ModbusRspHeader<'a>;
-
-    fn parse(
-        input: &'a [u8],
-        _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self> {
-        match input.len() {
-            0 => match EofHeader::parse(input) {
-                Ok((input, eof)) => Ok((input, ModbusRspPayload::Eof(eof))),
-                Err(_) => Ok((input, ModbusRspPayload::Error(ModbusRspPayloadError::Eof(input)))),
-            },
-            _ => Ok((input, ModbusRspPayload::Unknown(input))),
-        }
+fn parse_modbus_rsp_payload(
+    input: &[u8],
+    _header: &ModbusRspHeader,
+) -> Option<LayerType> {
+    match input.len() {
+        0 => Some(LayerType::Eof),
+        _ => Some(LayerType::Error(ParseError::UnknownPayload)),
     }
 }

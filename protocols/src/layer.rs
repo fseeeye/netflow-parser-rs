@@ -3,6 +3,7 @@ use crate::layer_type::LayerType;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Layer<'a> {
+    Eof(EofHeader),
     Ethernet(EthernetHeader<'a>),
     Ipv4(Ipv4Header<'a>),
     Ipv6(Ipv6Header<'a>),

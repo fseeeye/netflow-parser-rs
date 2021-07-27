@@ -1,7 +1,8 @@
 use nom::number::complete::{be_u16};
 
+// use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::{HeaderTrait, PayloadTrait};
+use crate::Layer;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct UdpHeader {
@@ -11,56 +12,39 @@ pub struct UdpHeader {
     pub checksum: u16,
 }
 
-impl<'a> HeaderTrait<'a> for UdpHeader {
-    fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> {
-        let (input, src_port) = be_u16(input)?;
-        let (input, dst_port) = be_u16(input)?;
-        let (input, length) = be_u16(input)?;
-        let (input, checksum) = be_u16(input)?;
-        Ok((
-            input,
-            UdpHeader {
-                src_port,
-                dst_port,
-                length,
-                checksum,
-            },
-        ))
-    }
+pub fn parse_udp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
+    let (input, header) = parse_udp_header(input)?;
+    let next = parse_udp_payload(input, &header);
+    let layer = Layer::Udp(header);
 
-    fn get_type(&self) -> LayerType {
-        return LayerType::Udp;
-    }
+    Ok((
+        input,
+        (
+            layer,
+            next
+        )
+    ))
 }
 
-use super::modbus_req::ModbusReqHeader;
-use super::modbus_rsp::ModbusRspHeader;
-use super::eof::EofHeader;
-
-#[derive(Debug, PartialEq)]
-pub enum UdpPayload<'a> {
-    ModbusReq(ModbusReqHeader<'a>),
-    ModbusRsp(ModbusRspHeader<'a>),
-    Eof(EofHeader),
-    Unknown(&'a [u8]),
-    Error(UdpPayloadError<'a>),
+fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
+    let (input, src_port) = be_u16(input)?;
+    let (input, dst_port) = be_u16(input)?;
+    let (input, length) = be_u16(input)?;
+    let (input, checksum) = be_u16(input)?;
+    Ok((
+        input,
+        UdpHeader {
+            src_port,
+            dst_port,
+            length,
+            checksum,
+        },
+    ))
 }
 
-#[derive(Debug, PartialEq)]
-pub enum UdpPayloadError<'a> {
-    ModbusReq(&'a [u8]),
-    ModbusRsp(&'a [u8]),
-    Eof(&'a [u8]),
-    NomPeek(&'a [u8]),
-}
-
-impl<'a> PayloadTrait<'a> for UdpPayload<'a> {
-    type Header = UdpHeader;
-
-    fn parse(
-        _input: &'a [u8],
-        _header: &Self::Header,
-    ) -> nom::IResult<&'a [u8], Self> {
-        unimplemented!();
-    }    
+fn parse_udp_payload(
+    _input: &[u8],
+    _header: &UdpHeader,
+) -> Option<LayerType> {
+    unimplemented!();
 }

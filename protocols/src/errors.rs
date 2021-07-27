@@ -3,5 +3,6 @@ pub enum ParseError {
     ParsingPayload,
     ParsingHeader,
     UnknownPayload,
+    NotEndPayload,
     UnregisteredParser,
 }
