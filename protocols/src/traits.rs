@@ -27,7 +27,11 @@ pub trait PacketTrait<'a> {
 /// ```
 pub trait HeaderTrait<'a> {
     fn parse(input: &'a [u8]) -> nom::IResult<&'a [u8], Self> where Self: Sized;
-    fn get_type(&self) -> LayerType;
+}
+
+pub trait Header {
+    // fn get_type(&self) -> LayerType;
+    fn get_payload(&self) -> Option<LayerType>;
 }
 
 /// Payload Trait Usage:

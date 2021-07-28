@@ -6,7 +6,7 @@ use nom::sequence::tuple;
 
 use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::Layer;
+use crate::{Header, Layer};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Ipv4Header<'a> {
@@ -26,9 +26,19 @@ pub struct Ipv4Header<'a> {
     pub options: Option<&'a [u8]>,
 }
 
+impl<'a> Header for Ipv4Header<'a> {
+    fn get_payload(&self) -> Option<LayerType> {
+        match self.protocol {
+            0x06 => Some(LayerType::Tcp),
+            0x11 => Some(LayerType::Udp),
+            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+        }
+    }
+}
+
 pub fn parse_ipv4_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
     let (input, header) = parse_ipv4_header(input)?;
-    let next = parse_ipv4_payload(input, &header);
+    let next = header.get_payload();
     let layer = Layer::Ipv4(header);
 
     Ok((
@@ -40,7 +50,7 @@ pub fn parse_ipv4_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<Laye
     ))
 }
 
-fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
+pub fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
     let (input, (version, header_length, diff_service, ecn)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
             take_bits(4usize),
@@ -87,17 +97,17 @@ fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
     ))
 }
 
-fn parse_ipv4_payload(
-    input: &[u8],
-    _header: &Ipv4Header,
-) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => match _header.protocol {
-            // ref: https://www.ietf.org/rfc/rfc790.txt
-            0x06 => Some(LayerType::Tcp),
-            0x11 => Some(LayerType::Udp),
-            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-        },
-    }
-}
+// // ref: https://www.ietf.org/rfc/rfc790.txt
+// fn parse_ipv4_payload(
+//     input: &[u8],
+//     _header: &Ipv4Header,
+// ) -> Option<LayerType> {
+//     match input.len() {
+//         0 => Some(LayerType::Eof),
+//         _ => match _header.protocol {
+//             0x06 => Some(LayerType::Tcp),
+//             0x11 => Some(LayerType::Udp),
+//             _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+//         },
+//     }
+// }

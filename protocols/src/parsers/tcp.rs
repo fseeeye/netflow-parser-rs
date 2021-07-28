@@ -6,30 +6,32 @@ use nom::sequence::tuple;
 
 use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::Layer;
+use crate::{Header, Layer};
 
 // TCP Header Format
 //
 //
-//    0                   1                   2                   3
-//    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |          Source Port          |       Destination Port        |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                        Sequence Number                        |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                    Acknowledgment Number                      |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |  Data |           |U|A|P|R|S|F|                               |
-//   | Offset| Reserved  |R|C|S|S|Y|I|            Window             |
-//   |       |           |G|K|H|T|N|N|                               |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |           Checksum            |         Urgent Pointer        |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                    Options                    |    Padding    |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                             data                              |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//     0                   1                   2                   3
+//     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 0  |          Source Port          |       Destination Port        |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 4  |                        Sequence Number                        |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 8  |                    Acknowledgment Number                      |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//    |  Data |           |U|A|P|R|S|F|                               |
+// 12 | Offset| Reserved  |R|C|S|S|Y|I|            Window             |
+//    |       |           |G|K|H|T|N|N|                               |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 16 |           Checksum            |         Urgent Pointer        |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// 20 |                                               |               |
+//  - |                    Options                    |    Padding    |
+// 60 |                                               |               |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//    |                             data                              |
+//    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // TCP Flags:
 //    URG:  Urgent Pointer field significant
 //    ACK:  Acknowledgment field significant
@@ -53,9 +55,21 @@ pub struct TcpHeader<'a> {
     pub options: Option<&'a [u8]>,
 }
 
+impl<'a> Header for TcpHeader<'a> {
+    fn get_payload(&self) -> Option<LayerType> {
+        match self.src_port {
+            502 => Some(LayerType::ModbusRsp),
+            _ => match self.dst_port {
+                502 => Some(LayerType::ModbusReq),
+                _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+            },
+        }
+    }
+}
+
 pub fn parse_tcp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
     let (input, header) = parse_tcp_header(input)?;
-    let next = parse_tcp_payload(input, &header);
+    let next = header.get_payload();
     let layer = Layer::Tcp(header);
 
     Ok((
@@ -67,7 +81,7 @@ pub fn parse_tcp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<Layer
     ))
 }
 
-fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
+pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     let (input, src_port) = be_u16(input)?;
     let (input, dst_port) = be_u16(input)?;
     let (input, seq) = be_u32(input)?;
@@ -106,18 +120,18 @@ fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     ))
 }
 
-fn parse_tcp_payload(
-    input: &[u8],
-    _header: &TcpHeader,
-) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => match _header.src_port {
-            502 => Some(LayerType::ModbusRsp),
-            _ => match _header.dst_port {
-                502 => Some(LayerType::ModbusReq),
-                _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-            },
-        },
-    }
-}
+// pub fn parse_tcp_payload(
+//     input: &[u8],
+//     _header: &TcpHeader,
+// ) -> Option<LayerType> {
+//     match input.len() {
+//         0 => Some(LayerType::Eof),
+//         _ => match _header.src_port {
+//             502 => Some(LayerType::ModbusRsp),
+//             _ => match _header.dst_port {
+//                 502 => Some(LayerType::ModbusReq),
+//                 _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+//             },
+//         },
+//     }
+// }

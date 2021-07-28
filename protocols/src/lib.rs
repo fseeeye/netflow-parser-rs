@@ -1,16 +1,20 @@
 mod parsers;
-mod packet;
+mod packet_vec;
+mod packet_quin;
 mod layer;
 mod layer_type;
 mod parsers_map;
 mod errors;
 mod traits;
 
+
 pub use traits::*;
-pub use packet::{VecPacket, VecPacketOptions};
-pub use parsers_map::parsers_map_init;
 pub use layer_type::LayerType;
 pub use layer::Layer;
+pub use parsers_map::parsers_map_init;
+pub use packet_vec::{VecPacket, VecPacketOptions};
+pub use packet_quin::QuinPacket;
+
 
 use std::collections::HashMap;
 

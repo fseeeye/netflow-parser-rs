@@ -50,7 +50,7 @@ impl<'a> VecPacket<'a> {
                             self.push_layer(FatLayer::new(old_next.clone(), nlayer));
                             self.next = new_next; // Tips: next layer might be `Unknow / NomPeek`
                         },
-                        // Error occurred: parsing next layer. update self.next to ParseError::Parsing
+                        // Error occurred: parsing next layer. update self.next to ParseError::ParsingHeader
                         Err(_) => {
                             // eprintln!("[!] Parsing Error `{:?}` at Layer `{:?}`", e, old_next);
                             // break;

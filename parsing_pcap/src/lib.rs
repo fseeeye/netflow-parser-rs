@@ -2,6 +2,7 @@ use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 
 use std::fs::File;
+use std::time::Instant;
 
 pub fn parse_pcap(path: &str) {
     let file = File::open(path).unwrap();
@@ -22,7 +23,8 @@ pub fn parse_pcap(path: &str) {
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
-                        parse_ethernet_packet(&_b.data);
+                        parse_ethernet_vec_packet(&_b.data);
+                        parse_ethernet_quin_packet(&_b.data);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
                 }
@@ -38,7 +40,7 @@ pub fn parse_pcap(path: &str) {
     println!("[-] number of blocks: {:?}\n", num_blocks);
 }
 
-fn parse_ethernet_packet(input: &[u8]) {
+fn parse_ethernet_vec_packet(input: &[u8]) {
     // use protocols::HeaderTrait;
     // use protocols::parsers::ethernet::EthernetHeader;
     // use protocols::parsers_ts::ethernet::EthernetPacket;
@@ -54,14 +56,42 @@ fn parse_ethernet_packet(input: &[u8]) {
 
     use protocols::*;
 
-    let mut packet = VecPacket::new(input, VecPacketOptions::new());
     let parsers_map = parsers_map_init();
-
+    
+    let runtimer = Instant::now(); // 程序运行计时变量
+    let mut packet = VecPacket::new(input, VecPacketOptions::new());
     packet.parse(parsers_map);
+    println!(
+        " in {} seconds.",
+        runtimer
+            .elapsed()
+            .as_secs_f64()
+            .to_string()
+    );
+
     println!("layers: {:?}", packet.get_layers());
     // if let Some(&Layer::Ethernet(eth)) = packet.get_layer(LayerType::Ethernet) {
     //     println!("Eth layer: {:?}", eth);
     //     println!("Eth layer - dst_mac: {:?}", eth.dst_mac);
     //     println!("Eth layer - src_mac: {:?}", eth.src_mac);
     // }
+}
+
+fn parse_ethernet_quin_packet(input: &[u8]) {
+    use protocols::*;
+
+    let parsers_map = parsers_map_init();
+
+    let runtimer = Instant::now(); // 程序运行计时变量
+    let mut packet = QuinPacket::new();
+    packet.parse(parsers_map, input);
+    println!(
+        " in {} seconds.",
+        runtimer
+            .elapsed()
+            .as_secs_f64()
+            .to_string()
+    );
+
+    println!("packet: {:?}", packet);
 }

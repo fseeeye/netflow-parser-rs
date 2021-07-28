@@ -7,9 +7,8 @@ use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 use nom::error::Error;
 
-use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::Layer;
+use crate::{Header, Layer};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ModbusRspHeader<'a> {
@@ -17,6 +16,11 @@ pub struct ModbusRspHeader<'a> {
     pub pdu: PDU<'a>,
 }
 
+impl<'a> Header for ModbusRspHeader<'a> {
+    fn get_payload(&self) -> Option<LayerType> {
+        Some(LayerType::Eof)
+    }
+}
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct MbapHeader {
     pub transaction_id: u16,
@@ -485,7 +489,7 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
 
 pub fn parse_modbus_rsp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
     let (input, header) = parse_modbus_rsp_header(input)?;
-    let next = parse_modbus_rsp_payload(input, &header);
+    let next = header.get_payload();
     let layer = Layer::ModbusRsp(header);
 
     Ok((
@@ -497,18 +501,18 @@ pub fn parse_modbus_rsp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Optio
     ))
 }
 
-fn parse_modbus_rsp_header(input: &[u8]) -> nom::IResult<&[u8], ModbusRspHeader> {
+pub fn parse_modbus_rsp_header(input: &[u8]) -> nom::IResult<&[u8], ModbusRspHeader> {
     let (input, mbap_header) = parse_mbap_header(input)?;
     let (input, pdu) = parse_pdu(input)?;
     Ok((input, ModbusRspHeader { mbap_header, pdu }))
 }
 
-fn parse_modbus_rsp_payload(
-    input: &[u8],
-    _header: &ModbusRspHeader,
-) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-    }
-}
+// fn parse_modbus_rsp_payload(
+//     input: &[u8],
+//     _header: &ModbusRspHeader,
+// ) -> Option<LayerType> {
+//     match input.len() {
+//         0 => Some(LayerType::Eof),
+//         _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+//     }
+// }

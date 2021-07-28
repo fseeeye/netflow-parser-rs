@@ -6,8 +6,9 @@ use nom::sequence::tuple;
 
 // use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::Layer;
+use crate::{Header, Layer};
 
+// refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Ipv6Header<'a> {
     pub version: u8,
@@ -21,9 +22,15 @@ pub struct Ipv6Header<'a> {
     pub extension_headers: Option<&'a [u8]>,
 }
 
+impl<'a> Header for Ipv6Header<'a> {
+    fn get_payload(&self) -> Option<LayerType> {
+        unimplemented!()
+    }
+}
+
 pub fn parse_ipv6_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
     let (input, header) = parse_ipv6_header(input)?;
-    let next = parse_ipv6_payload(input, &header);
+    let next = header.get_payload();
     let layer = Layer::Ipv6(header);
 
     Ok((
@@ -35,7 +42,7 @@ pub fn parse_ipv6_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<Laye
     ))
 }
 
-fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
+pub fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
     let (input, (version, traffic_class, flow_label)) =
         bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
             take_bits(4usize),
@@ -69,9 +76,10 @@ fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
     ))
 }
 
-fn parse_ipv6_payload(
-    _input: &[u8],
-    _header: &Ipv6Header,
-) -> Option<LayerType> {
-    unimplemented!();
-}
+// // refs: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+// fn parse_ipv6_payload(
+//     _input: &[u8],
+//     _header: &Ipv6Header,
+// ) -> Option<LayerType> {
+//     unimplemented!();
+// }

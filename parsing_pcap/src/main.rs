@@ -57,7 +57,7 @@ fn main() {
 // 程序参数配置
 struct Args {
     paths: Vec<String>,
-    ts: bool,
+    // ts: bool,
 }
 
 impl Args {
@@ -76,8 +76,9 @@ impl Args {
             .collect();
         if paths.is_empty() { return Err("empty arg 'paths'"); }
 
-        let ts = matches.is_present("ts");
+        // let ts = matches.is_present("ts");
 
-        Ok(Args { paths, ts })
+        // Ok(Args { paths, ts })
+        Ok(Args { paths })
     }
 }
