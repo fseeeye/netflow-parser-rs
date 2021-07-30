@@ -61,15 +61,10 @@ fn parse_ethernet_vec_packet(input: &[u8]) {
     let runtimer = Instant::now(); // 程序运行计时变量
     let mut packet = VecPacket::new(input, VecPacketOptions::new());
     packet.parse(parsers_map);
-    println!(
-        " in {} seconds.",
-        runtimer
-            .elapsed()
-            .as_secs_f64()
-            .to_string()
-    );
+    let time = runtimer.elapsed().as_secs_f64();
 
     println!("layers: {:?}", packet.get_layers());
+    println!(" in {} seconds.", time);
     // if let Some(&Layer::Ethernet(eth)) = packet.get_layer(LayerType::Ethernet) {
     //     println!("Eth layer: {:?}", eth);
     //     println!("Eth layer - dst_mac: {:?}", eth.dst_mac);
@@ -83,15 +78,12 @@ fn parse_ethernet_quin_packet(input: &[u8]) {
     let parsers_map = parsers_map_init();
 
     let runtimer = Instant::now(); // 程序运行计时变量
-    let mut packet = QuinPacket::new();
+    let mut packet = QuinPacket::new(QuinPacketOptions::new(false));
     packet.parse(parsers_map, input);
-    println!(
-        " in {} seconds.",
-        runtimer
-            .elapsed()
-            .as_secs_f64()
-            .to_string()
-    );
+    let time = runtimer.elapsed().as_secs_f64();
 
     println!("packet: {:?}", packet);
+    println!("ips: {:?}", packet.get_ips());
+    println!("ports: {:?}", packet.get_ports());
+    println!(" in {} seconds.", time);
 }

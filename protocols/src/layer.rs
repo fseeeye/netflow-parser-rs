@@ -4,7 +4,7 @@ use crate::layer_type::LayerType;
 #[derive(Debug, PartialEq, Clone)]
 pub enum Layer<'a> {
     Eof(EofHeader),
-    Ethernet(EthernetHeader<'a>),
+    Ethernet(EthernetHeader),
     Ipv4(Ipv4Header<'a>),
     Ipv6(Ipv6Header<'a>),
     ModbusReq(ModbusReqHeader<'a>),
@@ -12,6 +12,31 @@ pub enum Layer<'a> {
     Tcp(TcpHeader<'a>),
     Udp(UdpHeader),
     Error(&'a [u8]),
+}
+
+#[allow(dead_code)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum LinkLayer {
+    Ethernet(EthernetHeader),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum NetworkLayer<'a> {
+    Ipv4(Ipv4Header<'a>),
+    Ipv6(Ipv6Header<'a>),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum TransportLayer<'a> {
+    Tcp(TcpHeader<'a>),
+    Udp(UdpHeader),
+}
+
+#[allow(dead_code)]
+#[derive(Debug, PartialEq, Clone)]
+pub enum ApplicationLayer<'a> {
+    ModbusReq(ModbusReqHeader<'a>),
+    ModbusRsp(ModbusRspHeader<'a>),
 }
 
 #[derive(Debug, PartialEq, Clone)]

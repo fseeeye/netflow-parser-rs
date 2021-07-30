@@ -1,7 +1,10 @@
+use std::net::Ipv4Addr;
+use std::convert::TryFrom;
+
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::take;
-use nom::number::complete::{be_u16, be_u32, u8};
+use nom::number::complete::{be_u16, u8};
 use nom::sequence::tuple;
 
 use crate::errors::ParseError;
@@ -21,8 +24,8 @@ pub struct Ipv4Header<'a> {
     pub ttl: u8,
     pub protocol: u8,
     pub checksum: u16,
-    pub src_ip: u32,
-    pub dst_ip: u32,
+    pub src_ip: Ipv4Addr,
+    pub dst_ip: Ipv4Addr,
     pub options: Option<&'a [u8]>,
 }
 
@@ -68,8 +71,8 @@ pub fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
     let (input, ttl) = u8(input)?;
     let (input, protocol) = u8(input)?;
     let (input, checksum) = be_u16(input)?;
-    let (input, src_ip) = be_u32(input)?;
-    let (input, dst_ip) = be_u32(input)?;
+    let (input, src_ip) = address4(input)?;
+    let (input, dst_ip) = address4(input)?;
     let (input, options) = if (header_length * 4) > 20 {
         let (input, options) = take(header_length * 4 - 20)(input)?;
         Ok((input, Some(options)))
@@ -95,6 +98,12 @@ pub fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
             options,
         },
     ))
+}
+
+fn address4(input: &[u8]) -> nom::IResult<&[u8], Ipv4Addr> {
+    let (input, ipv4_addr) = take(4u8)(input)?;
+
+    Ok((input, Ipv4Addr::from(<[u8; 4]>::try_from(ipv4_addr).unwrap())))
 }
 
 // // ref: https://www.ietf.org/rfc/rfc790.txt

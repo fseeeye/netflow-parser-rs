@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 # parsing-rs
-protocols = { path = "../protocols", version = "0.2.0"}
+protocols = { path = "../protocols", version = "0.3"}
 # others
 pcap-parser = "0.11.1"
 clap = { version = "2.33", features = ["yaml"] }

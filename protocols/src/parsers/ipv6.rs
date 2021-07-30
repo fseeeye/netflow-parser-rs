@@ -1,3 +1,6 @@
+use std::net::Ipv6Addr;
+use std::convert::TryFrom;
+
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::take;
@@ -17,8 +20,8 @@ pub struct Ipv6Header<'a> {
     pub payload_length: u16,
     pub next_header: u8,
     pub hop_limit: u8,
-    pub src_ip: &'a [u8],
-    pub dst_ip: &'a [u8],
+    pub src_ip: Ipv6Addr,
+    pub dst_ip: Ipv6Addr,
     pub extension_headers: Option<&'a [u8]>,
 }
 
@@ -52,8 +55,8 @@ pub fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
     let (input, payload_length) = be_u16(input)?;
     let (input, next_header) = u8(input)?;
     let (input, hop_limit) = u8(input)?;
-    let (input, src_ip) = take(16usize)(input)?;
-    let (input, dst_ip) = take(16usize)(input)?;
+    let (input, src_ip) = address6(input)?;
+    let (input, dst_ip) = address6(input)?;
     let (input, extension_headers) = if payload_length > 40 {
         let (input, extension_headers) = take(payload_length - 40)(input)?;
         Ok((input, Some(extension_headers)))
@@ -74,6 +77,12 @@ pub fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
             extension_headers,
         },
     ))
+}
+
+fn address6(input: &[u8]) -> nom::IResult<&[u8], Ipv6Addr> {
+    let (input, ipv6) = take(16u8)(input)?;
+
+    Ok((input, Ipv6Addr::from(<[u8; 16]>::try_from(ipv6).unwrap())))
 }
 
 // // refs: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers

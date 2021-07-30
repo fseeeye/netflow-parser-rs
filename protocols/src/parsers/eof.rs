@@ -1,8 +1,12 @@
+use nom::combinator::eof;
+
 use crate::layer_type::LayerType;
 use crate::{Header, Layer};
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct EofHeader;
+pub struct EofHeader {
+    pub end: bool,
+}
 
 impl Header for EofHeader {
     fn get_payload(&self) -> Option<LayerType> {
@@ -25,15 +29,8 @@ pub fn parse_eof_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<Layer
 }
 
 pub fn parse_eof_header(input: &[u8]) -> nom::IResult<&[u8], EofHeader> {
-    Ok((input, EofHeader{}))
+    match eof::<_, ()>(input) {
+        Ok((_input, _nullstr)) => Ok((input, EofHeader{ end: true })),
+        Err(_e) => Ok((input, EofHeader{ end: false })),
+    }
 }
-
-// fn parse_eof_payload(
-//     input: &[u8],
-//     _header: &EofHeader,
-// ) -> Option<LayerType> {
-//     match eof::<_, (_, _)>(input) {
-//         Ok((_input, _nullstr)) => None,
-//         Err(_) => Some(LayerType::Error(ParseError::NotEndPayload)),
-//     }
-// }

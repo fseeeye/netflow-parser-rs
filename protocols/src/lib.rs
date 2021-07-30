@@ -10,10 +10,10 @@ mod traits;
 
 pub use traits::*;
 pub use layer_type::LayerType;
-pub use layer::Layer;
+pub use layer::{Layer, NetworkLayer, TransportLayer};
 pub use parsers_map::parsers_map_init;
 pub use packet_vec::{VecPacket, VecPacketOptions};
-pub use packet_quin::QuinPacket;
+pub use packet_quin::{QuinPacket, QuinPacketOptions};
 
 
 use std::collections::HashMap;
