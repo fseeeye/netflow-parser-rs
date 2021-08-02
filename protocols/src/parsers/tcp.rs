@@ -5,8 +5,6 @@ use nom::number::complete::{be_u16, be_u32};
 use nom::sequence::tuple;
 
 use crate::errors::ParseError;
-use crate::layer_type::LayerType;
-use crate::Header;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_quin::{L3Packet, L4Packet, QuinPacket, QuinPacketOptions};
 
@@ -59,18 +57,6 @@ pub struct TcpHeader<'a> {
     pub options: Option<&'a [u8]>,
 }
 
-impl<'a> Header for TcpHeader<'a> {
-    fn get_payload(&self) -> Option<LayerType> {
-        match self.src_port {
-            502 => Some(LayerType::ModbusRsp),
-            _ => match self.dst_port {
-                502 => Some(LayerType::ModbusReq),
-                _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-            },
-        }
-    }
-}
-
 pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     let (input, src_port) = be_u16(input)?;
     let (input, dst_port) = be_u16(input)?;
@@ -118,8 +104,7 @@ pub(crate) fn parse_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_la
                 L3Packet {
                     link_layer,
                     net_layer,
-                    remain: input,
-                    error: Some(ParseError::ParsingHeader),
+                    error: Some(ParseError::ParsingHeader(input)),
                 }
             )
         }
@@ -146,8 +131,7 @@ pub(crate) fn parse_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_la
                         link_layer,
                         net_layer,
                         trans_layer,
-                        remain: input,
-                        error: Some(ParseError::UnknownPayload),
+                        error: Some(ParseError::UnknownPayload(input)),
                     }
                 )
             },

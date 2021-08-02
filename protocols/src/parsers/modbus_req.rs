@@ -400,8 +400,7 @@ pub(crate) fn parse_modbus_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer,
                     link_layer,
                     net_layer,
                     trans_layer,
-                    remain: input,
-                    error: Some(ParseError::ParsingHeader),
+                    error: Some(ParseError::ParsingHeader(input)),
                 }
             )
         }

@@ -46,8 +46,7 @@ pub(crate) fn parse_ethernet_layer(input: &[u8], options: QuinPacketOptions) -> 
         Err(_e) => {
             return QuinPacket::L1(
                 L1Packet {
-                    remain: input,
-                    error: Some(ParseError::ParsingHeader),
+                    error: Some(ParseError::ParsingHeader(input)),
                 }
             )
         }
@@ -72,8 +71,7 @@ pub(crate) fn parse_ethernet_layer(input: &[u8], options: QuinPacketOptions) -> 
             return QuinPacket::L2(
                 L2Packet {
                     link_layer,
-                    remain: input,
-                    error: Some(ParseError::UnknownPayload),
+                    error: Some(ParseError::UnknownPayload(input)),
                 }
             )
         }

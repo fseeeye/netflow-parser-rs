@@ -21,7 +21,6 @@ pub(crate) fn parse_l2_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, _op
         return QuinPacket::L2(
             L2Packet {
                 link_layer,
-                remain: input,
                 error: None,
             }
         )
@@ -29,8 +28,7 @@ pub(crate) fn parse_l2_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, _op
         return QuinPacket::L2(
             L2Packet {
                 link_layer,
-                remain: input,
-                error: Some(ParseError::NotEndPayload),
+                error: Some(ParseError::NotEndPayload(input)),
             }
         )
     }
@@ -42,7 +40,6 @@ pub(crate) fn parse_l3_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net
             L3Packet {
                 link_layer,
                 net_layer,
-                remain: input,
                 error: None,
             }
         )
@@ -51,8 +48,7 @@ pub(crate) fn parse_l3_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net
             L3Packet {
                 link_layer,
                 net_layer,
-                remain: input,
-                error: Some(ParseError::NotEndPayload),
+                error: Some(ParseError::NotEndPayload(input)),
             }
         )
     }
@@ -65,7 +61,6 @@ pub(crate) fn parse_l4_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net
                 link_layer,
                 net_layer,
                 trans_layer,
-                remain: input,
                 error: None,
             }
         )
@@ -75,8 +70,7 @@ pub(crate) fn parse_l4_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net
                 link_layer,
                 net_layer,
                 trans_layer,
-                remain: input,
-                error: Some(ParseError::NotEndPayload),
+                error: Some(ParseError::NotEndPayload(input)),
             }
         )
     }
@@ -90,7 +84,6 @@ pub(crate) fn parse_l5_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net
                 net_layer,
                 trans_layer,
                 app_layer,
-                remain: input,
                 error: None,
             }
         )
@@ -101,8 +94,7 @@ pub(crate) fn parse_l5_eof_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net
                 net_layer,
                 trans_layer,
                 app_layer,
-                remain: input,
-                error: Some(ParseError::NotEndPayload),
+                error: Some(ParseError::NotEndPayload(input)),
             }
         )
     }

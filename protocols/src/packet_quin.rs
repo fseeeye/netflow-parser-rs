@@ -16,23 +16,20 @@ pub enum QuinPacket<'a> {
 
 #[derive(Debug)]
 pub struct L1Packet<'a> {
-    pub remain: &'a [u8],
-    pub error: Option<ParseError>,
+    pub error: Option<ParseError<'a>>,
 }
 
 #[derive(Debug)]
 pub struct L2Packet<'a> {
     pub link_layer: LinkLayer,
-    pub remain: &'a [u8],
-    pub error: Option<ParseError>,
+    pub error: Option<ParseError<'a>>,
 }
 
 #[derive(Debug)]
 pub struct L3Packet<'a> {
     pub link_layer: LinkLayer,
     pub net_layer: NetworkLayer<'a>,
-    pub remain: &'a [u8],
-    pub error: Option<ParseError>,
+    pub error: Option<ParseError<'a>>,
 }
 
 #[derive(Debug)]
@@ -40,8 +37,7 @@ pub struct L4Packet<'a> {
     pub link_layer: LinkLayer,
     pub net_layer: NetworkLayer<'a>,
     pub trans_layer: TransportLayer<'a>,
-    pub remain: &'a [u8],
-    pub error: Option<ParseError>,
+    pub error: Option<ParseError<'a>>,
 }
 
 #[derive(Debug)]
@@ -50,8 +46,7 @@ pub struct L5Packet<'a> {
     pub net_layer: NetworkLayer<'a>,
     pub trans_layer: TransportLayer<'a>,
     pub app_layer: ApplicationLayer<'a>,
-    pub remain: &'a [u8],
-    pub error: Option<ParseError>,
+    pub error: Option<ParseError<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq)]

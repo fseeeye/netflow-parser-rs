@@ -79,8 +79,7 @@ pub(crate) fn parse_ipv6_layer(input: &[u8], link_layer: LinkLayer, options: Qui
             return QuinPacket::L2(
                 L2Packet {
                     link_layer,
-                    remain: input,
-                    error: Some(ParseError::ParsingHeader),
+                    error: Some(ParseError::ParsingHeader(input)),
                 }
             )
         }
@@ -106,8 +105,7 @@ pub(crate) fn parse_ipv6_layer(input: &[u8], link_layer: LinkLayer, options: Qui
                 L3Packet {
                     link_layer,
                     net_layer,
-                    remain: input,
-                    error: Some(ParseError::UnknownPayload),
+                    error: Some(ParseError::UnknownPayload(input)),
                 }
             )
         },
