@@ -5,7 +5,7 @@ use crate::layer_type::LayerType;
 pub enum Layer<'a> {
     Eof(EofHeader),
     Ethernet(EthernetHeader),
-    Ipv4(Ipv4Header<'a>),
+    Ipv4(Ipv4Header),
     Ipv6(Ipv6Header<'a>),
     ModbusReq(ModbusReqHeader<'a>),
     ModbusRsp(ModbusRspHeader<'a>),
@@ -22,7 +22,7 @@ pub enum LinkLayer {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum NetworkLayer<'a> {
-    Ipv4(Ipv4Header<'a>),
+    Ipv4(Ipv4Header),
     Ipv6(Ipv6Header<'a>),
 }
 
