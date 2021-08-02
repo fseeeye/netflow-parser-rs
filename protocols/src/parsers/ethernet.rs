@@ -3,10 +3,11 @@ use nom::number::complete::{be_u16};
 
 use std::convert::TryFrom;
 
-use crate::Header;
 use crate::errors::ParseError;
-use crate::layer::Layer;
-use crate::layer_type::LayerType;
+use crate::layer::LinkLayer;
+use crate::packet_quin::{L1Packet, L2Packet, QuinPacket, QuinPacketOptions};
+
+use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct MacAddress(pub [u8; 6]);
@@ -24,31 +25,6 @@ pub struct EthernetHeader {
     pub link_type: u16,
 }
 
-impl Header for EthernetHeader {
-    // refs: https://en.wikipedia.org/wiki/EtherType
-    fn get_payload(&self) -> Option<LayerType> {
-        match self.link_type {
-            0x0800 => Some(LayerType::Ipv4),
-            0x86DD => Some(LayerType::Ipv6),
-            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-        }
-    }
-}
-
-pub fn parse_ethernet_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_ethernet_header(input)?;
-    let next = header.get_payload();
-    let layer = Layer::Ethernet(header);
-
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
-}
-
 pub fn parse_ethernet_header(input: &[u8]) -> nom::IResult<&[u8], EthernetHeader> {
     let (input, dst_mac) = mac_address(input)?;
     let (input, src_mac) = mac_address(input)?;
@@ -62,4 +38,44 @@ pub fn parse_ethernet_header(input: &[u8]) -> nom::IResult<&[u8], EthernetHeader
         link_type,
         },
     ))
+}
+
+pub(crate) fn parse_ethernet_layer(input: &[u8], options: QuinPacketOptions) -> QuinPacket {
+    let (input, eth_header) = match parse_ethernet_header(input) {
+        Ok(o) => o,
+        Err(_e) => {
+            return QuinPacket::L1(
+                L1Packet {
+                    remain: input,
+                    error: Some(ParseError::ParsingHeader),
+                }
+            )
+        }
+    };
+
+    if input.len() == 0 {
+        let link_layer = LinkLayer::Ethernet(eth_header);
+        return parse_l2_eof_layer(input, link_layer, options);
+    } 
+    // refs: https://en.wikipedia.org/wiki/EtherType
+    match eth_header.link_type {
+        0x0800 => {
+            let link_layer = LinkLayer::Ethernet(eth_header);
+            parse_ipv4_layer(input, link_layer, options)
+        },
+        0x86DD => {
+            let link_layer = LinkLayer::Ethernet(eth_header);
+            parse_ipv6_layer(input, link_layer, options)
+        },
+        _ => {
+            let link_layer = LinkLayer::Ethernet(eth_header);
+            return QuinPacket::L2(
+                L2Packet {
+                    link_layer,
+                    remain: input,
+                    error: Some(ParseError::UnknownPayload),
+                }
+            )
+        }
+    }
 }

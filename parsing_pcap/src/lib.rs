@@ -23,7 +23,6 @@ pub fn parse_pcap(path: &str) {
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
-                        parse_ethernet_vec_packet(&_b.data);
                         parse_ethernet_quin_packet(&_b.data);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
@@ -40,50 +39,35 @@ pub fn parse_pcap(path: &str) {
     println!("[-] number of blocks: {:?}\n", num_blocks);
 }
 
-fn parse_ethernet_vec_packet(input: &[u8]) {
-    // use protocols::HeaderTrait;
-    // use protocols::parsers::ethernet::EthernetHeader;
-    // use protocols::parsers_ts::ethernet::EthernetPacket;
-
-    // match EthernetHeader::parse(input) {
-    //     Ok((_input, header)) => {
-    //         println!("header: {:?}", header);
-    //     }
-    //     Err(e) => {
-    //         println!("parse error: {:?}", e);
-    //     }
-    // }
-
-    use protocols::*;
-
-    let parsers_map = parsers_map_init();
-    
-    let runtimer = Instant::now(); // 程序运行计时变量
-    let mut packet = VecPacket::new(input, VecPacketOptions::new());
-    packet.parse(parsers_map);
-    let time = runtimer.elapsed().as_secs_f64();
-
-    println!("layers: {:?}", packet.get_layers());
-    println!(" in {} seconds.", time);
-    // if let Some(&Layer::Ethernet(eth)) = packet.get_layer(LayerType::Ethernet) {
-    //     println!("Eth layer: {:?}", eth);
-    //     println!("Eth layer - dst_mac: {:?}", eth.dst_mac);
-    //     println!("Eth layer - src_mac: {:?}", eth.src_mac);
-    // }
-}
-
 fn parse_ethernet_quin_packet(input: &[u8]) {
     use protocols::*;
 
-    let parsers_map = parsers_map_init();
-
     let runtimer = Instant::now(); // 程序运行计时变量
-    let mut packet = QuinPacket::new(QuinPacketOptions::new(false));
-    packet.parse(parsers_map, input);
-    let time = runtimer.elapsed().as_secs_f64();
-
-    println!("packet: {:?}", packet);
-    println!("ips: {:?}", packet.get_ips());
-    println!("ports: {:?}", packet.get_ports());
-    println!(" in {} seconds.", time);
+    match parse_quin_enum_packet(input, QuinPacketOptions::default()) {
+        QuinPacket::L1(l1) => {
+            let time = runtimer.elapsed().as_secs_f64();
+            println!("  in time: {:?}", time);
+            println!("l1 packet: {:?}", l1);
+        },
+        QuinPacket::L2(l2) => {
+            let time = runtimer.elapsed().as_secs_f64();
+            println!("  in time: {:?}", time);
+            println!("l2 packet: {:?}", l2);
+        },
+        QuinPacket::L3(l3) => {
+            let time = runtimer.elapsed().as_secs_f64();
+            println!("  in time: {:?}", time);
+            println!("l3 packet: {:?}", l3);
+        },
+        QuinPacket::L4(l4) => {
+            let time = runtimer.elapsed().as_secs_f64();
+            println!("  in time: {:?}", time);
+            println!("l4 packet: {:?}", l4);
+        },
+        QuinPacket::L5(l5) => {
+            let time = runtimer.elapsed().as_secs_f64();
+            println!("  in time: {:?}", time);
+            println!("l5 packet: {:?}", l5);
+        },
+    };
 }

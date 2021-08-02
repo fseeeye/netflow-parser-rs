@@ -7,8 +7,12 @@ use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 use nom::error::Error;
 
-use crate::layer_type::LayerType;
-use crate::{Header, Layer};
+use crate::errors::ParseError;
+use crate::layer::{LinkLayer, NetworkLayer, TransportLayer, ApplicationLayer};
+use crate::packet_quin::{L4Packet, QuinPacket, QuinPacketOptions};
+
+use super::parse_l5_eof_layer;
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ModbusRspHeader<'a> {
@@ -16,11 +20,6 @@ pub struct ModbusRspHeader<'a> {
     pub pdu: PDU<'a>,
 }
 
-impl<'a> Header for ModbusRspHeader<'a> {
-    fn get_payload(&self) -> Option<LayerType> {
-        Some(LayerType::Eof)
-    }
-}
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct MbapHeader {
     pub transaction_id: u16,
@@ -487,32 +486,28 @@ fn parse_write_file_record_sub_request(input: &[u8]) -> IResult<&[u8], WriteFile
     ))
 }
 
-pub fn parse_modbus_rsp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_modbus_rsp_header(input)?;
-    let next = header.get_payload();
-    let layer = Layer::ModbusRsp(header);
-
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
-}
-
 pub fn parse_modbus_rsp_header(input: &[u8]) -> nom::IResult<&[u8], ModbusRspHeader> {
     let (input, mbap_header) = parse_mbap_header(input)?;
     let (input, pdu) = parse_pdu(input)?;
     Ok((input, ModbusRspHeader { mbap_header, pdu }))
 }
 
-// fn parse_modbus_rsp_payload(
-//     input: &[u8],
-//     _header: &ModbusRspHeader,
-// ) -> Option<LayerType> {
-//     match input.len() {
-//         0 => Some(LayerType::Eof),
-//         _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-//     }
-// }
+pub(crate) fn parse_modbus_rsp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_layer: NetworkLayer<'a>, trans_layer: TransportLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+    let (input, modbus_rsp) = match parse_modbus_rsp_header(input) {
+        Ok(o) => o,
+        Err(_e) => {
+            return QuinPacket::L4(
+                L4Packet {
+                    link_layer,
+                    net_layer,
+                    trans_layer,
+                    remain: input,
+                    error: Some(ParseError::ParsingHeader),
+                }
+            )
+        }
+    };
+
+    let app_layer = ApplicationLayer::ModbusRsp(modbus_rsp);
+    parse_l5_eof_layer(input, link_layer, net_layer, trans_layer, app_layer, options)
+}

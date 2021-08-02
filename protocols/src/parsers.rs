@@ -1,5 +1,4 @@
 mod eof;
-mod error;
 mod ethernet;
 mod ipv4;
 mod ipv6;
@@ -8,8 +7,7 @@ mod modbus_rsp;
 mod tcp;
 mod udp;
 
-pub use eof::*;
-pub use error::*;
+pub(crate) use eof::*;
 pub use ethernet::*;
 pub use ipv4::*;
 pub use ipv6::*;

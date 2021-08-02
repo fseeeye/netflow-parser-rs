@@ -7,9 +7,10 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, u8};
 use nom::sequence::tuple;
 
-// use crate::errors::ParseError;
-use crate::layer_type::LayerType;
-use crate::{Header, Layer};
+use crate::layer::{LinkLayer, NetworkLayer};
+use crate::packet_quin::{L2Packet, L3Packet, QuinPacket, QuinPacketOptions};
+use crate::errors::ParseError;
+use super::{parse_l3_eof_layer, parse_tcp_layer, parse_udp_layer};
 
 // refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -25,25 +26,11 @@ pub struct Ipv6Header<'a> {
     pub extension_headers: Option<&'a [u8]>,
 }
 
-impl<'a> Header for Ipv6Header<'a> {
-    fn get_payload(&self) -> Option<LayerType> {
-        unimplemented!()
-    }
-}
-
-pub fn parse_ipv6_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_ipv6_header(input)?;
-    let next = header.get_payload();
-    let layer = Layer::Ipv6(header);
-
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
-}
+// impl<'a> Header for Ipv6Header<'a> {
+//     fn get_payload(&self) -> Option<LayerType> {
+//         unimplemented!()
+//     }
+// }
 
 pub fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
     let (input, (version, traffic_class, flow_label)) =
@@ -85,10 +72,44 @@ fn address6(input: &[u8]) -> nom::IResult<&[u8], Ipv6Addr> {
     Ok((input, Ipv6Addr::from(<[u8; 16]>::try_from(ipv6).unwrap())))
 }
 
-// // refs: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
-// fn parse_ipv6_payload(
-//     _input: &[u8],
-//     _header: &Ipv6Header,
-// ) -> Option<LayerType> {
-//     unimplemented!();
-// }
+pub(crate) fn parse_ipv6_layer(input: &[u8], link_layer: LinkLayer, options: QuinPacketOptions) -> QuinPacket {
+    let (input, ipv6_header) = match parse_ipv6_header(input) {
+        Ok(o) => o,
+        Err(_e) => {
+            return QuinPacket::L2(
+                L2Packet {
+                    link_layer,
+                    remain: input,
+                    error: Some(ParseError::ParsingHeader),
+                }
+            )
+        }
+    };
+
+    if input.len() == 0 {
+        let net_layer = NetworkLayer::Ipv6(ipv6_header);
+        return parse_l3_eof_layer(input, link_layer, net_layer, options);
+    } 
+    // refs: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+    match ipv6_header.next_header {
+        0x06 => {
+            let net_layer = NetworkLayer::Ipv6(ipv6_header);
+            parse_tcp_layer(input, link_layer, net_layer, options)
+        },
+        0x11 => {
+            let net_layer = NetworkLayer::Ipv6(ipv6_header);
+            parse_udp_layer(input, link_layer, net_layer, options)
+        },
+        _ => {
+            let net_layer = NetworkLayer::Ipv6(ipv6_header);
+            return QuinPacket::L3(
+                L3Packet {
+                    link_layer,
+                    net_layer,
+                    remain: input,
+                    error: Some(ParseError::UnknownPayload),
+                }
+            )
+        },
+    }
+}

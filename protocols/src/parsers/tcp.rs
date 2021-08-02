@@ -6,7 +6,11 @@ use nom::sequence::tuple;
 
 use crate::errors::ParseError;
 use crate::layer_type::LayerType;
-use crate::{Header, Layer};
+use crate::Header;
+use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
+use crate::packet_quin::{L3Packet, L4Packet, QuinPacket, QuinPacketOptions};
+
+use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 
 // TCP Header Format
 //
@@ -67,20 +71,6 @@ impl<'a> Header for TcpHeader<'a> {
     }
 }
 
-pub fn parse_tcp_layer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_tcp_header(input)?;
-    let next = header.get_payload();
-    let layer = Layer::Tcp(header);
-
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
-}
-
 pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     let (input, src_port) = be_u16(input)?;
     let (input, dst_port) = be_u16(input)?;
@@ -120,18 +110,47 @@ pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     ))
 }
 
-// pub fn parse_tcp_payload(
-//     input: &[u8],
-//     _header: &TcpHeader,
-// ) -> Option<LayerType> {
-//     match input.len() {
-//         0 => Some(LayerType::Eof),
-//         _ => match _header.src_port {
-//             502 => Some(LayerType::ModbusRsp),
-//             _ => match _header.dst_port {
-//                 502 => Some(LayerType::ModbusReq),
-//                 _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-//             },
-//         },
-//     }
-// }
+pub(crate) fn parse_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_layer: NetworkLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+    let (input, tcp_header) = match parse_tcp_header(input) {
+        Ok(o) => o,
+        Err(_e) => {
+            return QuinPacket::L3(
+                L3Packet {
+                    link_layer,
+                    net_layer,
+                    remain: input,
+                    error: Some(ParseError::ParsingHeader),
+                }
+            )
+        }
+    };
+
+    if input.len() == 0 {
+        let trans_layer = TransportLayer::Tcp(tcp_header);
+        return parse_l4_eof_layer(input, link_layer, net_layer, trans_layer, options);
+    }
+    match tcp_header.src_port {
+        502 => {
+            let trans_layer = TransportLayer::Tcp(tcp_header);
+            parse_modbus_rsp_layer(input, link_layer, net_layer, trans_layer, options)
+        },
+        _ => match tcp_header.dst_port {
+            502 => {
+                let trans_layer = TransportLayer::Tcp(tcp_header);
+                parse_modbus_req_layer(input, link_layer, net_layer, trans_layer, options)
+            },
+            _ => {
+                let trans_layer = TransportLayer::Tcp(tcp_header);
+                return QuinPacket::L4(
+                    L4Packet {
+                        link_layer,
+                        net_layer,
+                        trans_layer,
+                        remain: input,
+                        error: Some(ParseError::UnknownPayload),
+                    }
+                )
+            },
+        },
+    }
+}
