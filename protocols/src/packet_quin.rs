@@ -51,7 +51,7 @@ pub struct L5Packet<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct QuinPacketOptions {
-    stop: Option<LayerType>,
+    pub stop: Option<LayerType>,
 }
 
 impl Default for QuinPacketOptions {

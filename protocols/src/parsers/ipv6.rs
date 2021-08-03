@@ -7,6 +7,7 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, u8};
 use nom::sequence::tuple;
 
+use crate::LayerType;
 use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_quin::{L2Packet, L3Packet, QuinPacket, QuinPacketOptions};
 use crate::errors::ParseError;
@@ -73,6 +74,8 @@ fn address6(input: &[u8]) -> nom::IResult<&[u8], Ipv6Addr> {
 }
 
 pub(crate) fn parse_ipv6_layer(input: &[u8], link_layer: LinkLayer, options: QuinPacketOptions) -> QuinPacket {
+    let current_layertype = LayerType::Ipv6;
+
     let (input, ipv6_header) = match parse_ipv6_header(input) {
         Ok(o) => o,
         Err(_e) => {
@@ -84,6 +87,17 @@ pub(crate) fn parse_ipv6_layer(input: &[u8], link_layer: LinkLayer, options: Qui
             )
         }
     };
+
+    if Some(current_layertype) == options.stop {
+        let net_layer = NetworkLayer::Ipv6(ipv6_header);
+        return QuinPacket::L3(
+            L3Packet {
+                link_layer,
+                net_layer,
+                error: None,
+            }
+        )
+    }
 
     if input.len() == 0 {
         let net_layer = NetworkLayer::Ipv6(ipv6_header);

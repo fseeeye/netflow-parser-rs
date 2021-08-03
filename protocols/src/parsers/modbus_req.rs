@@ -4,9 +4,10 @@ use nom::multi::count;
 use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 
+use crate::LayerType;
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer, ApplicationLayer};
-use crate::packet_quin::{L4Packet, QuinPacket, QuinPacketOptions};
+use crate::packet_quin::{L4Packet, L5Packet, QuinPacket, QuinPacketOptions};
 
 use super::parse_l5_eof_layer;
 
@@ -392,6 +393,8 @@ pub fn parse_modbus_req_header(input: &[u8]) -> nom::IResult<&[u8], ModbusReqHea
 }
 
 pub(crate) fn parse_modbus_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_layer: NetworkLayer<'a>, trans_layer: TransportLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+    let current_layertype = LayerType::ModbusReq;
+
     let (input, modbus_req) = match parse_modbus_req_header(input) {
         Ok(o) => o,
         Err(_e) => {
@@ -407,5 +410,18 @@ pub(crate) fn parse_modbus_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer,
     };
 
     let app_layer = ApplicationLayer::ModbusReq(modbus_req);
+
+    if Some(current_layertype) == options.stop {
+        return QuinPacket::L5(
+            L5Packet {
+                link_layer,
+                net_layer,
+                trans_layer,
+                app_layer,
+                error: None,
+            }
+        )
+    }
+
     parse_l5_eof_layer(input, link_layer, net_layer, trans_layer, app_layer, options)
 }

@@ -1,5 +1,6 @@
 use nom::number::complete::{be_u16};
 
+use crate::LayerType;
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_quin::{L3Packet, L4Packet, QuinPacket, QuinPacketOptions};
@@ -32,6 +33,8 @@ pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
 }
 
 pub(crate) fn parse_udp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_layer: NetworkLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+    let current_layertype = LayerType::Udp;
+
     let (input, udp_header) = match parse_udp_header(input) {
         Ok(o) => o,
         Err(_e) => {
@@ -44,6 +47,18 @@ pub(crate) fn parse_udp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_la
             )
         }
     };
+
+    if Some(current_layertype) == options.stop {
+        let trans_layer = TransportLayer::Udp(udp_header);
+        return QuinPacket::L4(
+            L4Packet {
+                link_layer,
+                net_layer,
+                trans_layer,
+                error: None,
+            }
+        )
+    }
 
     if input.len() == 0 {
         let trans_layer = TransportLayer::Udp(udp_header);

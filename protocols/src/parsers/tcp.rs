@@ -4,6 +4,7 @@ use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, be_u32};
 use nom::sequence::tuple;
 
+use crate::LayerType;
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_quin::{L3Packet, L4Packet, QuinPacket, QuinPacketOptions};
@@ -41,7 +42,6 @@ use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 //    RST:  Reset the connection
 //    SYN:  Synchronize sequence numbers
 //    FIN:  No more data from sender
-
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct TcpHeader<'a> {
     pub src_port: u16,
@@ -97,6 +97,8 @@ pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
 }
 
 pub(crate) fn parse_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_layer: NetworkLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+    let current_layertype = LayerType::Tcp;
+
     let (input, tcp_header) = match parse_tcp_header(input) {
         Ok(o) => o,
         Err(_e) => {
@@ -109,6 +111,18 @@ pub(crate) fn parse_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, net_la
             )
         }
     };
+
+    if Some(current_layertype) == options.stop {
+        let trans_layer = TransportLayer::Tcp(tcp_header);
+        return QuinPacket::L4(
+            L4Packet {
+                link_layer,
+                net_layer,
+                trans_layer,
+                error: None,
+            }
+        )
+    }
 
     if input.len() == 0 {
         let trans_layer = TransportLayer::Tcp(tcp_header);
