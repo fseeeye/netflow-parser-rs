@@ -28,11 +28,20 @@ mod layer;
 mod layer_type;
 mod packet_level;
 mod packet_quin;
+mod packet_vec;
+mod parsers_map;
 mod parsers;
 mod traits;
 
 pub use errors::ParseError;
-pub use layer::{NetworkLayer, TransportLayer};
+pub use layer::{NetworkLayer, TransportLayer, Layer};
 pub use layer_type::LayerType;
+pub use packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 pub use packet_quin::{parse_quin_packet, QuinPacket, QuinPacketOptions};
+pub use packet_vec::{VecPacket, VecPacketOptions};
+pub use parsers_map::parsers_map_init;
 pub use traits::*;
+
+use std::collections::HashMap;
+type Parser = Box<dyn Fn(&[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)>>;
+type ParsersMap = HashMap<LayerType, Parser>;

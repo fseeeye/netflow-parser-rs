@@ -1,21 +1,42 @@
-// use nom::combinator::eof;
+use nom::combinator::eof;
 
+use crate::{Layer, LayerType};
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L2Packet, L3Packet, L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 
-// #[derive(Debug, PartialEq, Clone)]
-// pub struct EofHeader {
-//     pub end: bool,
-// }
+#[derive(Debug, PartialEq, Clone)]
+pub struct EofHeader;
 
-// pub(crate) fn parse_eof_header(input: &[u8]) -> nom::IResult<&[u8], EofHeader> {
-//     match eof::<_, ()>(input) {
-//         Ok((_input, _nullstr)) => Ok((input, EofHeader{ end: true })),
-//         Err(_e) => Ok((input, EofHeader{ end: false })),
-//     }
-// }
+pub(crate) fn parse_eof_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
+    let (input, header) = parse_eof_header(input)?;
+    let next = parse_eof_payload(input, &header);
+    let layer = Layer::Eof(header);
+
+    Ok((
+        input,
+        (
+            layer,
+            next
+        )
+    ))
+}
+
+fn parse_eof_header(input: &[u8]) -> nom::IResult<&[u8], EofHeader> {
+    Ok((input, EofHeader{}))
+}
+
+fn parse_eof_payload(
+    input: &[u8],
+    _header: &EofHeader,
+) -> Option<LayerType> {
+    match eof(input) {
+        Ok((_input, _nullstr)) => None,
+        Err(nom::Err::Error((_input, _))) => Some(LayerType::Error(ParseError::NotEndPayload)),
+        _ => Some(LayerType::Error(ParseError::ParsingPayload)),
+    }
+}
 
 pub(crate) fn parse_l2_eof_layer<'a>(
     input: &'a [u8],
@@ -26,11 +47,13 @@ pub(crate) fn parse_l2_eof_layer<'a>(
         return QuinPacket::L2(L2Packet {
             link_layer,
             error: None,
+            remain: input,
         });
     } else {
         return QuinPacket::L2(L2Packet {
             link_layer,
-            error: Some(ParseError::NotEndPayload(input)),
+            error: Some(ParseError::NotEndPayload),
+            remain: input,
         });
     }
 }
@@ -46,12 +69,14 @@ pub(crate) fn parse_l3_eof_layer<'a>(
             link_layer,
             net_layer,
             error: None,
+            remain: input,
         });
     } else {
         return QuinPacket::L3(L3Packet {
             link_layer,
             net_layer,
-            error: Some(ParseError::NotEndPayload(input)),
+            error: Some(ParseError::NotEndPayload),
+            remain: input,
         });
     }
 }
@@ -69,13 +94,15 @@ pub(crate) fn parse_l4_eof_layer<'a>(
             net_layer,
             trans_layer,
             error: None,
+            remain: input,
         });
     } else {
         return QuinPacket::L4(L4Packet {
             link_layer,
             net_layer,
             trans_layer,
-            error: Some(ParseError::NotEndPayload(input)),
+            error: Some(ParseError::NotEndPayload),
+            remain: input,
         });
     }
 }
@@ -95,6 +122,7 @@ pub(crate) fn parse_l5_eof_layer<'a>(
             trans_layer,
             app_layer,
             error: None,
+            remain: input,
         });
     } else {
         return QuinPacket::L5(L5Packet {
@@ -102,7 +130,8 @@ pub(crate) fn parse_l5_eof_layer<'a>(
             net_layer,
             trans_layer,
             app_layer,
-            error: Some(ParseError::NotEndPayload(input)),
+            error: Some(ParseError::NotEndPayload),
+            remain: input,
         });
     }
 }

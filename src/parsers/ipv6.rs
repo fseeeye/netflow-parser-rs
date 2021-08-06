@@ -12,7 +12,35 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::LayerType;
+use crate::{Layer, LayerType};
+
+pub fn parse_ipv6_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
+    let (input, header) = parse_ipv6_header(input)?;
+    let next = parse_ipv6_payload(input, &header);
+    let layer = Layer::Ipv6(header);
+
+    Ok((
+        input,
+        (
+            layer,
+            next
+        )
+    ))
+}
+
+fn parse_ipv6_payload(
+    input: &[u8],
+    _header: &Ipv6Header,
+) -> Option<LayerType> {
+    match input.len() {
+        0 => Some(LayerType::Eof),
+        _ => match _header.next_header {
+            0x06 => Some(LayerType::Tcp),
+            0x11 => Some(LayerType::Udp),
+            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+        },
+    }
+}
 
 // refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -80,7 +108,8 @@ pub(crate) fn parse_ipv6_layer(
         Err(_e) => {
             return QuinPacket::L2(L2Packet {
                 link_layer,
-                error: Some(ParseError::ParsingHeader(input)),
+                error: Some(ParseError::ParsingHeader),
+                remain: input,
             })
         }
     };
@@ -91,6 +120,7 @@ pub(crate) fn parse_ipv6_layer(
             link_layer,
             net_layer,
             error: None,
+            remain: input,
         });
     }
 
@@ -113,7 +143,8 @@ pub(crate) fn parse_ipv6_layer(
             return QuinPacket::L3(L3Packet {
                 link_layer,
                 net_layer,
-                error: Some(ParseError::UnknownPayload(input)),
+                error: Some(ParseError::UnknownPayload),
+                remain: input,
             });
         }
     }

@@ -11,7 +11,8 @@ use crate::{
 /// 仅针对解析link层错误的情况使用。
 #[derive(Debug)]
 pub struct L1Packet<'a> {
-    pub error: Option<ParseError<'a>>,
+    pub error: Option<ParseError>,
+    pub remain: &'a [u8],
 }
 
 /// L2Packet为一种包含link层信息的packet
@@ -19,7 +20,8 @@ pub struct L1Packet<'a> {
 #[derive(Debug)]
 pub struct L2Packet<'a> {
     pub link_layer: LinkLayer,
-    pub error: Option<ParseError<'a>>,
+    pub error: Option<ParseError>,
+    pub remain: &'a [u8],
 }
 
 impl<'a> LinkLevelPacket for L2Packet<'a> {
@@ -40,7 +42,8 @@ impl<'a> LinkLevelPacket for L2Packet<'a> {
 pub struct L3Packet<'a> {
     pub link_layer: LinkLayer,
     pub net_layer: NetworkLayer<'a>,
-    pub error: Option<ParseError<'a>>,
+    pub error: Option<ParseError>,
+    pub remain: &'a [u8],
 }
 
 impl<'a> LinkLevelPacket for L3Packet<'a> {
@@ -78,7 +81,8 @@ pub struct L4Packet<'a> {
     pub link_layer: LinkLayer,
     pub net_layer: NetworkLayer<'a>,
     pub trans_layer: TransportLayer<'a>,
-    pub error: Option<ParseError<'a>>,
+    pub error: Option<ParseError>,
+    pub remain: &'a [u8],
 }
 
 impl<'a> LinkLevelPacket for L4Packet<'a> {
@@ -133,7 +137,8 @@ pub struct L5Packet<'a> {
     pub net_layer: NetworkLayer<'a>,
     pub trans_layer: TransportLayer<'a>,
     pub app_layer: ApplicationLayer<'a>,
-    pub error: Option<ParseError<'a>>,
+    pub error: Option<ParseError>,
+    pub remain: &'a [u8],
 }
 
 impl<'a> LinkLevelPacket for L5Packet<'a> {

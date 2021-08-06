@@ -1,3 +1,5 @@
+use crate::ParseError;
+
 /// LayerType旨在用简单结构来表示协议类型
 /// * 协助判断解析出来的packet中各层是什么协议
 /// * 也用于options的stop字段说明该在哪一层停止
@@ -11,4 +13,5 @@ pub enum LayerType {
     ModbusRsp,
     Tcp,
     Udp,
+    Error(ParseError)
 }

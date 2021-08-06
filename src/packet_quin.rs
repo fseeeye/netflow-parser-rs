@@ -46,7 +46,7 @@ pub enum QuinPacket<'a> {
 /// ```
 /// parse_quin_packet(input, QuinPacketOptions::default())
 /// ```
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct QuinPacketOptions {
     pub stop: Option<LayerType>,
 }

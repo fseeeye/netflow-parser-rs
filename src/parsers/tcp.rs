@@ -8,7 +8,7 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L3Packet, L4Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::LayerType;
+use crate::{Layer, LayerType};
 
 use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 
@@ -43,6 +43,37 @@ use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 //    RST:  Reset the connection
 //    SYN:  Synchronize sequence numbers
 //    FIN:  No more data from sender
+
+pub fn parse_tcp_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
+    let (input, header) = parse_tcp_header(input)?;
+    let next = parse_tcp_payload(input, &header);
+    let layer = Layer::Tcp(header);
+
+    Ok((
+        input,
+        (
+            layer,
+            next
+        )
+    ))
+}
+
+fn parse_tcp_payload(
+    input: &[u8],
+    _header: &TcpHeader,
+) -> Option<LayerType> {
+    match input.len() {
+        0 => Some(LayerType::Eof),
+        _ => match _header.src_port {
+            502 => Some(LayerType::ModbusRsp),
+            _ => match _header.dst_port {
+                502 => Some(LayerType::ModbusReq),
+                _ => Some(LayerType::Error(ParseError::UnknownPayload)),
+            },
+        },
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct TcpHeader<'a> {
     pub src_port: u16,
@@ -111,7 +142,8 @@ pub(crate) fn parse_tcp_layer<'a>(
             return QuinPacket::L3(L3Packet {
                 link_layer,
                 net_layer,
-                error: Some(ParseError::ParsingHeader(input)),
+                error: Some(ParseError::ParsingHeader),
+                remain: input,
             })
         }
     };
@@ -123,6 +155,7 @@ pub(crate) fn parse_tcp_layer<'a>(
             net_layer,
             trans_layer,
             error: None,
+            remain: input,
         });
     }
 
@@ -146,7 +179,8 @@ pub(crate) fn parse_tcp_layer<'a>(
                     link_layer,
                     net_layer,
                     trans_layer,
-                    error: Some(ParseError::UnknownPayload(input)),
+                    error: Some(ParseError::UnknownPayload),
+                    remain: input,
                 });
             }
         },

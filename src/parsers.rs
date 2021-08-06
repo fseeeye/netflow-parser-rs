@@ -1,4 +1,5 @@
 mod eof;
+mod error;
 mod ethernet;
 mod ipv4;
 mod ipv6;
@@ -15,3 +16,4 @@ pub use modbus_req::*;
 pub use modbus_rsp::*;
 pub use tcp::*;
 pub use udp::*;
+pub use error::*;

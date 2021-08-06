@@ -13,8 +13,9 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
-        "/Users/fseeeye/Downloads/ipv4-options.pcap",
-        "/Users/fseeeye/Desktop/pcap/ICS/modbus/test/mod_2.pcap",
+        "../pcap/ip/ipv4-options.pcap",
+        "../pcap/ICS/modbus/test/mod_2.pcap",
+        // "./benches/modbus_fins_test.pcap",
     ];
 
     for path in paths.iter() {
@@ -42,7 +43,7 @@ fn main() {
                 .collect();
             for entry in files {
                 let file_path = entry.path().to_str().unwrap(); // Warning: unhandle error.
-                                                                // ref: https://stackoverflow.com/questions/45291832/extracting-a-file-extension-from-a-given-path-in-rust-idiomatically
+                // ref: https://stackoverflow.com/questions/45291832/extracting-a-file-extension-from-a-given-path-in-rust-idiomatically
                 if let Some("pcap") = Path::new(file_path).extension().and_then(OsStr::to_str) {
                     println!(
                         "[*] Parsing Sub File: {} of {}",
@@ -76,6 +77,7 @@ pub fn parse_pcap(path: &str) {
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
+                        println!("{:?}", &_b.data);
                         parse_ethernet_quin_packet(&_b.data);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
