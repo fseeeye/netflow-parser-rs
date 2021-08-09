@@ -1,3 +1,17 @@
+## [0.3.3](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.2...v0.3.3) (2021-08-09)
+
+
+### Features
+
+* **benches:** add benchmark feature ([8faac3d](https://gitee.com/BoleanTech/parsing-rs/commits/8faac3d9f167897acdc3b1180a1c7b59e9916dd2))
+
+
+### Reverts
+
+* delete VecPacket & ParsersMap ([b492f2c](https://gitee.com/BoleanTech/parsing-rs/commits/b492f2c8f27eb955229f91d707179939d55689d2))
+
+
+
 ## [0.3.2](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.1...v0.3.2) (2021-08-03)
 
 

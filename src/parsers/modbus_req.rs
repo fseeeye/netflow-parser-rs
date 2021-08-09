@@ -8,7 +8,7 @@ use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{LayerType};
+use crate::LayerType;
 
 use super::parse_l5_eof_layer;
 

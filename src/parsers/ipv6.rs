@@ -12,7 +12,7 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{LayerType};
+use crate::LayerType;
 
 // refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]

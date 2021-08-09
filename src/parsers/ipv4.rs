@@ -11,7 +11,7 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{LayerType};
+use crate::LayerType;
 
 use super::{parse_l3_eof_layer, parse_tcp_layer, parse_udp_layer};
 

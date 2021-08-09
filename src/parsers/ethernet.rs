@@ -1,5 +1,5 @@
 use nom::bytes::complete::take;
-use nom::number::complete::{be_u16};
+use nom::number::complete::be_u16;
 
 use std::convert::TryFrom;
 
@@ -7,7 +7,7 @@ use crate::errors::ParseError;
 use crate::layer::LinkLayer;
 use crate::packet_level::{L1Packet, L2Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{LayerType};
+use crate::LayerType;
 
 use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer};
 

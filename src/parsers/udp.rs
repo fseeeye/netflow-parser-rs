@@ -4,7 +4,7 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L3Packet, L4Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{LayerType};
+use crate::LayerType;
 
 use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 
