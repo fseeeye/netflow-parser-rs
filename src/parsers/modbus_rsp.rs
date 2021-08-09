@@ -11,24 +11,9 @@ use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{Layer, LayerType};
+use crate::{LayerType};
 
 use super::parse_l5_eof_layer;
-
-pub fn parse_modbus_rsp_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_modbus_rsp_header(input)?;
-    let next = parse_modbus_rsp_payload(input, &header);
-    let layer = Layer::ModbusRsp(header);
-
-    Ok((input, (layer, next)))
-}
-
-fn parse_modbus_rsp_payload(input: &[u8], _header: &ModbusRspHeader) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-    }
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ModbusRspHeader<'a> {

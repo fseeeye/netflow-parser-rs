@@ -7,5 +7,4 @@ pub enum ParseError {
     ParsingPayload,
     UnknownPayload,
     NotEndPayload,
-    UnregisteredParser, // only for packet which use parsers_map
 }

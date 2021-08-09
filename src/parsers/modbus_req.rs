@@ -8,24 +8,9 @@ use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{Layer, LayerType};
+use crate::{LayerType};
 
 use super::parse_l5_eof_layer;
-
-pub fn parse_modbus_req_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_modbus_req_header(input)?;
-    let next = parse_modbus_req_payload(input, &header);
-    let layer = Layer::ModbusReq(header);
-
-    Ok((input, (layer, next)))
-}
-
-fn parse_modbus_req_payload(input: &[u8], _header: &ModbusReqHeader) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-    }
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ModbusReqHeader<'a> {

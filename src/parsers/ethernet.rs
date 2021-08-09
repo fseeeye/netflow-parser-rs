@@ -1,6 +1,5 @@
 use nom::bytes::complete::take;
-use nom::combinator::peek;
-use nom::number::complete::{be_u16, u8};
+use nom::number::complete::{be_u16};
 
 use std::convert::TryFrom;
 
@@ -8,34 +7,9 @@ use crate::errors::ParseError;
 use crate::layer::LinkLayer;
 use crate::packet_level::{L1Packet, L2Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{Layer, LayerType};
+use crate::{LayerType};
 
 use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer};
-
-pub fn parse_ethernet_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_ethernet_header(input)?;
-    let next = parse_ethernet_payload(input, &header);
-    let layer = Layer::Ethernet(header);
-
-    Ok((input, (layer, next)))
-}
-
-fn parse_ethernet_payload(input: &[u8], _header: &EthernetHeader) -> Option<LayerType> {
-    let (input, version) = match peek(u8)(input) {
-        Ok((input, version)) => (input, version),
-        Err(nom::Err::Error((_, _))) => return Some(LayerType::Error(ParseError::ParsingPayload)),
-        _ => return Some(LayerType::Error(ParseError::ParsingPayload)),
-    };
-
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => match version >> 4 {
-            0x04 => Some(LayerType::Ipv4),
-            0x06 => Some(LayerType::Ipv6),
-            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-        },
-    }
-}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct MacAddress(pub [u8; 6]);

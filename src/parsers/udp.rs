@@ -4,24 +4,9 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L3Packet, L4Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{Layer, LayerType};
+use crate::{LayerType};
 
 use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
-
-pub fn parse_udp_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_udp_header(input)?;
-    let next = parse_udp_payload(input, &header);
-    let layer = Layer::Udp(header);
-
-    Ok((input, (layer, next)))
-}
-
-fn parse_udp_payload(input: &[u8], _header: &UdpHeader) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-    }
-}
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct UdpHeader {

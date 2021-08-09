@@ -11,29 +11,9 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{Layer, LayerType};
+use crate::{LayerType};
 
 use super::{parse_l3_eof_layer, parse_tcp_layer, parse_udp_layer};
-
-pub fn parse_ipv4_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_ipv4_header(input)?;
-    let next = parse_ipv4_payload(input, &header);
-    let layer = Layer::Ipv4(header);
-
-    Ok((input, (layer, next)))
-}
-
-fn parse_ipv4_payload(input: &[u8], _header: &Ipv4Header) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => match _header.protocol {
-            // ref: https://www.ietf.org/rfc/rfc790.txt
-            0x06 => Some(LayerType::Tcp),
-            0x11 => Some(LayerType::Udp),
-            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-        },
-    }
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Ipv4Header<'a> {

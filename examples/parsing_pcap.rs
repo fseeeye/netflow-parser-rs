@@ -77,7 +77,6 @@ pub fn parse_pcap(path: &str) {
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
-                        println!("{:?}", &_b.data);
                         parse_ethernet_quin_packet(&_b.data);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
@@ -97,6 +96,7 @@ pub fn parse_pcap(path: &str) {
 fn parse_ethernet_quin_packet(input: &[u8]) {
     use parsing_rs::*;
 
+    println!("{:?}", &input);
     let runtimer = Instant::now(); // 程序运行计时变量
     match parse_quin_packet(input, QuinPacketOptions::default()) {
         QuinPacket::L1(l1) => {
@@ -128,8 +128,7 @@ fn parse_ethernet_quin_packet(input: &[u8]) {
         QuinPacket::L5(l5) => {
             let time = runtimer.elapsed().as_secs_f64();
             println!("l5 packet: {:?}", l5);
-            println!("l5 dst mac: {:?}", l5.get_dst_mac());
-            println!("l5 src mac: {:?}", l5.get_src_mac());
+            println!("l5 app_layer: {:?}", l5.app_layer);
             println!("  in time: {:?}", time);
         }
     };

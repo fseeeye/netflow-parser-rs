@@ -12,26 +12,7 @@ use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
-use crate::{Layer, LayerType};
-
-pub fn parse_ipv6_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<LayerType>)> {
-    let (input, header) = parse_ipv6_header(input)?;
-    let next = parse_ipv6_payload(input, &header);
-    let layer = Layer::Ipv6(header);
-
-    Ok((input, (layer, next)))
-}
-
-fn parse_ipv6_payload(input: &[u8], _header: &Ipv6Header) -> Option<LayerType> {
-    match input.len() {
-        0 => Some(LayerType::Eof),
-        _ => match _header.next_header {
-            0x06 => Some(LayerType::Tcp),
-            0x11 => Some(LayerType::Udp),
-            _ => Some(LayerType::Error(ParseError::UnknownPayload)),
-        },
-    }
-}
+use crate::{LayerType};
 
 // refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]
