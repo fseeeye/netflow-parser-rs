@@ -20,19 +20,10 @@ pub fn parse_modbus_rsp_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Op
     let next = parse_modbus_rsp_payload(input, &header);
     let layer = Layer::ModbusRsp(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_modbus_rsp_payload(
-    input: &[u8],
-    _header: &ModbusRspHeader,
-) -> Option<LayerType> {
+fn parse_modbus_rsp_payload(input: &[u8], _header: &ModbusRspHeader) -> Option<LayerType> {
     match input.len() {
         0 => Some(LayerType::Eof),
         _ => Some(LayerType::Error(ParseError::UnknownPayload)),

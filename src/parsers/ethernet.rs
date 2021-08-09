@@ -17,24 +17,13 @@ pub fn parse_ethernet_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Opti
     let next = parse_ethernet_payload(input, &header);
     let layer = Layer::Ethernet(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_ethernet_payload(
-    input: &[u8],
-    _header: &EthernetHeader,
-) -> Option<LayerType> {
+fn parse_ethernet_payload(input: &[u8], _header: &EthernetHeader) -> Option<LayerType> {
     let (input, version) = match peek(u8)(input) {
         Ok((input, version)) => (input, version),
-        Err(nom::Err::Error((_, _))) => {
-            return Some(LayerType::Error(ParseError::ParsingPayload))
-        },
+        Err(nom::Err::Error((_, _))) => return Some(LayerType::Error(ParseError::ParsingPayload)),
         _ => return Some(LayerType::Error(ParseError::ParsingPayload)),
     };
 

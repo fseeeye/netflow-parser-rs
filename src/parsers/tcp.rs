@@ -49,19 +49,10 @@ pub fn parse_tcp_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<La
     let next = parse_tcp_payload(input, &header);
     let layer = Layer::Tcp(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_tcp_payload(
-    input: &[u8],
-    _header: &TcpHeader,
-) -> Option<LayerType> {
+fn parse_tcp_payload(input: &[u8], _header: &TcpHeader) -> Option<LayerType> {
     match input.len() {
         0 => Some(LayerType::Eof),
         _ => match _header.src_port {

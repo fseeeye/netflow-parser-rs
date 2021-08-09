@@ -20,19 +20,10 @@ pub fn parse_ipv4_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<L
     let next = parse_ipv4_payload(input, &header);
     let layer = Layer::Ipv4(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_ipv4_payload(
-    input: &[u8],
-    _header: &Ipv4Header,
-) -> Option<LayerType> {
+fn parse_ipv4_payload(input: &[u8], _header: &Ipv4Header) -> Option<LayerType> {
     match input.len() {
         0 => Some(LayerType::Eof),
         _ => match _header.protocol {

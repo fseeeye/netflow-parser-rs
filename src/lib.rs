@@ -29,12 +29,12 @@ mod layer_type;
 mod packet_level;
 mod packet_quin;
 mod packet_vec;
-mod parsers_map;
 mod parsers;
+mod parsers_map;
 mod traits;
 
 pub use errors::ParseError;
-pub use layer::{NetworkLayer, TransportLayer, Layer};
+pub use layer::{Layer, NetworkLayer, TransportLayer};
 pub use layer_type::LayerType;
 pub use packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 pub use packet_quin::{parse_quin_packet, QuinPacket, QuinPacketOptions};

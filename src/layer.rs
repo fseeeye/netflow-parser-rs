@@ -1,5 +1,5 @@
-use crate::parsers::*;
 use crate::layer_type::LayerType;
+use crate::parsers::*;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Layer<'a> {
@@ -29,11 +29,11 @@ impl<'a> FatLayer<'a> {
     }
 
     pub fn get_type(&self) -> LayerType {
-        return self.ltype
+        return self.ltype;
     }
 
     pub fn get_layer(&self) -> &Layer {
-        return &self.nlayer
+        return &self.nlayer;
     }
 }
 

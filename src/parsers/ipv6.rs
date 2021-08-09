@@ -19,19 +19,10 @@ pub fn parse_ipv6_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<L
     let next = parse_ipv6_payload(input, &header);
     let layer = Layer::Ipv6(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_ipv6_payload(
-    input: &[u8],
-    _header: &Ipv6Header,
-) -> Option<LayerType> {
+fn parse_ipv6_payload(input: &[u8], _header: &Ipv6Header) -> Option<LayerType> {
     match input.len() {
         0 => Some(LayerType::Eof),
         _ => match _header.next_header {

@@ -43,7 +43,7 @@ fn main() {
                 .collect();
             for entry in files {
                 let file_path = entry.path().to_str().unwrap(); // Warning: unhandle error.
-                // ref: https://stackoverflow.com/questions/45291832/extracting-a-file-extension-from-a-given-path-in-rust-idiomatically
+                                                                // ref: https://stackoverflow.com/questions/45291832/extracting-a-file-extension-from-a-given-path-in-rust-idiomatically
                 if let Some("pcap") = Path::new(file_path).extension().and_then(OsStr::to_str) {
                     println!(
                         "[*] Parsing Sub File: {} of {}",

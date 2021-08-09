@@ -9,6 +9,7 @@ mod tcp;
 mod udp;
 
 pub(crate) use eof::*;
+pub use error::*;
 pub use ethernet::*;
 pub use ipv4::*;
 pub use ipv6::*;
@@ -16,4 +17,3 @@ pub use modbus_req::*;
 pub use modbus_rsp::*;
 pub use tcp::*;
 pub use udp::*;
-pub use error::*;

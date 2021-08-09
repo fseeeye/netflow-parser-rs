@@ -13,19 +13,10 @@ pub fn parse_udp_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Option<La
     let next = parse_udp_payload(input, &header);
     let layer = Layer::Udp(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_udp_payload(
-    input: &[u8],
-    _header: &UdpHeader,
-) -> Option<LayerType> {
+fn parse_udp_payload(input: &[u8], _header: &UdpHeader) -> Option<LayerType> {
     match input.len() {
         0 => Some(LayerType::Eof),
         _ => Some(LayerType::Error(ParseError::UnknownPayload)),

@@ -1,10 +1,10 @@
 use nom::combinator::eof;
 
-use crate::{Layer, LayerType};
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet_level::{L2Packet, L3Packet, L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
+use crate::{Layer, LayerType};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct EofHeader;
@@ -14,23 +14,14 @@ pub(crate) fn parse_eof_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Op
     let next = parse_eof_payload(input, &header);
     let layer = Layer::Eof(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
 fn parse_eof_header(input: &[u8]) -> nom::IResult<&[u8], EofHeader> {
-    Ok((input, EofHeader{}))
+    Ok((input, EofHeader {}))
 }
 
-fn parse_eof_payload(
-    input: &[u8],
-    _header: &EofHeader,
-) -> Option<LayerType> {
+fn parse_eof_payload(input: &[u8], _header: &EofHeader) -> Option<LayerType> {
     match eof(input) {
         Ok((_input, _nullstr)) => None,
         Err(nom::Err::Error((_input, _))) => Some(LayerType::Error(ParseError::NotEndPayload)),

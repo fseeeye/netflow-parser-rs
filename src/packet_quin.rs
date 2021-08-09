@@ -7,7 +7,7 @@ use crate::LayerType;
 /// QuinPacket是一种层级结构的packet，使用示例如下：
 /// ```
 /// use parsing_rs::*;
-/// 
+///
 /// match parse_quin_packet(input, QuinPacketOptions::default()) {
 ///     QuinPacket::L1(l1) => {
 ///         println!("l1 packet: {:?}", l1);

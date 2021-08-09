@@ -13,5 +13,5 @@ pub enum LayerType {
     ModbusRsp,
     Tcp,
     Udp,
-    Error(ParseError)
+    Error(ParseError),
 }

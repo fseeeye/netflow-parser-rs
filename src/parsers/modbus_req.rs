@@ -17,19 +17,10 @@ pub fn parse_modbus_req_fatlayer(input: &[u8]) -> nom::IResult<&[u8], (Layer, Op
     let next = parse_modbus_req_payload(input, &header);
     let layer = Layer::ModbusReq(header);
 
-    Ok((
-        input,
-        (
-            layer,
-            next
-        )
-    ))
+    Ok((input, (layer, next)))
 }
 
-fn parse_modbus_req_payload(
-    input: &[u8],
-    _header: &ModbusReqHeader,
-) -> Option<LayerType> {
+fn parse_modbus_req_payload(input: &[u8], _header: &ModbusReqHeader) -> Option<LayerType> {
     match input.len() {
         0 => Some(LayerType::Eof),
         _ => Some(LayerType::Error(ParseError::UnknownPayload)),

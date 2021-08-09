@@ -1,22 +1,30 @@
 use crate::errors::ParseError;
-use crate::layer::{Layer, FatLayer};
+use crate::layer::{FatLayer, Layer};
 use crate::layer_type::LayerType;
 use crate::ParsersMap;
 
-
+/// VecPacketOptions为VecPacket的解析选项，提供多种解析特性。
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct VecPacketOptions {
-    stop: Option<LayerType>
+    stop: Option<LayerType>,
 }
 
 impl VecPacketOptions {
     pub fn new() -> Self {
-        Self {
-            stop: None,
-        }
+        Self { stop: None }
     }
 }
 
+/// VecPacket是一种使用Vec存储层级Layer的包结构
+/// 使用方法如下：
+/// ```
+/// let parsers_map = parsers_map_init();
+/// let mut packet = VecPacket::new(input, VecPacketOptions::new());
+/// packet.parse(&parsers_map);
+/// if let Some(&Layer::Ethernet(eth)) = packet.get_layer(LayerType::Ethernet) {
+///     eth.dst_mac;
+/// }
+/// ```
 #[derive(Debug)]
 pub struct VecPacket<'a> {
     input: &'a [u8],
@@ -29,7 +37,7 @@ impl<'a> VecPacket<'a> {
     pub fn new(input: &'a [u8], options: VecPacketOptions) -> Self {
         Self {
             input,
-            layers: vec!(),
+            layers: vec![],
             next: Some(LayerType::Ethernet),
             options,
         }
@@ -49,15 +57,16 @@ impl<'a> VecPacket<'a> {
                             self.input = input;
                             self.push_layer(FatLayer::new(old_next.clone(), nlayer));
                             self.next = new_next; // Tips: next layer might be `Unknow / NomPeek`
-                        },
+                        }
                         // Error occurred: parsing next layer. update self.next to ParseError::Parsing
                         Err(_) => {
                             // eprintln!("[!] Parsing Error `{:?}` at Layer `{:?}`", e, old_next);
                             // break;
                             self.next = Some(LayerType::Error(ParseError::ParsingHeader));
-                        },
+                        }
                     };
-                } else { // Error occurred: Can't find parser correspond to self.next
+                } else {
+                    // Error occurred: Can't find parser correspond to self.next
                     // eprintln!("[!] Don't register any parser for Layer `{:?}`", old_next);
                     // break;
                     self.next = Some(LayerType::Error(ParseError::UnregisteredParser));
@@ -71,7 +80,7 @@ impl<'a> VecPacket<'a> {
     pub fn get_layer(&self, layer_type: LayerType) -> Option<&Layer> {
         for layer in self.layers.iter() {
             if layer_type == layer.get_type() {
-                return Some(layer.get_layer())
+                return Some(layer.get_layer());
             }
         }
         None
