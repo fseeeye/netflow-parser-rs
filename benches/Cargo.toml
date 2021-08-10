@@ -2,15 +2,18 @@
 name = "benches"
 version = "0.3.0"
 edition = "2018"
+links = "pypkt"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dev-dependencies]
 # bench
 criterion = "0.3"
 parsing_rs = { path = "../"}
 # required by parsing bench
 pcap-parser = "0.11.1"
+
+[build-dependencies]
+bindgen = "0.59.1"
 
 [[bench]]
 name = "my_test"
