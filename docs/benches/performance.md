@@ -35,13 +35,13 @@ cargo criterion --bench parsing --all-features
 
 ## Pcap 10000 (Modbus)
 测试用例采用应用层协议以ModbusTcp为主的Pcap进行测试。
-* Parsing-rs(QuinPacket): about 2.5 ms (含读取pcap的损耗)
-* Parsing-rs(VecPacket): about 6.5 ms (含读取pcap的损耗)
-* [gopacket](https://github.com/google/gopacket)(PacketDecode): about 10.2ms (不含读取pcap的损耗)
-* [gopacket](https://github.com/google/gopacket)(LayerDecode): about 2.7ms (不含读取pcap的损耗)
+* Parsing-rs(QuinPacket): about 2.5 ms / 4000000 TEU (含读取pcap的损耗)
+* Parsing-rs(VecPacket): about 6.5 ms / 1540000 TEU (含读取pcap的损耗)
+* [gopacket](https://github.com/google/gopacket)(PacketDecode): about 10.2ms / 980000 TEU (不含读取pcap的损耗)
+* [gopacket](https://github.com/google/gopacket)(LayerDecode): about 2.7ms / 3700000 TEU (不含读取pcap的损耗)
 
 ## Packet 1 (Modbus)
 测试用例采用硬编码u8 slice的Modbus Packet。
-* QuinPacket: about 180 ns
-* VecPacket: about 640 ns
-* [pypkt](https://gitee.com/bolean-tech/bolean-pypkt-c/): about 2.0 µs
+* QuinPacket: about 180 ns / 5550000 TEU
+* VecPacket: about 640 ns / 1560000 TEU
+* [pypkt](https://gitee.com/bolean-tech/bolean-pypkt-c/): about 2.0 µs / 500000 TEU
