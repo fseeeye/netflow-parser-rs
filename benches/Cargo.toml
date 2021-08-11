@@ -16,7 +16,7 @@ pcap-parser = "0.11.1"
 bindgen = "0.59.1"
 
 [[bench]]
-name = "my_test"
+name = "demo"
 path = "benches/demo/demo.rs"
 harness = false
 
