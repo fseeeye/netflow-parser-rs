@@ -3,7 +3,7 @@ use std::net::IpAddr;
 use crate::{
     errors::ParseError,
     layer::{ApplicationLayer, LinkLayer},
-    parsers::MacAddress,
+    field_type::MacAddress,
     LinkLevelPacket, NetLevelPacket, NetworkLayer, TransLevelPacket, TransportLayer,
 };
 
@@ -24,15 +24,20 @@ pub struct L2Packet<'a> {
     pub remain: &'a [u8],
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> LinkLevelPacket for L2Packet<'a> {
-    fn get_dst_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.dst_mac
+    fn get_dst_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
+            _ => None
+        }
     }
 
-    fn get_src_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.src_mac
+    fn get_src_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
+            _ => None
+        }
     }
 }
 
@@ -41,35 +46,43 @@ impl<'a> LinkLevelPacket for L2Packet<'a> {
 #[derive(Debug)]
 pub struct L3Packet<'a> {
     pub link_layer: LinkLayer,
-    pub net_layer: NetworkLayer<'a>,
+    pub network_layer: NetworkLayer<'a>,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> LinkLevelPacket for L3Packet<'a> {
-    fn get_dst_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.dst_mac
-    }
-
-    fn get_src_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.src_mac
-    }
-}
-
-impl<'a> NetLevelPacket for L3Packet<'a> {
-    fn get_dst_ip(&self) -> std::net::IpAddr {
-        match &self.net_layer {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.dst_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.dst_ip),
+    fn get_dst_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
+            _ => None
         }
     }
 
-    fn get_src_ip(&self) -> IpAddr {
-        match &self.net_layer {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.src_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.src_ip),
+    fn get_src_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
+            _ => None
+        }
+    }
+}
+
+#[allow(unreachable_patterns)]
+impl<'a> NetLevelPacket for L3Packet<'a> {
+    fn get_dst_ip(&self) -> Option<IpAddr> {
+        match &self.network_layer {
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
+            _ => None,
+        }
+    }
+
+    fn get_src_ip(&self) -> Option<IpAddr> {
+        match &self.network_layer {
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
+            _ => None,
         }
     }
 }
@@ -79,52 +92,63 @@ impl<'a> NetLevelPacket for L3Packet<'a> {
 #[derive(Debug)]
 pub struct L4Packet<'a> {
     pub link_layer: LinkLayer,
-    pub net_layer: NetworkLayer<'a>,
-    pub trans_layer: TransportLayer<'a>,
+    pub network_layer: NetworkLayer<'a>,
+    pub transport_layer: TransportLayer<'a>,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> LinkLevelPacket for L4Packet<'a> {
-    fn get_dst_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.dst_mac
+    fn get_dst_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
+            _ => None
+        }
     }
 
-    fn get_src_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.src_mac
+    fn get_src_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
+            _ => None
+        }
     }
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> NetLevelPacket for L4Packet<'a> {
-    fn get_dst_ip(&self) -> std::net::IpAddr {
-        match &self.net_layer {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.dst_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.dst_ip),
+    fn get_dst_ip(&self) -> Option<IpAddr> {
+        match &self.network_layer {
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
+            _ => None,
         }
     }
 
-    fn get_src_ip(&self) -> IpAddr {
-        match &self.net_layer {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.src_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.src_ip),
+    fn get_src_ip(&self) -> Option<IpAddr> {
+        match &self.network_layer {
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
+            _ => None,
         }
     }
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> TransLevelPacket for L4Packet<'a> {
-    fn get_dst_port(&self) -> u16 {
-        match &self.trans_layer {
-            TransportLayer::Tcp(tcp) => tcp.dst_port,
-            TransportLayer::Udp(udp) => udp.dst_port,
+    fn get_dst_port(&self) -> Option<u16> {
+        match &self.transport_layer {
+            TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
+            TransportLayer::Udp(udp) => Some(udp.dst_port),
+            _ => None,
         }
     }
 
-    fn get_src_port(&self) -> u16 {
-        match &self.trans_layer {
-            TransportLayer::Tcp(tcp) => tcp.src_port,
-            TransportLayer::Udp(udp) => udp.src_port,
+    fn get_src_port(&self) -> Option<u16> {
+        match &self.transport_layer {
+            TransportLayer::Tcp(tcp) => Some(tcp.src_port),
+            TransportLayer::Udp(udp) => Some(udp.src_port),
+            _ => None,
         }
     }
 }
@@ -134,53 +158,64 @@ impl<'a> TransLevelPacket for L4Packet<'a> {
 #[derive(Debug)]
 pub struct L5Packet<'a> {
     pub link_layer: LinkLayer,
-    pub net_layer: NetworkLayer<'a>,
-    pub trans_layer: TransportLayer<'a>,
-    pub app_layer: ApplicationLayer<'a>,
+    pub network_layer: NetworkLayer<'a>,
+    pub transport_layer: TransportLayer<'a>,
+    pub application_layer: ApplicationLayer<'a>,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> LinkLevelPacket for L5Packet<'a> {
-    fn get_dst_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.dst_mac
+    fn get_dst_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
+            _ => None
+        }
     }
 
-    fn get_src_mac(&self) -> MacAddress {
-        let LinkLayer::Ethernet(eth) = &self.link_layer;
-        eth.src_mac
+    fn get_src_mac(&self) -> Option<MacAddress> {
+        match &self.link_layer {
+            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
+            _ => None
+        }
     }
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> NetLevelPacket for L5Packet<'a> {
-    fn get_dst_ip(&self) -> std::net::IpAddr {
-        match &self.net_layer {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.dst_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.dst_ip),
+    fn get_dst_ip(&self) -> Option<IpAddr> {
+        match &self.network_layer {
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
+            _ => None,
         }
     }
 
-    fn get_src_ip(&self) -> IpAddr {
-        match &self.net_layer {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.src_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.src_ip),
+    fn get_src_ip(&self) -> Option<IpAddr> {
+        match &self.network_layer {
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
+            _ => None,
         }
     }
 }
 
+#[allow(unreachable_patterns)]
 impl<'a> TransLevelPacket for L5Packet<'a> {
-    fn get_dst_port(&self) -> u16 {
-        match &self.trans_layer {
-            TransportLayer::Tcp(tcp) => tcp.dst_port,
-            TransportLayer::Udp(udp) => udp.dst_port,
+    fn get_dst_port(&self) -> Option<u16> {
+        match &self.transport_layer {
+            TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
+            TransportLayer::Udp(udp) => Some(udp.dst_port),
+            _ => None,
         }
     }
 
-    fn get_src_port(&self) -> u16 {
-        match &self.trans_layer {
-            TransportLayer::Tcp(tcp) => tcp.src_port,
-            TransportLayer::Udp(udp) => udp.src_port,
+    fn get_src_port(&self) -> Option<u16> {
+        match &self.transport_layer {
+            TransportLayer::Tcp(tcp) => Some(tcp.src_port),
+            TransportLayer::Udp(udp) => Some(udp.src_port),
+            _ => None,
         }
     }
 }

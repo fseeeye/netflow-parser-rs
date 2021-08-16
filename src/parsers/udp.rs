@@ -35,7 +35,7 @@ pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
 pub(crate) fn parse_udp_layer<'a>(
     input: &'a [u8],
     link_layer: LinkLayer,
-    net_layer: NetworkLayer<'a>,
+    network_layer: NetworkLayer<'a>,
     options: QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_layertype = LayerType::Udp;
@@ -45,7 +45,7 @@ pub(crate) fn parse_udp_layer<'a>(
         Err(_e) => {
             return QuinPacket::L3(L3Packet {
                 link_layer,
-                net_layer,
+                network_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
             })
@@ -53,36 +53,36 @@ pub(crate) fn parse_udp_layer<'a>(
     };
 
     if Some(current_layertype) == options.stop {
-        let trans_layer = TransportLayer::Udp(udp_header);
+        let transport_layer = TransportLayer::Udp(udp_header);
         return QuinPacket::L4(L4Packet {
             link_layer,
-            net_layer,
-            trans_layer,
+            network_layer,
+            transport_layer,
             error: None,
             remain: input,
         });
     }
 
     if input.len() == 0 {
-        let trans_layer = TransportLayer::Udp(udp_header);
-        return parse_l4_eof_layer(input, link_layer, net_layer, trans_layer, options);
+        let transport_layer = TransportLayer::Udp(udp_header);
+        return parse_l4_eof_layer(input, link_layer, network_layer, transport_layer, options);
     }
     match udp_header.src_port {
         502 => {
-            let trans_layer = TransportLayer::Udp(udp_header);
-            parse_modbus_rsp_layer(input, link_layer, net_layer, trans_layer, options)
+            let transport_layer = TransportLayer::Udp(udp_header);
+            parse_modbus_rsp_layer(input, link_layer, network_layer, transport_layer, options)
         }
         _ => match udp_header.dst_port {
             502 => {
-                let trans_layer = TransportLayer::Udp(udp_header);
-                parse_modbus_req_layer(input, link_layer, net_layer, trans_layer, options)
+                let transport_layer = TransportLayer::Udp(udp_header);
+                parse_modbus_req_layer(input, link_layer, network_layer, transport_layer, options)
             }
             _ => {
-                let trans_layer = TransportLayer::Udp(udp_header);
+                let transport_layer = TransportLayer::Udp(udp_header);
                 return QuinPacket::L4(L4Packet {
                     link_layer,
-                    net_layer,
-                    trans_layer,
+                    network_layer,
+                    transport_layer,
                     error: Some(ParseError::UnknownPayload),
                     remain: input,
                 });

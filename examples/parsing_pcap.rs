@@ -128,7 +128,7 @@ fn parse_ethernet_quin_packet(input: &[u8]) {
         QuinPacket::L5(l5) => {
             let time = runtimer.elapsed().as_secs_f64();
             println!("l5 packet: {:?}", l5);
-            println!("l5 app_layer: {:?}", l5.app_layer);
+            println!("l5 app_layer: {:?}", l5.application_layer);
             println!("  in time: {:?}", time);
         }
     };

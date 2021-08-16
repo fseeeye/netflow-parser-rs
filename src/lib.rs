@@ -30,6 +30,7 @@ mod packet_level;
 mod packet_quin;
 mod parsers;
 mod traits;
+pub mod field_type;
 
 pub use errors::ParseError;
 pub use layer::{NetworkLayer, TransportLayer};

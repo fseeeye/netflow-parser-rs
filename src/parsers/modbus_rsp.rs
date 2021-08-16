@@ -500,8 +500,8 @@ pub fn parse_modbus_rsp_header(input: &[u8]) -> nom::IResult<&[u8], ModbusRspHea
 pub(crate) fn parse_modbus_rsp_layer<'a>(
     input: &'a [u8],
     link_layer: LinkLayer,
-    net_layer: NetworkLayer<'a>,
-    trans_layer: TransportLayer<'a>,
+    network_layer: NetworkLayer<'a>,
+    transport_layer: TransportLayer<'a>,
     options: QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_layertype = LayerType::ModbusRsp;
@@ -511,22 +511,22 @@ pub(crate) fn parse_modbus_rsp_layer<'a>(
         Err(_e) => {
             return QuinPacket::L4(L4Packet {
                 link_layer,
-                net_layer,
-                trans_layer,
+                network_layer,
+                transport_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
             })
         }
     };
 
-    let app_layer = ApplicationLayer::ModbusRsp(modbus_rsp);
+    let application_layer = ApplicationLayer::ModbusRsp(modbus_rsp);
 
     if Some(current_layertype) == options.stop {
         return QuinPacket::L5(L5Packet {
             link_layer,
-            net_layer,
-            trans_layer,
-            app_layer,
+            network_layer,
+            transport_layer,
+            application_layer,
             error: None,
             remain: input,
         });
@@ -535,9 +535,9 @@ pub(crate) fn parse_modbus_rsp_layer<'a>(
     parse_l5_eof_layer(
         input,
         link_layer,
-        net_layer,
-        trans_layer,
-        app_layer,
+        network_layer,
+        transport_layer,
+        application_layer,
         options,
     )
 }

@@ -1,6 +1,3 @@
-use std::convert::TryFrom;
-use std::net::Ipv6Addr;
-
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::take;
@@ -13,6 +10,7 @@ use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
+use crate::field_type::*;
 
 // refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -62,12 +60,6 @@ pub fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
     ))
 }
 
-fn address6(input: &[u8]) -> nom::IResult<&[u8], Ipv6Addr> {
-    let (input, ipv6) = take(16u8)(input)?;
-
-    Ok((input, Ipv6Addr::from(<[u8; 16]>::try_from(ipv6).unwrap())))
-}
-
 pub(crate) fn parse_ipv6_layer(
     input: &[u8],
     link_layer: LinkLayer,
@@ -87,34 +79,34 @@ pub(crate) fn parse_ipv6_layer(
     };
 
     if Some(current_layertype) == options.stop {
-        let net_layer = NetworkLayer::Ipv6(ipv6_header);
+        let network_layer = NetworkLayer::Ipv6(ipv6_header);
         return QuinPacket::L3(L3Packet {
             link_layer,
-            net_layer,
+            network_layer,
             error: None,
             remain: input,
         });
     }
 
     if input.len() == 0 {
-        let net_layer = NetworkLayer::Ipv6(ipv6_header);
-        return parse_l3_eof_layer(input, link_layer, net_layer, options);
+        let network_layer = NetworkLayer::Ipv6(ipv6_header);
+        return parse_l3_eof_layer(input, link_layer, network_layer, options);
     }
     // refs: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
     match ipv6_header.next_header {
         0x06 => {
-            let net_layer = NetworkLayer::Ipv6(ipv6_header);
-            parse_tcp_layer(input, link_layer, net_layer, options)
+            let network_layer = NetworkLayer::Ipv6(ipv6_header);
+            parse_tcp_layer(input, link_layer, network_layer, options)
         }
         0x11 => {
-            let net_layer = NetworkLayer::Ipv6(ipv6_header);
-            parse_udp_layer(input, link_layer, net_layer, options)
+            let network_layer = NetworkLayer::Ipv6(ipv6_header);
+            parse_udp_layer(input, link_layer, network_layer, options)
         }
         _ => {
-            let net_layer = NetworkLayer::Ipv6(ipv6_header);
+            let network_layer = NetworkLayer::Ipv6(ipv6_header);
             return QuinPacket::L3(L3Packet {
                 link_layer,
-                net_layer,
+                network_layer,
                 error: Some(ParseError::UnknownPayload),
                 remain: input,
             });

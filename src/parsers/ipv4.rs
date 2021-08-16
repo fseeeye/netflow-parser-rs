@@ -1,6 +1,3 @@
-use std::convert::TryFrom;
-use std::net::Ipv4Addr;
-
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::take;
@@ -12,6 +9,7 @@ use crate::layer::{LinkLayer, NetworkLayer};
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
+use crate::field_type::*;
 
 use super::{parse_l3_eof_layer, parse_tcp_layer, parse_udp_layer};
 
@@ -79,15 +77,6 @@ pub fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
     ))
 }
 
-fn address4(input: &[u8]) -> nom::IResult<&[u8], Ipv4Addr> {
-    let (input, ipv4_addr) = take(4u8)(input)?;
-
-    Ok((
-        input,
-        Ipv4Addr::from(<[u8; 4]>::try_from(ipv4_addr).unwrap()),
-    ))
-}
-
 pub(crate) fn parse_ipv4_layer(
     input: &[u8],
     link_layer: LinkLayer,
@@ -107,34 +96,34 @@ pub(crate) fn parse_ipv4_layer(
     };
 
     if Some(current_layertype) == options.stop {
-        let net_layer = NetworkLayer::Ipv4(ipv4_header);
+        let network_layer = NetworkLayer::Ipv4(ipv4_header);
         return QuinPacket::L3(L3Packet {
             link_layer,
-            net_layer,
+            network_layer,
             error: None,
             remain: input,
         });
     }
 
     if input.len() == 0 {
-        let net_layer = NetworkLayer::Ipv4(ipv4_header);
-        return parse_l3_eof_layer(input, link_layer, net_layer, options);
+        let network_layer = NetworkLayer::Ipv4(ipv4_header);
+        return parse_l3_eof_layer(input, link_layer, network_layer, options);
     }
     // ref: https://www.ietf.org/rfc/rfc790.txt
     match ipv4_header.protocol {
         0x06 => {
-            let net_layer = NetworkLayer::Ipv4(ipv4_header);
-            parse_tcp_layer(input, link_layer, net_layer, options)
+            let network_layer = NetworkLayer::Ipv4(ipv4_header);
+            parse_tcp_layer(input, link_layer, network_layer, options)
         }
         0x11 => {
-            let net_layer = NetworkLayer::Ipv4(ipv4_header);
-            parse_udp_layer(input, link_layer, net_layer, options)
+            let network_layer = NetworkLayer::Ipv4(ipv4_header);
+            parse_udp_layer(input, link_layer, network_layer, options)
         }
         _ => {
-            let net_layer = NetworkLayer::Ipv4(ipv4_header);
+            let network_layer = NetworkLayer::Ipv4(ipv4_header);
             return QuinPacket::L3(L3Packet {
                 link_layer,
-                net_layer,
+                network_layer,
                 error: Some(ParseError::UnknownPayload),
                 remain: input,
             });

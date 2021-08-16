@@ -1,24 +1,13 @@
-use nom::bytes::complete::take;
 use nom::number::complete::be_u16;
-
-use std::convert::TryFrom;
 
 use crate::errors::ParseError;
 use crate::layer::LinkLayer;
 use crate::packet_level::{L1Packet, L2Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
+use crate::field_type::*;
 
 use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer};
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub struct MacAddress(pub [u8; 6]);
-
-fn mac_address(input: &[u8]) -> nom::IResult<&[u8], MacAddress> {
-    let (input, mac) = take(6usize)(input)?;
-
-    Ok((input, MacAddress(<[u8; 6]>::try_from(mac).unwrap()))) // Warning: unwarp unchecked
-}
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct EthernetHeader {
