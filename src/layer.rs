@@ -25,4 +25,8 @@ pub enum TransportLayer<'a> {
 pub enum ApplicationLayer<'a> {
     ModbusReq(ModbusReqHeader<'a>),
     ModbusRsp(ModbusRspHeader<'a>),
+    FinsTcpReq(FinsTcpReqHeader<'a>),
+    FinsTcpRsp(FinsTcpRspHeader<'a>),
+    FinsUdpReq(FinsUdpReqHeader<'a>),
+    FinsUdpRsp(FinsUdpRspHeader<'a>),
 }

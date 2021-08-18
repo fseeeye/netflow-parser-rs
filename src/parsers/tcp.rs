@@ -10,7 +10,7 @@ use crate::packet_level::{L3Packet, L4Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
 
-use super::{parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
+use super::{parse_fins_tcp_req_layer, parse_fins_tcp_rsp_layer, parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 
 // TCP Header Format
 //
@@ -137,10 +137,18 @@ pub(crate) fn parse_tcp_layer<'a>(
             let transport_layer = TransportLayer::Tcp(tcp_header);
             parse_modbus_rsp_layer(input, link_layer, network_layer, transport_layer, options)
         }
+        9600 => {
+            let transport_layer = TransportLayer::Tcp(tcp_header);
+            parse_fins_tcp_rsp_layer(input, link_layer, network_layer, transport_layer, options)
+        }
         _ => match tcp_header.dst_port {
             502 => {
                 let transport_layer = TransportLayer::Tcp(tcp_header);
                 parse_modbus_req_layer(input, link_layer, network_layer, transport_layer, options)
+            }
+            9600 => {
+                let transport_layer = TransportLayer::Tcp(tcp_header);
+                parse_fins_tcp_req_layer(input, link_layer, network_layer, transport_layer, options)
             }
             _ => {
                 let transport_layer = TransportLayer::Tcp(tcp_header);

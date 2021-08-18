@@ -278,16 +278,30 @@ fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = count(
-        parse_write_file_record_sub_request,
-        (byte_count as usize / 7 as usize) as usize,
-    )(input)?;
+    let (input, sub_requests) = get_sub_requests_with_write_file_record_sub_request(input, byte_count)?;
     Ok((
         input,
         Data::WriteFileRecord {
             byte_count,
             sub_requests,
         },
+    ))
+}
+
+fn get_sub_requests_with_write_file_record_sub_request(input: &[u8], byte_count: u8) -> IResult<&[u8], Vec<WriteFileRecordSubRequest>> {
+    let mut sub_requests = Vec::new();
+    let mut _sub_requests: WriteFileRecordSubRequest;
+    let mut input = input;
+    let len_flag = input.len() - byte_count as usize;
+
+    while input.len() > len_flag {
+        (input, _sub_requests) = parse_write_file_record_sub_request(input)?;
+        sub_requests.push(_sub_requests);
+    }
+
+    Ok((
+        input,
+        sub_requests
     ))
 }
 

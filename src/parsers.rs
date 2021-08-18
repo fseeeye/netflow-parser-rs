@@ -1,5 +1,9 @@
 mod eof;
 mod ethernet;
+mod fins_tcp_req;
+mod fins_tcp_rsp;
+mod fins_udp_req;
+mod fins_udp_rsp;
 mod ipv4;
 mod ipv6;
 mod modbus_req;
@@ -9,6 +13,10 @@ mod udp;
 
 pub(crate) use eof::*;
 pub use ethernet::*;
+pub use fins_tcp_req::*;
+pub use fins_tcp_rsp::*;
+pub use fins_udp_req::*;
+pub use fins_udp_rsp::*;
 pub use ipv4::*;
 pub use ipv6::*;
 pub use modbus_req::*;

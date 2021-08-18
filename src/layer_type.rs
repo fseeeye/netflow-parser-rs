@@ -7,6 +7,10 @@ use crate::ParseError;
 pub enum LayerType {
     Eof,
     Ethernet,
+    FinsTcpReq,
+    FinsTcpRsp,
+    FinsUdpReq,
+    FinsUdpRsp,
     Ipv4,
     Ipv6,
     ModbusReq,

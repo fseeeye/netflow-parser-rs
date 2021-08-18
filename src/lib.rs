@@ -23,6 +23,8 @@
 //! };
 //! ```
 //! 这仅仅是一个分级五元组Packet结构，我们将会支持更多种类数据结构的Packet以支持多元化使用场景。
+#![feature(destructuring_assignment)]
+
 mod errors;
 mod layer;
 mod layer_type;

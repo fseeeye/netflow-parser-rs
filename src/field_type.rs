@@ -1,6 +1,6 @@
 use nom::bytes::complete::take;
 use std::{convert::TryFrom};
-pub use std::net::{Ipv4Addr, Ipv6Addr};
+pub use std::net::{Ipv4Addr, Ipv6Addr, IpAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct MacAddress(pub [u8; 6]);
