@@ -1,3 +1,16 @@
+# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.4...v) (2021-08-18)
+
+
+
+## [0.3.4](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.3...v0.3.4) (2021-08-18)
+
+
+### Features
+
+* merge branch "vec-re" & "feature/fins" ([adb565f](https://gitee.com/BoleanTech/parsing-rs/commits/adb565f0d4a7b6947bc21e07b6277c471b7380b5))
+
+
+
 ## [0.3.3](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.2...v0.3.3) (2021-08-09)
 
 
