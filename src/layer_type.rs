@@ -11,6 +11,7 @@ pub enum LayerType {
     FinsTcpRsp,
     FinsUdpReq,
     FinsUdpRsp,
+	MMS,
     Ipv4,
     Ipv6,
     ModbusReq,

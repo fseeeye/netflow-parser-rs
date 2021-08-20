@@ -10,6 +10,7 @@ mod modbus_req;
 mod modbus_rsp;
 mod tcp;
 mod udp;
+mod mms;
 
 pub(crate) use eof::*;
 pub use ethernet::*;
@@ -23,3 +24,4 @@ pub use modbus_req::*;
 pub use modbus_rsp::*;
 pub use tcp::*;
 pub use udp::*;
+pub use mms::*;
