@@ -6,6 +6,7 @@ use nom::sequence::tuple;
 
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
+use crate::layer_type::TransportLayerType;
 use crate::packet_level::{L3Packet, L4Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
@@ -103,7 +104,7 @@ pub(crate) fn parse_tcp_layer<'a>(
     network_layer: NetworkLayer<'a>,
     options: QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = LayerType::Tcp;
+    let current_layertype = LayerType::Transport(TransportLayerType::Tcp);
 
     let (input, tcp_header) = match parse_tcp_header(input) {
         Ok(o) => o,

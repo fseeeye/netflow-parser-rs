@@ -58,7 +58,7 @@ fn main() {
     }
 }
 
-pub fn parse_pcap(path: &str) {
+fn parse_pcap(path: &str) {
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();

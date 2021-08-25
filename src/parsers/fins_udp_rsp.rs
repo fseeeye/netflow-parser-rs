@@ -21,6 +21,7 @@ use nom::IResult;
 use crate::errors::ParseError;
 #[allow(unused)]
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+use crate::layer_type::ApplicationLayerType;
 #[allow(unused)]
 use crate::packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 #[allow(unused)]
@@ -79,7 +80,7 @@ pub fn parse_fins_udp_rsp_header(input: &[u8]) -> IResult<&[u8], FinsUdpRspHeade
 }
 
 pub(crate) fn parse_fins_udp_rsp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
-    let current_layertype = LayerType::FinsUdpRsp;
+    let current_layertype = LayerType::Application(ApplicationLayerType::FinsUdpRsp);
 
     let (input, fins_udp_rsp_header) = match parse_fins_udp_rsp_header(input) {
         Ok(o) => o,

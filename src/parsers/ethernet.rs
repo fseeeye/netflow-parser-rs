@@ -2,6 +2,7 @@ use nom::number::complete::be_u16;
 
 use crate::errors::ParseError;
 use crate::layer::LinkLayer;
+use crate::layer_type::LinkLayerType;
 use crate::packet_level::{L1Packet, L2Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
@@ -32,7 +33,7 @@ pub fn parse_ethernet_header(input: &[u8]) -> nom::IResult<&[u8], EthernetHeader
 }
 
 pub(crate) fn parse_ethernet_layer(input: &[u8], options: QuinPacketOptions) -> QuinPacket {
-    let current_layertype = LayerType::Ethernet;
+    let current_layertype = LayerType::Link(LinkLayerType::Ethernet);
 
     let (input, eth_header) = match parse_ethernet_header(input) {
         Ok(o) => o,

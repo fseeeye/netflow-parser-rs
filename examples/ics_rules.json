@@ -1,0 +1,42 @@
+[
+    {
+        "rid": 1,
+        "proname": "Modbus",
+        "action": "drop",
+        "src_mac": [1, 2, 3, 4, 5, 6],
+        "src_ip": "192.0.0.1",
+        "src_port": null,
+        "dir": "->",
+        "dst_mac": null,
+        "dst_ip": null,
+        "dst_port": null,
+        "msg": "Modbus: Write Multiple Coils(15)",
+        "args": [
+            {
+                "args_type": "ModbusReq",
+                "transaction_id": null,
+                "protocol_id": null,
+                "length": null,
+                "unit_id": null,
+                "function": "15",
+                "data": {
+                    "read_start_address": null,
+                    "read_count": null,
+                    "write_start_address": null,
+                    "write_count": null,
+                    "write_byte_count": null,
+                    "write_register_values": null
+                }
+            },
+            {
+                "args_type": "ModbusRsp",
+                "function": "0x07",
+                "data": {}
+            },
+            {
+                "args_type": "ModbusRsp",
+                "protocol_id": 1
+            }
+        ]
+    }
+]

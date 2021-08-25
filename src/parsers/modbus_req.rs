@@ -6,6 +6,7 @@ use nom::IResult;
 
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+use crate::layer_type::ApplicationLayerType;
 use crate::packet_level::{L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
@@ -98,7 +99,10 @@ pub enum Data<'a> {
         byte_count: u8,
         output_values: Vec<u16>,
     },
-    Eof {},
+    ReadExceptionStatus {},
+    GetCommEventCounter {},
+    GetCommEventLog {},
+    ReportServerID {},
     ReadFileRecord {
         byte_count: u8,
         sub_requests: Vec<ReadFileRecordSubRequest>,
@@ -133,12 +137,12 @@ fn parse_data(input: &[u8], function_code: u8) -> IResult<&[u8], Data> {
         0x04 => parse_read_input_registers(input),
         0x05 => parse_write_single_coil(input),
         0x06 => parse_write_single_register(input),
-        0x07 => parse_eof(input),
-        0x0b => parse_eof(input),
-        0x0c => parse_eof(input),
+        0x07 => parse_read_exception_status(input),
+        0x0b => parse_get_comm_event_counter(input),
+        0x0c => parse_get_comm_event_log(input),
         0x0f => parse_write_multiple_coils(input),
         0x10 => parse_write_multiple_registers(input),
-        0x11 => parse_eof(input),
+        0x11 => parse_report_server_id(input),
         0x14 => parse_read_file_record(input),
         0x15 => parse_write_file_record(input),
         0x16 => parse_mask_write_register(input),
@@ -224,6 +228,38 @@ fn parse_write_single_register(input: &[u8]) -> IResult<&[u8], Data> {
     ))
 }
 
+fn parse_read_exception_status(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, _) = eof(input)?;
+    Ok((
+        input,
+        Data::ReadExceptionStatus {}
+    ))
+}
+
+fn parse_get_comm_event_counter(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, _) = eof(input)?;
+    Ok((
+        input,
+        Data::GetCommEventCounter {}
+    ))
+}
+
+fn parse_get_comm_event_log(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, _) = eof(input)?;
+    Ok((
+        input,
+        Data::GetCommEventLog {}
+    ))
+}
+
+fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, _) = eof(input)?;
+    Ok((
+        input,
+        Data::ReportServerID {}
+    ))
+}
+
 fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, start_address) = be_u16(input)?;
     let (input, output_count) = be_u16(input)?;
@@ -256,10 +292,6 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     ))
 }
 
-fn parse_eof(input: &[u8]) -> IResult<&[u8], Data> {
-    let (input, _) = eof(input)?;
-    Ok((input, Data::Eof {}))
-}
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
@@ -413,7 +445,7 @@ pub(crate) fn parse_modbus_req_layer<'a>(
     transport_layer: TransportLayer<'a>,
     options: QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = LayerType::ModbusReq;
+    let current_layertype = LayerType::Application(ApplicationLayerType::ModbusReq);
 
     let (input, modbus_req) = match parse_modbus_req_header(input) {
         Ok(o) => o,

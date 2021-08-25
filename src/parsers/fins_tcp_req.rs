@@ -21,6 +21,7 @@ use nom::IResult;
 use crate::errors::ParseError;
 #[allow(unused)]
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+use crate::layer_type::ApplicationLayerType;
 #[allow(unused)]
 use crate::packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 #[allow(unused)]
@@ -58,7 +59,7 @@ pub fn parse_fins_tcp_req_header(input: &[u8]) -> IResult<&[u8], FinsTcpReqHeade
 }
 
 pub(crate) fn parse_fins_tcp_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
-    let current_layertype = LayerType::FinsTcpReq;
+    let current_layertype = LayerType::Application(ApplicationLayerType::FinsTcpReq);
 
     let (input, fins_tcp_req_header) = match parse_fins_tcp_req_header(input) {
         Ok(o) => o,

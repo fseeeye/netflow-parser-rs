@@ -7,6 +7,7 @@ use nom::sequence::tuple;
 use super::{parse_l3_eof_layer, parse_tcp_layer, parse_udp_layer};
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
+use crate::layer_type::NetworkLayerType;
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
@@ -65,7 +66,7 @@ pub(crate) fn parse_ipv6_layer(
     link_layer: LinkLayer,
     options: QuinPacketOptions,
 ) -> QuinPacket {
-    let current_layertype = LayerType::Ipv6;
+    let current_layertype = LayerType::Network(NetworkLayerType::Ipv6);
 
     let (input, ipv6_header) = match parse_ipv6_header(input) {
         Ok(o) => o,

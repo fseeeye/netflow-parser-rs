@@ -1,8 +1,10 @@
 use nom::bytes::complete::take;
+use serde::{Serialize, Deserialize};
+
 use std::{convert::TryFrom};
 pub use std::net::{Ipv4Addr, Ipv6Addr, IpAddr};
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize,)]
 pub struct MacAddress(pub [u8; 6]);
 
 pub fn mac_address(input: &[u8]) -> nom::IResult<&[u8], MacAddress> {

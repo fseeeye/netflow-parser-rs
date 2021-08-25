@@ -6,6 +6,7 @@ use nom::sequence::tuple;
 
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer};
+use crate::layer_type::NetworkLayerType;
 use crate::packet_level::{L2Packet, L3Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
@@ -82,7 +83,7 @@ pub(crate) fn parse_ipv4_layer(
     link_layer: LinkLayer,
     options: QuinPacketOptions,
 ) -> QuinPacket {
-    let current_layertype = LayerType::Ipv4;
+    let current_layertype = LayerType::Network(NetworkLayerType::Ipv4);
 
     let (input, ipv4_header) = match parse_ipv4_header(input) {
         Ok(o) => o,

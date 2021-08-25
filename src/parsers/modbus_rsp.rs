@@ -1,7 +1,6 @@
 use nom::bits::bits;
 use nom::bits::complete::take as take_bits;
 use nom::bytes::complete::take;
-use nom::combinator::eof;
 use nom::error::Error;
 use nom::multi::count;
 use nom::number::complete::{be_u16, u8};
@@ -9,6 +8,7 @@ use nom::IResult;
 
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+use crate::layer_type::ApplicationLayerType;
 use crate::packet_level::{L4Packet, L5Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
@@ -60,12 +60,12 @@ fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
         0x04 => parse_read_input_registers(input),
         0x05 => parse_write_single_coil(input),
         0x06 => parse_write_single_register(input),
-        0x07 => parse_eof(input),
-        0x0b => parse_eof(input),
-        0x0c => parse_eof(input),
+        0x07 => parse_read_exception_status(input),
+        0x0b => parse_get_comm_event_counter(input),
+        0x0c => parse_get_comm_event_log(input),
         0x0f => parse_write_multiple_coils(input),
         0x10 => parse_write_multiple_registers(input),
-        0x11 => parse_eof(input),
+        0x11 => parse_report_server_id(input),
         0x14 => parse_read_file_record(input),
         0x15 => parse_write_file_record(input),
         0x16 => parse_mask_write_register(input),
@@ -77,12 +77,12 @@ fn parse_pdu(input: &[u8]) -> IResult<&[u8], PDU> {
         0x84 => parse_read_input_registers_exc(input),
         0x85 => parse_write_single_coil_exc(input),
         0x86 => parse_write_single_register_exc(input),
-        0x87 => parse_eof(input),
-        0x8b => parse_eof(input),
-        0x8c => parse_eof(input),
+        0x87 => parse_read_exception_status_exc(input),
+        0x8b => parse_get_comm_event_counter_exc(input),
+        0x8c => parse_get_comm_event_log_exc(input),
         0x8f => parse_write_multiple_coils_exc(input),
         0x90 => parse_write_multiple_registers_exc(input),
-        0x91 => parse_eof(input),
+        0x91 => parse_report_server_id_exc(input),
         0x94 => parse_read_file_record_exc(input),
         0x95 => parse_write_file_record_exc(input),
         0x96 => parse_mask_write_register_exc(input),
@@ -136,7 +136,24 @@ pub enum Data<'a> {
         start_address: u16,
         output_count: u16,
     },
-    Eof {},
+    ReadExceptionStatus {
+        output_data: u8,
+    },
+    GetCommEventCounter {
+        status: u16,
+        event_count: u16
+    },
+    GetCommEventLog {
+        byte_count: u8,
+        status: u16,
+        event_count: u16,
+        message_count: u16,
+        events: Vec<u8>,
+    },
+    ReportServerID {
+        byte_count: u8,
+        server_data: &'a [u8],
+    },
     ReadFileRecord {
         byte_count: u8,
         sub_requests: Vec<ReadFileRecordSubRequest<'a>>,
@@ -182,6 +199,18 @@ pub enum Data<'a> {
     },
     WriteMultipleRegistersExc {
         exception_code: u8,
+    },
+    ReadExceptionStatusExc {
+        exception_code: u8
+    },
+    GetCommEventCounterExc {
+        exception_code: u8
+    },
+    GetCommEventLogExc {
+        exception_code: u8
+    },
+    ReportServerIDExc {
+        exception_code: u8
     },
     ReadFileRecordExc {
         exception_code: u8,
@@ -300,9 +329,56 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     ))
 }
 
-fn parse_eof(input: &[u8]) -> IResult<&[u8], Data> {
-    let (input, _) = eof(input)?;
-    Ok((input, Data::Eof {}))
+fn parse_read_exception_status(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, output_data) = u8(input)?;
+    Ok((
+        input,
+        Data::ReadExceptionStatus {
+            output_data
+        }
+    ))
+}
+
+fn parse_get_comm_event_counter(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, status) = be_u16(input)?;
+    let (input, event_count) = be_u16(input)?;
+    Ok((
+        input,
+        Data::GetCommEventCounter {
+            status,
+            event_count,
+        }
+    ))
+}
+
+fn parse_get_comm_event_log(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, byte_count) = u8(input)?;
+    let (input, status) = be_u16(input)?;
+    let (input, event_count) = be_u16(input)?;
+    let (input, message_count) = be_u16(input)?;
+    let (input, events) = count(u8, (byte_count - 6) as usize)(input)?;
+    Ok((
+        input,
+        Data::GetCommEventLog {
+            byte_count,
+            status,
+            event_count,
+            message_count,
+            events,
+        }
+    ))
+}
+
+fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, byte_count) = u8(input)?;
+    let (input, server_data) = take(byte_count)(input)?;
+    Ok((
+        input,
+        Data::ReportServerID {
+            byte_count,
+            server_data,
+        }
+    ))
 }
 
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
@@ -415,6 +491,26 @@ fn parse_write_multiple_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {
     Ok((input, Data::WriteMultipleRegistersExc { exception_code }))
 }
 
+fn parse_read_exception_status_exc(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, exception_code) = u8(input)?;
+    Ok((input, Data::ReadExceptionStatusExc { exception_code }))
+}
+
+fn parse_get_comm_event_counter_exc(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, exception_code) = u8(input)?;
+    Ok((input, Data::GetCommEventCounterExc { exception_code }))
+}
+
+fn parse_get_comm_event_log_exc(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, exception_code) = u8(input)?;
+    Ok((input, Data::GetCommEventLogExc { exception_code }))
+}
+
+fn parse_report_server_id_exc(input: &[u8]) -> IResult<&[u8], Data> {
+    let (input, exception_code) = u8(input)?;
+    Ok((input, Data::ReportServerIDExc { exception_code }))
+}
+
 fn parse_read_file_record_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
     Ok((input, Data::ReadFileRecordExc { exception_code }))
@@ -504,7 +600,7 @@ pub(crate) fn parse_modbus_rsp_layer<'a>(
     transport_layer: TransportLayer<'a>,
     options: QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = LayerType::ModbusRsp;
+    let current_layertype = LayerType::Application(ApplicationLayerType::ModbusRsp);
 
     let (input, modbus_rsp) = match parse_modbus_rsp_header(input) {
         Ok(o) => o,
