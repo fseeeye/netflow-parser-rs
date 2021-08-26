@@ -1,5 +1,8 @@
 use serde::{Serialize, Deserialize};
 
+use crate::parsers::ModbusRspHeader;
+use crate::parsers::modbus_rsp;
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ModbusRspArg {
@@ -32,7 +35,7 @@ pub enum Data {
         byte_count: Option<u8>,
     },
     #[serde(alias = "2", alias = "0x02")]
-    ReadDiscreInputs {
+    ReadDiscreteInputs {
         byte_count: Option<u8>,
     },
     #[serde(alias = "3", alias = "0x03")]
@@ -111,7 +114,7 @@ pub enum Data {
         exception_code: Option<u8>,
     },
     #[serde(alias = "130", alias = "0x82")]
-    ReadDiscreInputsExc {
+    ReadDiscreteInputsExc {
         exception_code: Option<u8>,
     },
     #[serde(alias = "131", alias = "0x83")]
@@ -174,4 +177,67 @@ pub enum Data {
     ReadFIFOQueueExc {
         exception_code: Option<u8>,
     },
+}
+
+impl ModbusRspArg {
+    pub fn check_arg(&self, header: &ModbusRspHeader) -> bool {
+        let packet_mbap_header = &header.mbap_header;
+        if let Some(mbap_header) = &self.mbap_header {
+            if let Some(transaction_id) = &mbap_header.transaction_id {
+                if transaction_id != &packet_mbap_header.transaction_id {
+                    return false;
+                }
+            }
+            if let Some(protocol_id) = &mbap_header.protocol_id {
+                if protocol_id != &packet_mbap_header.protocol_id {
+                    return false;
+                }
+            }
+            if let Some(length) = &mbap_header.length {
+                if length != &packet_mbap_header.length {
+                    return false;
+                }
+            }
+            if let Some(unit_id) = &mbap_header.unit_id {
+                if unit_id != &packet_mbap_header.unit_id {
+                    return false;
+                }
+            }
+        }
+
+        if let Some(pdu) = &self.pdu {
+            if let Some(data) = &pdu.data {
+                match data {
+                    Data::ReadCoils {byte_count} => {
+                        if let modbus_rsp::Data::ReadCoils { byte_count: _byte_count, .. } = &header.pdu.data {
+                            if let Some(byte_count) = byte_count {
+                                if byte_count != _byte_count {
+                                    return false;
+                                }
+                            }
+                        } else {
+                            // 如果enum类型不相符，则直接返回false
+                            return false;
+                        }
+                    },
+                    Data::ReadDiscreteInputs {byte_count} => {
+                        if let modbus_rsp::Data::ReadDiscreteInputs { byte_count: _byte_count, .. } = &header.pdu.data {
+                            if let Some(byte_count) = byte_count {
+                                if byte_count != _byte_count {
+                                    return false;
+                                }
+                            }
+                        } else {
+                            return false;
+                        }
+                    },
+                    _ => {
+                        unimplemented!();
+                    }
+                }
+            }
+        }
+
+        true
+    }
 }

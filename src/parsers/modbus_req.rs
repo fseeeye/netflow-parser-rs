@@ -67,7 +67,7 @@ pub enum Data<'a> {
         start_address: u16,
         count: u16,
     },
-    ReadDiscreInputs {
+    ReadDiscreteInputs {
         start_address: u16,
         count: u16,
     },
@@ -173,7 +173,7 @@ fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, count) = be_u16(input)?;
     Ok((
         input,
-        Data::ReadDiscreInputs {
+        Data::ReadDiscreteInputs {
             start_address,
             count,
         },

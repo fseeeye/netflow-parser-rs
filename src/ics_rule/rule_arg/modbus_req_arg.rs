@@ -1,3 +1,6 @@
+use crate::parsers::ModbusReqHeader;
+use crate::parsers::modbus_req;
+
 use serde::{Serialize, Deserialize};
 
 
@@ -33,7 +36,7 @@ pub enum Data {
         count: Option<u16>,
     },
     #[serde(alias = "2", alias = "0x02")]
-    ReadDiscreInputs {
+    ReadDiscreteInputs {
         start_address: Option<u16>,
         count: Option<u16>,
     },
@@ -103,4 +106,76 @@ pub enum Data {
     ReadFIFOQueue {
         fifo_pointer_address: Option<u16>,
     },
+}
+
+impl ModbusReqArg {
+    pub fn check_arg(&self, header: &ModbusReqHeader) -> bool {
+        if let Some(mbap_header) = &self.mbap_header {
+            if let Some(transaction_id) = mbap_header.transaction_id {
+                if transaction_id != header.mbap_header.transaction_id {
+                    return false;
+                }
+            }
+            if let Some(protocol_id) = mbap_header.protocol_id {
+                if protocol_id != header.mbap_header.protocol_id {
+                    return false;
+                }
+            }
+            if let Some(length) = mbap_header.length {
+                if length != header.mbap_header.length {
+                    return false;
+                }
+            }
+            if let Some(unit_id) = mbap_header.unit_id {
+                if unit_id != header.mbap_header.unit_id {
+                    return false;
+                }
+            }
+        }
+
+        if let Some(pdu) = &self.pdu {
+            if let Some(data) = &pdu.data {
+                match data {
+                    Data::ReadCoils {start_address, count} => {
+                        if let modbus_req::Data::ReadCoils { start_address: _start_address, count: _count, .. } = &header.pdu.data {
+                            if let Some(start_address) = start_address {
+                                if start_address != _start_address {
+                                    return false
+                                }
+                            }
+                            if let Some(count) = count {
+                                if count != _count {
+                                    return false
+                                }
+                            }
+                        } else {
+                            // 如果enum类型不相符，则直接返回false
+                            return false;
+                        }
+                    },
+                    Data::ReadDiscreteInputs {start_address, count} => {
+                        if let modbus_req::Data::ReadDiscreteInputs { start_address: _start_address, count: _count, .. } = &header.pdu.data {
+                            if let Some(start_address) = start_address {
+                                if start_address != _start_address {
+                                    return false
+                                }
+                            }
+                            if let Some(count) = count {
+                                if count != _count {
+                                    return false
+                                }
+                            }
+                        } else {
+                            return false;
+                        }
+                    },
+                    _ => {
+                        unimplemented!();
+                    }
+                }
+            }
+        }
+
+        true
+    }
 }

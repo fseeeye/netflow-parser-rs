@@ -6,7 +6,9 @@ fn main() {
     let mut rules = Rules::new();
 
     // assert_eq!(init_whitelist_rules(Rules::new(), file_str), true);
-    init_whitelist_rules(&mut rules, file_str);
-
-    println!("{:?}", rules);
+    if init_whitelist_rules(&mut rules, file_str) {
+        println!("{:?}", rules);
+    } else {
+        println!("[!] init rule error!");
+    }
 }

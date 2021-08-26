@@ -108,7 +108,7 @@ pub enum Data<'a> {
         byte_count: u8,
         coil_status: Vec<u8>,
     },
-    ReadDiscreInputs {
+    ReadDiscreteInputs {
         byte_count: u8,
         coil_status: Vec<u8>,
     },
@@ -179,7 +179,7 @@ pub enum Data<'a> {
     ReadCoilsExc {
         exception_code: u8,
     },
-    ReadDiscreInputsExc {
+    ReadDiscreteInputsExc {
         exception_code: u8,
     },
     ReadHoldingRegistersExc {
@@ -250,7 +250,7 @@ fn parse_read_discre_inputs(input: &[u8]) -> IResult<&[u8], Data> {
         ))(input)?;
     Ok((
         input,
-        Data::ReadDiscreInputs {
+        Data::ReadDiscreteInputs {
             byte_count,
             coil_status,
         },
@@ -453,12 +453,12 @@ fn parse_read_fifo_queue(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_coils_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((input, Data::ReadDiscreInputsExc { exception_code }))
+    Ok((input, Data::ReadDiscreteInputsExc { exception_code }))
 }
 
 fn parse_read_discre_inputs_exc(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, exception_code) = u8(input)?;
-    Ok((input, Data::ReadDiscreInputsExc { exception_code }))
+    Ok((input, Data::ReadDiscreteInputsExc { exception_code }))
 }
 
 fn parse_read_holding_registers_exc(input: &[u8]) -> IResult<&[u8], Data> {

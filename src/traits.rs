@@ -1,4 +1,4 @@
-use crate::{field_type::*};
+use crate::{L5Packet, field_type::*};
 
 /// LinkLevelPacket是服务于包含link层的packet
 /// 实现获取link层常用字段值的方法。
@@ -19,4 +19,8 @@ pub trait NetLevelPacket {
 pub trait TransLevelPacket {
     fn get_dst_port(&self) -> Option<u16>;
     fn get_src_port(&self) -> Option<u16>;
+}
+
+pub trait RuleTrait {
+    fn check_rule(&self, l5: &L5Packet) -> bool;
 }

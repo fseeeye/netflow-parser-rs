@@ -1,9 +1,9 @@
+mod basic_rule;
 mod modbus_rule;
 
-use std::net::IpAddr;
 use std::fs;
 
-use crate::{QuinPacket, field_type::MacAddress};
+use crate::{QuinPacket, RuleTrait};
 use self::modbus_rule::ModbusRule;
 
 use serde::{Deserialize, Serialize};
@@ -13,37 +13,6 @@ use serde::{Deserialize, Serialize};
 #[serde(tag="proname")]
 pub enum Rule {
     Modbus(ModbusRule)
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct BasicRule {
-    pub rid: u32,
-    pub action: Action,
-    pub src_mac: Option<MacAddress>,
-    pub src_ip: Option<IpAddr>,
-    pub src_port: Option<u16>,
-    pub dir: Direction,
-    pub dst_mac: Option<MacAddress>,
-    pub dst_ip: Option<IpAddr>,
-    pub dst_port: Option<u16>,
-    pub msg: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
-pub enum Action {
-    Allow,
-    Alert,
-    Drop,
-    Reject,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum Direction {
-    #[serde(rename = "->")]
-    Uni,
-    #[serde(rename = "<>")]
-    Bi,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -81,7 +50,20 @@ pub fn init_whitelist_rules(rules: &mut Rules, file_str: &str) -> bool {
     return true
 }
 
-pub fn check_rule(rules: &Rules, packet: QuinPacket) -> bool {
-    
-    return true
+pub fn check_ics_rule(rules: &Rules, packet: &QuinPacket) -> bool {
+    // ics规则要求packet为L5，否则返回false
+    if let &QuinPacket::L5(l5) = &packet {
+        for rule in &rules.inner_rules {
+            match rule {
+                Rule::Modbus(modbus_rule) => {
+                    if modbus_rule.check_rule(l5) {
+                        return true;
+                    }
+                },
+                // ...
+            };   
+        }
+    }
+
+    false
 }

@@ -1,4 +1,5 @@
 use colored::*;
+use parsing_rs::{QuinPacket, Rules, check_ics_rule, init_whitelist_rules};
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use walkdir::{DirEntry, WalkDir};
@@ -43,7 +44,7 @@ fn main() {
                 .collect();
             for entry in files {
                 let file_path = entry.path().to_str().unwrap(); // Warning: unhandle error.
-                                                                // ref: https://stackoverflow.com/questions/45291832/extracting-a-file-extension-from-a-given-path-in-rust-idiomatically
+                // ref: https://stackoverflow.com/questions/45291832/extracting-a-file-extension-from-a-given-path-in-rust-idiomatically
                 if let Some("pcap") = Path::new(file_path).extension().and_then(OsStr::to_str) {
                     println!(
                         "[*] Parsing Sub File: {} of {}",
@@ -62,6 +63,11 @@ fn parse_pcap(path: &str) {
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
+
+    let rule_path = "./examples/ics_rules.json";
+    let mut rules = Rules::new();
+    assert_eq!(init_whitelist_rules(&mut rules, rule_path), true);
+
     loop {
         match reader.next() {
             Ok((offset, block)) => {
@@ -77,7 +83,9 @@ fn parse_pcap(path: &str) {
                         // println!("{:?}", _b);
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
-                        parse_ethernet_quin_packet(&_b.data);
+                        let packet = parse_ethernet_quin_packet(&_b.data);
+                        let res = check_ics_rule(&rules, &packet);
+                        println!("rule check: {}", res);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
                 }
@@ -93,12 +101,13 @@ fn parse_pcap(path: &str) {
     println!("[-] number of blocks: {:?}\n", num_blocks);
 }
 
-fn parse_ethernet_quin_packet(input: &[u8]) {
+fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
     use parsing_rs::*;
 
     println!("{:?}", &input);
     let runtimer = Instant::now(); // 程序运行计时变量
-    match parse_quin_packet(input, QuinPacketOptions::default()) {
+    let packet = parse_quin_packet(input, QuinPacketOptions::default());
+    match &packet {
         QuinPacket::L1(l1) => {
             let time = runtimer.elapsed().as_secs_f64();
             println!("l1 packet: {:?}", l1);
@@ -132,4 +141,6 @@ fn parse_ethernet_quin_packet(input: &[u8]) {
             println!("  in time: {:?}", time);
         }
     };
+
+    packet
 }
