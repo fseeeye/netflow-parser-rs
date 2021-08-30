@@ -21,6 +21,6 @@ pub trait TransLevelPacket {
     fn get_src_port(&self) -> Option<u16>;
 }
 
-pub trait RuleTrait {
-    fn check_rule(&self, l5: &L5Packet) -> bool;
+pub trait RuleDetector {
+    fn detect(&self, l5: &L5Packet) -> bool;
 }

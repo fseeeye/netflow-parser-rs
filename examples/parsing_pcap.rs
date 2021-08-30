@@ -1,5 +1,5 @@
 use colored::*;
-use parsing_rs::{QuinPacket, Rules, check_ics_rule, init_whitelist_rules};
+use parsing_rs::{QuinPacket, Rules, detect_ics};
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use walkdir::{DirEntry, WalkDir};
@@ -66,7 +66,7 @@ fn parse_pcap(path: &str) {
 
     let rule_path = "./examples/ics_rules.json";
     let mut rules = Rules::new();
-    assert_eq!(init_whitelist_rules(&mut rules, rule_path), true);
+    assert_eq!(rules.init(rule_path), true);
 
     loop {
         match reader.next() {
@@ -84,8 +84,8 @@ fn parse_pcap(path: &str) {
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
                         let packet = parse_ethernet_quin_packet(&_b.data);
-                        let res = check_ics_rule(&rules, &packet);
-                        println!("rule check: {}", res);
+                        let res = detect_ics(&rules, &packet);
+                        println!("rule check: {:?}", res);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
                 }

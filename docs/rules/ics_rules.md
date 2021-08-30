@@ -2,16 +2,14 @@
 
 ## 参数说明
 
-- rid: 规则ID
+- rid: 规则ID，请保持rid唯一性，否则会出现覆盖。
 - action: pass(通过)/alert(告警)/drop(丢弃)/reject(拒绝)
-- src_mac: 源mac地址(没有填写any)
-- src_ip: 源地址(没有填写any)
-- src_port: 源端口(没有填any)
+- src_ip: 源地址(Optional, 没有填写null)
+- src_port: 源端口(Optional)
 - dire: 方向(->: 单向检测, <>: 双向检测)
-- dst_mac: 目的mac地址(没有填写any)
-- dst_ip: 目的地址(没有填写any)
-- dst_port: 目的端口(没有填any)
-- msg: 提示信息(没有填空字符串)
+- dst_ip: 目的地址(Optional)
+- dst_port: 目的端口(Optional)
+- msg: 提示信息(Optional)
 - args: 
   -  [协议名]: 应用层协议字段规则，json格式 
 
@@ -23,11 +21,9 @@
         "rid": 0,
         "action": "alert",
         "proname": "Modbus",
-        "src_mac": null,
         "src_ip": null,
         "src_port": null,
         "dir": "->",
-        "dst_mac": null,
         "dst_ip": null,
         "dst_port": 502,
         "msg": "Modbus: Read Write Multiple Register(23)",
@@ -44,11 +40,9 @@
         "rid": 1,
         "proname": "Modbus",
         "action": "drop",
-        "src_mac": [1, 2, 3, 4, 5, 6],
         "src_ip": "192.0.0.1",
         "src_port": null,
         "dir": "->",
-        "dst_mac": null,
         "dst_ip": null,
         "dst_port": null,
         "msg": "Modbus: Write Multiple Coils(15)",

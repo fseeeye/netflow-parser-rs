@@ -30,7 +30,7 @@ pub enum TransportLayerType {
     Udp
 }
 
-#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum ApplicationLayerType {
     FinsTcpReq,
     FinsTcpRsp,
@@ -38,4 +38,10 @@ pub enum ApplicationLayerType {
     FinsUdpRsp,
     ModbusReq,
     ModbusRsp,
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash, Serialize, Deserialize)]
+pub enum ApplicationLayerNaiveType {
+    Fins,
+    Modbus,
 }

@@ -41,4 +41,4 @@ pub use layer_type::{LayerType, LinkLayerType, NetworkLayerType, TransportLayerT
 pub use packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 pub use packet_quin::{parse_quin_packet, QuinPacket, QuinPacketOptions};
 pub use traits::*;
-pub use ics_rule::rule::{init_whitelist_rules, Rule, Rules, check_ics_rule};
+pub use ics_rule::{Rules, detect_ics};

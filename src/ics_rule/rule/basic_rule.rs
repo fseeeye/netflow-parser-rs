@@ -2,24 +2,22 @@ use std::net::IpAddr;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{L5Packet, LinkLevelPacket, NetLevelPacket, RuleTrait, TransLevelPacket, field_type::MacAddress};
+use crate::{L5Packet, NetLevelPacket, RuleDetector, TransLevelPacket};
 
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BasicRule {
     pub rid: u32,
     pub action: Action,
-    pub src_mac: Option<MacAddress>,
     pub src_ip: Option<IpAddr>,
     pub src_port: Option<u16>,
     pub dir: Direction,
-    pub dst_mac: Option<MacAddress>,
     pub dst_ip: Option<IpAddr>,
     pub dst_port: Option<u16>,
     pub msg: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum Action {
     Allow,
@@ -28,7 +26,7 @@ pub enum Action {
     Reject,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum Direction {
     #[serde(rename = "->")]
     Uni,
@@ -36,10 +34,8 @@ pub enum Direction {
     Bi,
 }
 
-impl RuleTrait for BasicRule {
-    fn check_rule(&self, l5: &L5Packet) -> bool {
-        let packet_src_mac = l5.get_src_mac();
-        let pakcet_dst_mac = l5.get_dst_mac();
+impl RuleDetector for BasicRule {
+    fn detect(&self, l5: &L5Packet) -> bool {
         let packet_src_ip = l5.get_src_ip();
         let packet_dst_ip = l5.get_dst_ip();
         let packet_src_port = l5.get_src_port();
@@ -48,12 +44,6 @@ impl RuleTrait for BasicRule {
         match self.dir {
             Direction::Uni => {
                 // 如果rules该字段设置了值，并且和packet相应字段不匹配，返回false
-                if self.src_mac.is_some() && self.src_mac != packet_src_mac {
-                    return false;
-                }
-                if self.dst_mac.is_some() && self.dst_mac != pakcet_dst_mac {
-                    return false;
-                }
                 if self.src_ip.is_some() && self.src_ip != packet_src_ip {
                     return false;
                 }
@@ -68,12 +58,6 @@ impl RuleTrait for BasicRule {
                 }
             },
             Direction::Bi => {
-                if self.src_mac.is_some() && self.src_mac != packet_src_mac && self.src_mac != pakcet_dst_mac {
-                    return false;
-                }
-                if self.dst_mac.is_some() && self.dst_mac != pakcet_dst_mac && self.dst_mac != packet_src_mac {
-                    return false;
-                }
                 if self.src_ip.is_some() && self.src_ip != packet_src_ip && self.src_ip != packet_dst_ip {
                     return false;
                 }
