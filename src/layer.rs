@@ -29,5 +29,5 @@ pub enum ApplicationLayer<'a> {
     FinsTcpRsp(FinsTcpRspHeader<'a>),
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
-	MMS(MMSHeader<'a>)
+	MMS(MmsHeader<'a>)
 }
