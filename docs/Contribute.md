@@ -11,3 +11,6 @@
 * 变量、函数、方法请采用下划线命名法。
 * trait、struct、enum请采用帕斯卡(大驼峰)命名法。
 * 协议名的命名方式请保持一致，如：`ModbusReq` <-> `modbus_req`
+
+## Rust
+* 项目使用了Rust部分最新特性，请切换Rust版本为Nightly进行开发。

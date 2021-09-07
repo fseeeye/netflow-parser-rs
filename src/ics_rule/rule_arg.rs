@@ -1,12 +1,12 @@
-mod modbus_arg;
-mod modbus_req_arg;
-mod modbus_rsp_arg;
+mod modbus;
+mod modbus_req;
+mod modbus_rsp;
 
 use crate::RuleDetector;
 
-pub use self::modbus_arg::ModbusArg;
-pub use self::modbus_req_arg::ModbusReqArg;
-pub use self::modbus_rsp_arg::ModbusRspArg;
+pub use self::modbus::ModbusArg;
+pub use self::modbus_req::ModbusReqArg;
+pub use self::modbus_rsp::ModbusRspArg;
 
 
 use serde::{Deserialize, Serialize};

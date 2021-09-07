@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{RuleDetector, layer::ApplicationLayer};
 
-use super::{ModbusReqArg, modbus_rsp_arg::ModbusRspArg};
+use super::{ModbusReqArg, modbus_rsp::ModbusRspArg};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "args_type")]
