@@ -1,5 +1,7 @@
 use nom::bytes::complete::take;
+use nom::number::complete::{be_u16, u8};
 use std::{convert::TryFrom};
+use std::ops::BitAnd;
 pub use std::net::{Ipv4Addr, Ipv6Addr, IpAddr};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -44,5 +46,47 @@ pub fn address6(input: &[u8]) -> nom::IResult<&[u8], Ipv6Addr> {
             input,
             nom::error::ErrorKind::Switch
         )))
+    }
+}
+
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct BerTL {
+    pub tag: u8,
+    pub length: u16,
+}
+
+pub fn ber_tl(input: &[u8]) -> nom::IResult<&[u8], BerTL> {
+	let (input, tag) = u8(input)?;
+    if tag.bitand(0x1f) > 0x1e {
+        panic!("Tag is not Supported!")
+    }
+    let (input, length) = u8(input)?;
+    if length < 128 {
+        //短形式
+        Ok((input, BerTL{tag,length: length as u16}))
+    } else {
+        //长形式
+		if length == 128{//不定长
+			let mut length:u16 = 0;
+			let mut input = input;
+			let mut tmp;
+			(input, tmp) = be_u16(input)?;
+			loop {
+				if tmp == 0{
+					return Ok((input,BerTL{tag,length}))
+				}else {
+					length += tmp;
+					(input, tmp) = be_u16(input)?;
+				}
+			}
+		}else{
+			let (input, slice) = take((length - 128) as usize)(input)?;
+			let mut length: u8 = 0;
+			for i in slice {
+				length += *i
+			}
+			Ok((input, BerTL{tag,length: length as u16}))
+		}
     }
 }
