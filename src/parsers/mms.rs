@@ -1775,7 +1775,7 @@ pub fn parse_read_request_choice(
     input: &[u8],
     read_request_choice_tl_tag: u8,
 ) -> IResult<&[u8], ReadRequestChoice> {
-    let (input, read_request_choice) = match read_request_choice_tl_tag {
+    let (input, read_request_choice) = match read_request_choice_tl_tag.bitand(0x1f) {
         0x81 => parse_read_request_choice_default(input),
         0x80 => parse_read_request_choice_otherwise(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
