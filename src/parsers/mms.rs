@@ -107,13 +107,13 @@ pub(crate) fn parse_mms_layer<'a>(
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SimpleItem<'a> {
-    pub simple_item_tl: BerTL,
+    // pub simple_item_tl: BerTL,
     pub data: &'a [u8],
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SimpleU8Data {
-    pub simple_u8_item_tl: BerTL,
+    // pub simple_u8_item_tl: BerTL,
     pub data: u8,
 }
 
@@ -218,9 +218,9 @@ pub struct OsiSesConnectRequest {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresUserData {
-    pub fullt_encode_data_tl: BerTL,
+    // pub fullt_encode_data_tl: BerTL,
     pub presentation_context_indentifier: SimpleU8Data,
-    pub presentation_context_values_tl: BerTL,
+    // pub presentation_context_values_tl: BerTL,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -230,7 +230,7 @@ pub struct NormalModeParametersCpWithProtocolVersion<'a> {
     pub called_presentation_selector: SimpleItem<'a>,
     pub presentation_context_definition_list: SimpleItem<'a>,
     pub presentation_requirements: SimpleItem<'a>,
-    pub user_data_tl: BerTL,
+    // pub user_data_tl: BerTL,
     pub user_data: OsiPresUserData,
 }
 
@@ -239,7 +239,7 @@ pub struct NormalModeParametersCpaWithProtocolVersion<'a> {
     pub protocol_version: SimpleItem<'a>,
     pub responding_presentation_selector: SimpleItem<'a>,
     pub presentation_context_definition_result_list: SimpleItem<'a>,
-    pub user_data_tl: BerTL,
+    // pub user_data_tl: BerTL,
     pub user_data: OsiPresUserData,
 }
 
@@ -249,7 +249,7 @@ pub struct OsiPresPduNormalModeParametersCp<'a> {
     pub called_presentation_selector: SimpleItem<'a>,
     pub presentation_context_definition_list: SimpleItem<'a>,
     pub presentation_requirements: SimpleItem<'a>,
-    pub user_data_tl: BerTL,
+    // pub user_data_tl: BerTL,
     pub user_data: OsiPresUserData,
 }
 
@@ -257,7 +257,7 @@ pub struct OsiPresPduNormalModeParametersCp<'a> {
 pub struct OsiPresPduNormalModeParametersCpa<'a> {
     pub responding_presentation_selector: SimpleItem<'a>,
     pub presentation_context_definition_result_list: SimpleItem<'a>,
-    pub user_data_tl: BerTL,
+    // pub user_data_tl: BerTL,
     pub user_data: OsiPresUserData,
 }
 
@@ -285,39 +285,39 @@ pub enum OsiPresPduNormalModeParametersCpaChoice<'a> {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCp<'a> {
-    pub pres_tl: BerTL,
-    pub pres_cp_tl: BerTL,
+    // pub pres_tl: BerTL,
+    // pub pres_cp_tl: BerTL,
     pub pres_cp_mode_selector: SimpleItem<'a>,
-    pub normal_mode_parameters_tl: BerTL,
+    // pub normal_mode_parameters_tl: BerTL,
     pub normal_mode_parameters: OsiPresPduNormalModeParametersCpChoice<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCpa<'a> {
-    pub pres_tl: BerTL,
-    pub pres_cpa_tl: BerTL,
+    // pub pres_tl: BerTL,
+    // pub pres_cpa_tl: BerTL,
     pub pres_cp_mode_selector: SimpleItem<'a>,
-    pub normal_mode_parameters_tl: BerTL,
+    // pub normal_mode_parameters_tl: BerTL,
     pub normal_mode_parameters: OsiPresPduNormalModeParametersCpaChoice<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiAcseAarq<'a> {
-    pub acse_aarq_tl: BerTL,
+    // pub acse_aarq_tl: BerTL,
     pub protocol_version: SimpleItem<'a>,
     pub aso_context_name: SimpleItem<'a>,
     pub called_ap_title: SimpleItem<'a>,
     pub called_ae_qualifier: SimpleItem<'a>,
-    pub user_information_tl: BerTL,
-    pub association_data_tl: BerTL,
+    // pub user_information_tl: BerTL,
+    // pub association_data_tl: BerTL,
     pub direct_ref: SimpleItem<'a>,
     pub indirect_ref: SimpleItem<'a>,
-    pub encoding_tl: BerTL,
+    // pub encoding_tl: BerTL,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiAcseAare<'a> {
-    pub acse_aare_tl: BerTL,
+    // pub acse_aare_tl: BerTL,
     pub protocol_version: SimpleItem<'a>,
     pub aso_context_name: SimpleItem<'a>,
     pub result: SimpleItem<'a>,
@@ -342,7 +342,7 @@ pub enum OsiSesChoice<'a> {
     GiveTokens {
         ses2_type: u8,
         ses2_len: u8,
-        pres_cpa_tl: BerTL,
+        // pres_cpa_tl: BerTL,
         pres_cpa: OsiPresUserData,
     },
 }
@@ -396,7 +396,7 @@ pub struct BoolResult {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfData<'a> {
-    pub lod_tl: BerTL,
+    // pub lod_tl: BerTL,
     pub lod: Vec<SimpleItem<'a>>,
 }
 
@@ -416,7 +416,7 @@ pub enum ObjectName<'a> {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ObjectNameStruct<'a> {
-    pub object_name_tl: BerTL,
+    // pub object_name_tl: BerTL,
     pub object_name: ObjectName<'a>,
 }
 
@@ -426,20 +426,20 @@ pub enum VariableSpecification<'a> {
         res: ObjectNameStruct<'a>,
     },
     Others {
-        variable_specification_tl: BerTL,
+        // variable_specification_tl: BerTL,
         value: &'a [u8],
     },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct VariableSpecificationStruct<'a> {
-    pub variable_specification_tl: BerTL,
+    // pub variable_specification_tl: BerTL,
     pub variable_specification: VariableSpecification<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfVariableSpecification<'a> {
-    pub lovs_tl: BerTL,
+    // pub lovs_tl: BerTL,
     pub lovs: Vec<VariableSpecificationStruct<'a>>,
 }
 
@@ -485,7 +485,7 @@ pub enum DataAccessError {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct DataAccessErrorConstruct {
-    pub data_access_error_tl: BerTL,
+    // pub data_access_error_tl: BerTL,
     pub data_access_error: DataAccessError,
 }
 
@@ -502,19 +502,19 @@ pub enum AccessResult<'a> {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AccessResultStruct<'a> {
-    pub access_result_tl: BerTL,
+    // pub access_result_tl: BerTL,
     pub access_result: AccessResult<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfAccessResult<'a> {
-    pub loar_tl: BerTL,
+    // pub loar_tl: BerTL,
     pub loar: Vec<AccessResultStruct<'a>>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfIdentifier<'a> {
-    pub loar_tl: BerTL,
+    // pub loar_tl: BerTL,
     pub loar: Vec<Identifier<'a>>,
 }
 
@@ -549,7 +549,7 @@ pub enum VariableAccessSpecificationChoice<'a> {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct VariableAccessSpecificationChoiceStruct<'a> {
-    pub variable_access_specification_choice_tl: BerTL,
+    // pub variable_access_specification_choice_tl: BerTL,
     pub variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
 }
 
@@ -560,38 +560,38 @@ pub enum ReadRequestChoice<'a> {
     },
     ReadRequestChoiceOtherwise {
         specification_with_result: BoolResult,
-        variable_access_specification_choice_struct_tl: BerTL,
+        // variable_access_specification_choice_struct_tl: BerTL,
         res: VariableAccessSpecificationChoiceStruct<'a>,
     },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct WriteRequestChoiceConstruct<'a> {
-    pub variable_access_specification_choice_tl: BerTL,
+    // pub variable_access_specification_choice_tl: BerTL,
     pub variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
-    pub list_of_data_tl: BerTL,
+    // pub list_of_data_tl: BerTL,
     pub list_of_data: ListOfData<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GetNamedVariableListAttributesRequestChoiceConstruct<'a> {
-    pub object_name_tl: BerTL,
+    // pub object_name_tl: BerTL,
     pub object_name: ObjectName<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GetNameListRequestChoiceConstruct<'a> {
-    pub object_class_tl: BerTL,
+    // pub object_class_tl: BerTL,
     pub object_class: ObjectClass<'a>,
-    pub object_scope_tl: BerTL,
+    // pub object_scope_tl: BerTL,
     pub object_scope: ObjectScope<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GetNameListResponseChoiceConstruct<'a> {
-    pub list_of_identifier_tl: BerTL,
+    // pub list_of_identifier_tl: BerTL,
     pub list_of_identifier: ListOfIdentifier<'a>,
-    pub more_follows_tl: BerTL,
+    // pub more_follows_tl: BerTL,
     pub more_follows: BoolResult,
 }
 
@@ -600,11 +600,11 @@ pub struct IdentifyRequestChoiceConstruct {}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct IdentifyResponseChoiceConstruct<'a> {
-    pub vendor_name_tl: BerTL,
+    // pub vendor_name_tl: BerTL,
     pub vendor_name: SimpleItem<'a>,
-    pub model_name_tl: BerTL,
+    // pub model_name_tl: BerTL,
     pub model_name: SimpleItem<'a>,
-    pub revision_tl: BerTL,
+    // pub revision_tl: BerTL,
     pub revision: SimpleItem<'a>,
 }
 
@@ -612,7 +612,7 @@ pub struct IdentifyResponseChoiceConstruct<'a> {
 pub enum ReadResponseChoice<'a> {
     ReadResponseChoiceNone {},
     ReadResponseChoiceWithData {
-        list_of_access_result_tl: BerTL,
+        // list_of_access_result_tl: BerTL,
         list_of_access_result: ListOfAccessResult<'a>,
     },
 }
@@ -625,35 +625,35 @@ pub enum WriteResponseChoice {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ReadResponseChoiceConstruct<'a> {
-    pub read_response_choice_tl: BerTL,
+    // pub read_response_choice_tl: BerTL,
     pub read_response_choice: ReadResponseChoice<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct WriteResponseChoiceConstruct {
-    pub write_response_choice_tl: BerTL,
+    // pub write_response_choice_tl: BerTL,
     pub write_response_choice: WriteResponseChoice,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GetNamedVariableListAttributesResponseChoice<'a> {
-    pub mms_deleteable_tl: BerTL,
+    // pub mms_deleteable_tl: BerTL,
     pub mms_deleteable: BoolResult,
-    pub list_of_variable_specification_tl: BerTL,
+    // pub list_of_variable_specification_tl: BerTL,
     pub list_of_variable_specification: ListOfVariableSpecification<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct InformationReportChoice<'a> {
-    pub variable_access_specification_choice_tl: BerTL,
+    // pub variable_access_specification_choice_tl: BerTL,
     pub variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
-    pub list_of_access_result_tl: BerTL,
+    // pub list_of_access_result_tl: BerTL,
     pub list_of_access_result: ListOfAccessResult<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ReadRequestChoiceStruct<'a> {
-    pub read_request_choice_tl: BerTL,
+    // pub read_request_choice_tl: BerTL,
     pub read_request_choice: ReadRequestChoice<'a>,
 }
 
@@ -699,7 +699,7 @@ pub enum ConfirmedServiceResponseChoice<'a> {
 pub enum ConfirmedServiceResponseStruct<'a> {
     ConfirmedServiceResponseStructNone {},
     ConfirmedServiceResponseStructWithData {
-        service_tl: BerTL,
+        // service_tl: BerTL,
         service: ConfirmedServiceResponseChoice<'a>,
     },
 }
@@ -711,22 +711,22 @@ pub enum UnConfirmedChoice<'a> {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ConfirmedRequestPDU<'a> {
-    pub invoke_id_tl: BerTL,
+    // pub invoke_id_tl: BerTL,
     pub invoke_id: InvokeId,
-    pub service_tl: BerTL,
+    // pub service_tl: BerTL,
     pub service: ConfirmedServiceRequestChoice<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ConfirmedResponsePDU<'a> {
-    pub invoke_id_tl: BerTL,
+    // pub invoke_id_tl: BerTL,
     pub invoke_id: InvokeId,
     pub service: ConfirmedServiceResponseStruct<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct UnConfirmedPDU<'a> {
-    pub service_tl: BerTL,
+    // pub service_tl: BerTL,
     pub service: UnConfirmedChoice<'a>,
 }
 
@@ -736,7 +736,7 @@ pub struct InitiateRequestPDU<'a> {
     pub proposed_max_serv_outstanding_calling: SimpleItem<'a>,
     pub proposed_max_serv_outstanding_called: SimpleItem<'a>,
     pub proposed_data_structure_nesting_level: SimpleItem<'a>,
-    pub init_request_detail_tl: BerTL,
+    // pub init_request_detail_tl: BerTL,
     pub init_request_detail: InitDetailRequest<'a>,
 }
 
@@ -746,7 +746,7 @@ pub struct InitiateResponsePDU<'a> {
     pub proposed_max_serv_outstanding_calling: SimpleItem<'a>,
     pub proposed_max_serv_outstanding_called: SimpleItem<'a>,
     pub proposed_data_structure_nesting_level: SimpleItem<'a>,
-    pub init_response_detail_tl: BerTL,
+    // pub init_response_detail_tl: BerTL,
     pub init_response_detail: InitDetailResponse<'a>,
 }
 
@@ -767,7 +767,7 @@ pub struct MmsapHeader {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MmsPdu<'a> {
-    pub mms_pdu_choice_tl: BerTL,
+    // pub mms_pdu_choice_tl: BerTL,
     pub mms_pdu_choice: MmsPduChoice<'a>,
 }
 
@@ -777,19 +777,19 @@ pub fn parse_simple_item(input: &[u8]) -> IResult<&[u8], SimpleItem> {
     Ok((
         input,
         SimpleItem {
-            simple_item_tl,
+            // simple_item_tl,
             data,
         },
     ))
 }
 
 pub fn parse_simple_u8_data(input: &[u8]) -> IResult<&[u8], SimpleU8Data> {
-    let (input, simple_u8_item_tl) = ber_tl(input)?;
+    let (input, _simple_u8_item_tl) = ber_tl(input)?;
     let (input, data) = u8(input)?;
     Ok((
         input,
         SimpleU8Data {
-            simple_u8_item_tl,
+            // simple_u8_item_tl,
             data,
         },
     ))
@@ -1004,15 +1004,15 @@ pub fn parse_osi_ses_connect_request(input: &[u8]) -> IResult<&[u8], OsiSesConne
 }
 
 pub fn parse_osi_pres_user_data(input: &[u8]) -> IResult<&[u8], OsiPresUserData> {
-    let (input, fullt_encode_data_tl) = ber_tl(input)?;
+    let (input, _fullt_encode_data_tl) = ber_tl(input)?;
     let (input, presentation_context_indentifier) = parse_simple_u8_data(input)?;
-    let (input, presentation_context_values_tl) = ber_tl(input)?;
+    let (input, _presentation_context_values_tl) = ber_tl(input)?;
     Ok((
         input,
         OsiPresUserData {
-            fullt_encode_data_tl,
+            // fullt_encode_data_tl,
             presentation_context_indentifier,
-            presentation_context_values_tl,
+            // presentation_context_values_tl,
         },
     ))
 }
@@ -1025,7 +1025,7 @@ pub fn parse_normal_mode_parameters_cp_with_protocol_version(
     let (input, called_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_list) = parse_simple_item(input)?;
     let (input, presentation_requirements) = parse_simple_item(input)?;
-    let (input, user_data_tl) = ber_tl(input)?;
+    let (input, _user_data_tl) = ber_tl(input)?;
     let (input, user_data) = parse_osi_pres_user_data(input)?;
     Ok((
         input,
@@ -1035,7 +1035,7 @@ pub fn parse_normal_mode_parameters_cp_with_protocol_version(
             called_presentation_selector,
             presentation_context_definition_list,
             presentation_requirements,
-            user_data_tl,
+            // user_data_tl,
             user_data,
         },
     ))
@@ -1047,7 +1047,7 @@ pub fn parse_normal_mode_parameters_cpa_with_protocol_version(
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, responding_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_result_list) = parse_simple_item(input)?;
-    let (input, user_data_tl) = ber_tl(input)?;
+    let (input, _user_data_tl) = ber_tl(input)?;
     let (input, user_data) = parse_osi_pres_user_data(input)?;
     Ok((
         input,
@@ -1055,7 +1055,7 @@ pub fn parse_normal_mode_parameters_cpa_with_protocol_version(
             protocol_version,
             responding_presentation_selector,
             presentation_context_definition_result_list,
-            user_data_tl,
+            // user_data_tl,
             user_data,
         },
     ))
@@ -1068,7 +1068,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cp(
     let (input, called_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_list) = parse_simple_item(input)?;
     let (input, presentation_requirements) = parse_simple_item(input)?;
-    let (input, user_data_tl) = ber_tl(input)?;
+    let (input, _user_data_tl) = ber_tl(input)?;
     let (input, user_data) = parse_osi_pres_user_data(input)?;
     Ok((
         input,
@@ -1077,7 +1077,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cp(
             called_presentation_selector,
             presentation_context_definition_list,
             presentation_requirements,
-            user_data_tl,
+            // user_data_tl,
             user_data,
         },
     ))
@@ -1088,14 +1088,14 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa(
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpa> {
     let (input, responding_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_result_list) = parse_simple_item(input)?;
-    let (input, user_data_tl) = ber_tl(input)?;
+    let (input, _user_data_tl) = ber_tl(input)?;
     let (input, user_data) = parse_osi_pres_user_data(input)?;
     Ok((
         input,
         OsiPresPduNormalModeParametersCpa {
             responding_presentation_selector,
             presentation_context_definition_result_list,
-            user_data_tl,
+            // user_data_tl,
             user_data,
         },
     ))
@@ -1178,8 +1178,8 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
 }
 
 pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
-    let (input, pres_tl) = ber_tl(input)?;
-    let (input, pres_cp_tl) = ber_tl(input)?;
+    let (input, _pres_tl) = ber_tl(input)?;
+    let (input, _pres_cp_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
     let (input, normal_mode_parameters_tl) = ber_tl(input)?;
     let (input, normal_mode_parameters) =
@@ -1187,18 +1187,18 @@ pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
     Ok((
         input,
         OsiPresCp {
-            pres_tl,
-            pres_cp_tl,
+            // pres_tl,
+            // pres_cp_tl,
             pres_cp_mode_selector,
-            normal_mode_parameters_tl,
+            // normal_mode_parameters_tl,
             normal_mode_parameters,
         },
     ))
 }
 
 pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
-    let (input, pres_tl) = ber_tl(input)?;
-    let (input, pres_cpa_tl) = ber_tl(input)?;
+    let (input, _pres_tl) = ber_tl(input)?;
+    let (input, _pres_cpa_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
     let (input, normal_mode_parameters_tl) = ber_tl(input)?;
     let (input, normal_mode_parameters) =
@@ -1206,45 +1206,45 @@ pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
     Ok((
         input,
         OsiPresCpa {
-            pres_tl,
-            pres_cpa_tl,
+            // pres_tl,
+            // pres_cpa_tl,
             pres_cp_mode_selector,
-            normal_mode_parameters_tl,
+            // normal_mode_parameters_tl,
             normal_mode_parameters,
         },
     ))
 }
 
 pub fn parse_osi_acse_aarq(input: &[u8]) -> IResult<&[u8], OsiAcseAarq> {
-    let (input, acse_aarq_tl) = ber_tl(input)?;
+    let (input, _acse_aarq_tl) = ber_tl(input)?;
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, aso_context_name) = parse_simple_item(input)?;
     let (input, called_ap_title) = parse_simple_item(input)?;
     let (input, called_ae_qualifier) = parse_simple_item(input)?;
-    let (input, user_information_tl) = ber_tl(input)?;
-    let (input, association_data_tl) = ber_tl(input)?;
+    let (input, _user_information_tl) = ber_tl(input)?;
+    let (input, _association_data_tl) = ber_tl(input)?;
     let (input, direct_ref) = parse_simple_item(input)?;
     let (input, indirect_ref) = parse_simple_item(input)?;
-    let (input, encoding_tl) = ber_tl(input)?;
+    let (input, _encoding_tl) = ber_tl(input)?;
     Ok((
         input,
         OsiAcseAarq {
-            acse_aarq_tl,
+            // acse_aarq_tl,
             protocol_version,
             aso_context_name,
             called_ap_title,
             called_ae_qualifier,
-            user_information_tl,
-            association_data_tl,
+            // user_information_tl,
+            // association_data_tl,
             direct_ref,
             indirect_ref,
-            encoding_tl,
+            // encoding_tl,
         },
     ))
 }
 
 pub fn parse_osi_acse_aare(input: &[u8]) -> IResult<&[u8], OsiAcseAare> {
-    let (input, acse_aare_tl) = ber_tl(input)?;
+    let (input, _acse_aare_tl) = ber_tl(input)?;
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, aso_context_name) = parse_simple_item(input)?;
     let (input, result) = parse_simple_item(input)?;
@@ -1255,7 +1255,7 @@ pub fn parse_osi_acse_aare(input: &[u8]) -> IResult<&[u8], OsiAcseAare> {
     Ok((
         input,
         OsiAcseAare {
-            acse_aare_tl,
+            // acse_aare_tl,
             protocol_version,
             aso_context_name,
             result,
@@ -1298,14 +1298,14 @@ fn parse_response(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
 fn parse_give_tokens(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
     let (input, ses2_type) = u8(input)?;
     let (input, ses2_len) = u8(input)?;
-    let (input, pres_cpa_tl) = ber_tl(input)?;
+    let (input, _pres_cpa_tl) = ber_tl(input)?;
     let (input, pres_cpa) = parse_osi_pres_user_data(input)?;
     Ok((
         input,
         OsiSesChoice::GiveTokens {
             ses2_type,
             ses2_len,
-            pres_cpa_tl,
+            // pres_cpa_tl,
             pres_cpa,
         },
     ))
@@ -1478,7 +1478,7 @@ pub fn parse_bool_result(input: &[u8]) -> IResult<&[u8], BoolResult> {
 pub fn parse_list_of_data(input: &[u8]) -> IResult<&[u8], ListOfData> {
     let (input, lod_tl) = ber_tl(input)?;
     let (input, lod) = get_lod_with_simple_item(input, lod_tl.length)?;
-    Ok((input, ListOfData { lod_tl, lod }))
+    Ok((input, ListOfData { /* lod_tl, */ lod }))
 }
 
 fn get_lod_with_simple_item(input: &[u8], lod_tl_length: u16) -> IResult<&[u8], Vec<SimpleItem>> {
@@ -1541,7 +1541,7 @@ pub fn parse_object_name_struct(input: &[u8]) -> IResult<&[u8], ObjectNameStruct
     Ok((
         input,
         ObjectNameStruct {
-            object_name_tl,
+            // object_name_tl,
             object_name,
         },
     ))
@@ -1558,7 +1558,7 @@ fn parse_others(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
     Ok((
         input,
         VariableSpecification::Others {
-            variable_specification_tl,
+            // variable_specification_tl,
             value,
         },
     ))
@@ -1588,7 +1588,7 @@ pub fn parse_variable_specification_struct(
     Ok((
         input,
         VariableSpecificationStruct {
-            variable_specification_tl,
+            // variable_specification_tl,
             variable_specification,
         },
     ))
@@ -1599,7 +1599,7 @@ pub fn parse_list_of_variable_specification(
 ) -> IResult<&[u8], ListOfVariableSpecification> {
     let (input, lovs_tl) = ber_tl(input)?;
     let (input, lovs) = get_lovs_with_variable_specification_struct(input, lovs_tl.length)?;
-    Ok((input, ListOfVariableSpecification { lovs_tl, lovs }))
+    Ok((input, ListOfVariableSpecification { /* lovs_tl, */ lovs }))
 }
 
 fn get_lovs_with_variable_specification_struct(
@@ -1746,7 +1746,7 @@ pub fn parse_data_access_error_construct(input: &[u8]) -> IResult<&[u8], DataAcc
     Ok((
         input,
         DataAccessErrorConstruct {
-            data_access_error_tl,
+            // data_access_error_tl,
             data_access_error,
         },
     ))
@@ -1785,7 +1785,7 @@ pub fn parse_access_result_struct(input: &[u8]) -> IResult<&[u8], AccessResultSt
     Ok((
         input,
         AccessResultStruct {
-            access_result_tl,
+            // access_result_tl,
             access_result,
         },
     ))
@@ -1794,7 +1794,7 @@ pub fn parse_access_result_struct(input: &[u8]) -> IResult<&[u8], AccessResultSt
 pub fn parse_list_of_access_result(input: &[u8]) -> IResult<&[u8], ListOfAccessResult> {
     let (input, loar_tl) = ber_tl(input)?;
     let (input, loar) = get_loar_with_access_result_struct(input, loar_tl.length)?;
-    Ok((input, ListOfAccessResult { loar_tl, loar }))
+    Ok((input, ListOfAccessResult { /* loar_tl, */ loar }))
 }
 
 fn get_loar_with_access_result_struct(
@@ -1817,7 +1817,7 @@ fn get_loar_with_access_result_struct(
 pub fn parse_list_of_identifier(input: &[u8]) -> IResult<&[u8], ListOfIdentifier> {
     let (input, loar_tl) = ber_tl(input)?;
     let (input, loar) = get_loar_with_identifier(input, loar_tl.length)?;
-    Ok((input, ListOfIdentifier { loar_tl, loar }))
+    Ok((input, ListOfIdentifier { /* loar_tl, */ loar }))
 }
 
 fn get_loar_with_identifier(input: &[u8], loar_tl_length: u16) -> IResult<&[u8], Vec<Identifier>> {
@@ -1910,7 +1910,7 @@ pub fn parse_variable_access_specification_choice_struct(
     Ok((
         input,
         VariableAccessSpecificationChoiceStruct {
-            variable_access_specification_choice_tl,
+            // variable_access_specification_choice_tl,
             variable_access_specification_choice,
         },
     ))
@@ -1923,13 +1923,13 @@ fn parse_read_request_choice_default(input: &[u8]) -> IResult<&[u8], ReadRequest
 
 fn parse_read_request_choice_otherwise(input: &[u8]) -> IResult<&[u8], ReadRequestChoice> {
     let (input, specification_with_result) = parse_bool_result(input)?;
-    let (input, variable_access_specification_choice_struct_tl) = ber_tl(input)?;
+    let (input, _variable_access_specification_choice_struct_tl) = ber_tl(input)?;
     let (input, res) = parse_variable_access_specification_choice_struct(input)?;
     Ok((
         input,
         ReadRequestChoice::ReadRequestChoiceOtherwise {
             specification_with_result,
-            variable_access_specification_choice_struct_tl,
+            // variable_access_specification_choice_struct_tl,
             res,
         },
     ))
@@ -1958,14 +1958,14 @@ pub fn parse_write_request_choice_construct(
         input,
         variable_access_specification_choice_tl.tag,
     )?;
-    let (input, list_of_data_tl) = ber_tl(input)?;
+    let (input, _list_of_data_tl) = ber_tl(input)?;
     let (input, list_of_data) = parse_list_of_data(input)?;
     Ok((
         input,
         WriteRequestChoiceConstruct {
-            variable_access_specification_choice_tl,
+            // variable_access_specification_choice_tl,
             variable_access_specification_choice,
-            list_of_data_tl,
+            // list_of_data_tl,
             list_of_data,
         },
     ))
@@ -1979,7 +1979,7 @@ pub fn parse_get_named_variable_list_attributes_request_choice_construct(
     Ok((
         input,
         GetNamedVariableListAttributesRequestChoiceConstruct {
-            object_name_tl,
+            // object_name_tl,
             object_name,
         },
     ))
@@ -1995,9 +1995,9 @@ pub fn parse_get_name_list_request_choice_construct(
     Ok((
         input,
         GetNameListRequestChoiceConstruct {
-            object_class_tl,
+            // object_class_tl,
             object_class,
-            object_scope_tl,
+            // object_scope_tl,
             object_scope,
         },
     ))
@@ -2006,16 +2006,16 @@ pub fn parse_get_name_list_request_choice_construct(
 pub fn parse_get_name_list_response_choice_construct(
     input: &[u8],
 ) -> IResult<&[u8], GetNameListResponseChoiceConstruct> {
-    let (input, list_of_identifier_tl) = ber_tl(input)?;
+    let (input, _list_of_identifier_tl) = ber_tl(input)?;
     let (input, list_of_identifier) = parse_list_of_identifier(input)?;
-    let (input, more_follows_tl) = ber_tl(input)?;
+    let (input, _more_follows_tl) = ber_tl(input)?;
     let (input, more_follows) = parse_bool_result(input)?;
     Ok((
         input,
         GetNameListResponseChoiceConstruct {
-            list_of_identifier_tl,
+            // list_of_identifier_tl,
             list_of_identifier,
-            more_follows_tl,
+            // more_follows_tl,
             more_follows,
         },
     ))
@@ -2030,20 +2030,20 @@ pub fn parse_identify_request_choice_construct(
 pub fn parse_identify_response_choice_construct(
     input: &[u8],
 ) -> IResult<&[u8], IdentifyResponseChoiceConstruct> {
-    let (input, vendor_name_tl) = ber_tl(input)?;
+    let (input, _vendor_name_tl) = ber_tl(input)?;
     let (input, vendor_name) = parse_simple_item(input)?;
-    let (input, model_name_tl) = ber_tl(input)?;
+    let (input, _model_name_tl) = ber_tl(input)?;
     let (input, model_name) = parse_simple_item(input)?;
-    let (input, revision_tl) = ber_tl(input)?;
+    let (input, _revision_tl) = ber_tl(input)?;
     let (input, revision) = parse_simple_item(input)?;
     Ok((
         input,
         IdentifyResponseChoiceConstruct {
-            vendor_name_tl,
+            // vendor_name_tl,
             vendor_name,
-            model_name_tl,
+            // model_name_tl,
             model_name,
-            revision_tl,
+            // revision_tl,
             revision,
         },
     ))
@@ -2054,12 +2054,12 @@ fn parse_read_response_choice_none(input: &[u8]) -> IResult<&[u8], ReadResponseC
 }
 
 fn parse_read_response_choice_with_data(input: &[u8]) -> IResult<&[u8], ReadResponseChoice> {
-    let (input, list_of_access_result_tl) = ber_tl(input)?;
+    let (input, _list_of_access_result_tl) = ber_tl(input)?;
     let (input, list_of_access_result) = parse_list_of_access_result(input)?;
     Ok((
         input,
         ReadResponseChoice::ReadResponseChoiceWithData {
-            list_of_access_result_tl,
+            // list_of_access_result_tl,
             list_of_access_result,
         },
     ))
@@ -2103,12 +2103,12 @@ pub fn parse_write_response_choice(
 pub fn parse_read_response_choice_construct(
     input: &[u8],
 ) -> IResult<&[u8], ReadResponseChoiceConstruct> {
-    let (input, read_response_choice_tl) = ber_tl(input)?;
+    let (input, _read_response_choice_tl) = ber_tl(input)?;
     let (input, read_response_choice) = parse_read_response_choice(input)?;
     Ok((
         input,
         ReadResponseChoiceConstruct {
-            read_response_choice_tl,
+            // read_response_choice_tl,
             read_response_choice,
         },
     ))
@@ -2123,7 +2123,7 @@ pub fn parse_write_response_choice_construct(
     Ok((
         input,
         WriteResponseChoiceConstruct {
-            write_response_choice_tl,
+            // write_response_choice_tl,
             write_response_choice,
         },
     ))
@@ -2132,16 +2132,16 @@ pub fn parse_write_response_choice_construct(
 pub fn parse_get_named_variable_list_attributes_response_choice(
     input: &[u8],
 ) -> IResult<&[u8], GetNamedVariableListAttributesResponseChoice> {
-    let (input, mms_deleteable_tl) = ber_tl(input)?;
+    let (input, _mms_deleteable_tl) = ber_tl(input)?;
     let (input, mms_deleteable) = parse_bool_result(input)?;
-    let (input, list_of_variable_specification_tl) = ber_tl(input)?;
+    let (input, _list_of_variable_specification_tl) = ber_tl(input)?;
     let (input, list_of_variable_specification) = parse_list_of_variable_specification(input)?;
     Ok((
         input,
         GetNamedVariableListAttributesResponseChoice {
-            mms_deleteable_tl,
+            // mms_deleteable_tl,
             mms_deleteable,
-            list_of_variable_specification_tl,
+            // list_of_variable_specification_tl,
             list_of_variable_specification,
         },
     ))
@@ -2153,14 +2153,14 @@ pub fn parse_information_report_choice(input: &[u8]) -> IResult<&[u8], Informati
         input,
         variable_access_specification_choice_tl.tag,
     )?;
-    let (input, list_of_access_result_tl) = ber_tl(input)?;
+    let (input, _list_of_access_result_tl) = ber_tl(input)?;
     let (input, list_of_access_result) = parse_list_of_access_result(input)?;
     Ok((
         input,
         InformationReportChoice {
-            variable_access_specification_choice_tl,
+            // variable_access_specification_choice_tl,
             variable_access_specification_choice,
-            list_of_access_result_tl,
+            // list_of_access_result_tl,
             list_of_access_result,
         },
     ))
@@ -2173,7 +2173,7 @@ pub fn parse_read_request_choice_struct(input: &[u8]) -> IResult<&[u8], ReadRequ
     Ok((
         input,
         ReadRequestChoiceStruct {
-            read_request_choice_tl,
+            // read_request_choice_tl,
             read_request_choice,
         },
     ))
@@ -2304,7 +2304,7 @@ fn parse_confirmed_service_response_struct_with_data(
     Ok((
         input,
         ConfirmedServiceResponseStruct::ConfirmedServiceResponseStructWithData {
-            service_tl,
+            // service_tl,
             service,
         },
     ))
@@ -2340,29 +2340,29 @@ pub fn parse_un_confirmed_choice(
 }
 
 pub fn parse_confirmed_request_pdu(input: &[u8]) -> IResult<&[u8], ConfirmedRequestPDU> {
-    let (input, invoke_id_tl) = ber_tl(input)?;
+    let (input, _invoke_id_tl) = ber_tl(input)?;
     let (input, invoke_id) = parse_invoke_id(input)?;
     let (input, service_tl) = ber_tl(input)?;
     let (input, service) = parse_confirmed_service_request_choice(input, service_tl.tag)?;
     Ok((
         input,
         ConfirmedRequestPDU {
-            invoke_id_tl,
+            // invoke_id_tl,
             invoke_id,
-            service_tl,
+            // service_tl,
             service,
         },
     ))
 }
 
 pub fn parse_confirmed_response_pdu(input: &[u8]) -> IResult<&[u8], ConfirmedResponsePDU> {
-    let (input, invoke_id_tl) = ber_tl(input)?;
+    let (input, _invoke_id_tl) = ber_tl(input)?;
     let (input, invoke_id) = parse_invoke_id(input)?;
     let (input, service) = parse_confirmed_service_response_struct(input)?;
     Ok((
         input,
         ConfirmedResponsePDU {
-            invoke_id_tl,
+            // invoke_id_tl,
             invoke_id,
             service,
         },
@@ -2375,7 +2375,7 @@ pub fn parse_un_confirmed_pdu(input: &[u8]) -> IResult<&[u8], UnConfirmedPDU> {
     Ok((
         input,
         UnConfirmedPDU {
-            service_tl,
+            // service_tl,
             service,
         },
     ))
@@ -2386,7 +2386,7 @@ pub fn parse_initiate_request_pdu(input: &[u8]) -> IResult<&[u8], InitiateReques
     let (input, proposed_max_serv_outstanding_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_called) = parse_simple_item(input)?;
     let (input, proposed_data_structure_nesting_level) = parse_simple_item(input)?;
-    let (input, init_request_detail_tl) = ber_tl(input)?;
+    let (input, _init_request_detail_tl) = ber_tl(input)?;
     let (input, init_request_detail) = parse_init_detail_request(input)?;
     Ok((
         input,
@@ -2395,7 +2395,7 @@ pub fn parse_initiate_request_pdu(input: &[u8]) -> IResult<&[u8], InitiateReques
             proposed_max_serv_outstanding_calling,
             proposed_max_serv_outstanding_called,
             proposed_data_structure_nesting_level,
-            init_request_detail_tl,
+            // init_request_detail_tl,
             init_request_detail,
         },
     ))
@@ -2406,7 +2406,7 @@ pub fn parse_initiate_response_pdu(input: &[u8]) -> IResult<&[u8], InitiateRespo
     let (input, proposed_max_serv_outstanding_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_called) = parse_simple_item(input)?;
     let (input, proposed_data_structure_nesting_level) = parse_simple_item(input)?;
-    let (input, init_response_detail_tl) = ber_tl(input)?;
+    let (input, _init_response_detail_tl) = ber_tl(input)?;
     let (input, init_response_detail) = parse_init_detail_response(input)?;
     Ok((
         input,
@@ -2415,7 +2415,7 @@ pub fn parse_initiate_response_pdu(input: &[u8]) -> IResult<&[u8], InitiateRespo
             proposed_max_serv_outstanding_calling,
             proposed_max_serv_outstanding_called,
             proposed_data_structure_nesting_level,
-            init_response_detail_tl,
+            // init_response_detail_tl,
             init_response_detail,
         },
     ))
@@ -2476,7 +2476,7 @@ pub fn parse_mms_pdu(input: &[u8]) -> IResult<&[u8], MmsPdu> {
     Ok((
         input,
         MmsPdu {
-            mms_pdu_choice_tl,
+            // mms_pdu_choice_tl,
             mms_pdu_choice,
         },
     ))
