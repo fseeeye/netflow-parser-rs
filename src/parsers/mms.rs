@@ -224,6 +224,26 @@ pub struct OsiPresUserData {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub struct NormalModeParametersCpWithProtocolVersion<'a> {
+    pub protocol_version: SimpleItem<'a>,
+    pub calling_presentation_selector: SimpleItem<'a>,
+    pub called_presentation_selector: SimpleItem<'a>,
+    pub presentation_context_definition_list: SimpleItem<'a>,
+    pub presentation_requirements: SimpleItem<'a>,
+    pub user_data_tl: BerTL,
+    pub user_data: OsiPresUserData,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct NormalModeParametersCpaWithProtocolVersion<'a> {
+    pub protocol_version: SimpleItem<'a>,
+    pub responding_presentation_selector: SimpleItem<'a>,
+    pub presentation_context_definition_result_list: SimpleItem<'a>,
+    pub user_data_tl: BerTL,
+    pub user_data: OsiPresUserData,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresPduNormalModeParametersCp<'a> {
     pub calling_presentation_selector: SimpleItem<'a>,
     pub called_presentation_selector: SimpleItem<'a>,
@@ -242,12 +262,34 @@ pub struct OsiPresPduNormalModeParametersCpa<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub enum OsiPresPduNormalModeParametersCpChoice<'a> {
+    NormalModeParametersCpWithProtocolVersionChoice {
+        normal_mode_parameters_cp_with_protocol_version:
+            NormalModeParametersCpWithProtocolVersion<'a>,
+    },
+    NormalModeParametersCpChoice {
+        osi_pres_pdu_normal_mode_parameters_cp: OsiPresPduNormalModeParametersCp<'a>,
+    },
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum OsiPresPduNormalModeParametersCpaChoice<'a> {
+    NormalModeParametersCpaWithProtocolVersionChoice {
+        normal_mode_parameters_cpa_with_protocol_version:
+            NormalModeParametersCpaWithProtocolVersion<'a>,
+    },
+    NormalModeParametersCpaChoice {
+        osi_pres_pdu_normal_mode_parameters_cpa: OsiPresPduNormalModeParametersCpa<'a>,
+    },
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCp<'a> {
     pub pres_tl: BerTL,
     pub pres_cp_tl: BerTL,
     pub pres_cp_mode_selector: SimpleItem<'a>,
     pub normal_mode_parameters_tl: BerTL,
-    pub normal_mode_parameters: OsiPresPduNormalModeParametersCp<'a>,
+    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpChoice<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -256,7 +298,7 @@ pub struct OsiPresCpa<'a> {
     pub pres_cpa_tl: BerTL,
     pub pres_cp_mode_selector: SimpleItem<'a>,
     pub normal_mode_parameters_tl: BerTL,
-    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpa<'a>,
+    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpaChoice<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -975,6 +1017,50 @@ pub fn parse_osi_pres_user_data(input: &[u8]) -> IResult<&[u8], OsiPresUserData>
     ))
 }
 
+pub fn parse_normal_mode_parameters_cp_with_protocol_version(
+    input: &[u8],
+) -> IResult<&[u8], NormalModeParametersCpWithProtocolVersion> {
+    let (input, protocol_version) = parse_simple_item(input)?;
+    let (input, calling_presentation_selector) = parse_simple_item(input)?;
+    let (input, called_presentation_selector) = parse_simple_item(input)?;
+    let (input, presentation_context_definition_list) = parse_simple_item(input)?;
+    let (input, presentation_requirements) = parse_simple_item(input)?;
+    let (input, user_data_tl) = ber_tl(input)?;
+    let (input, user_data) = parse_osi_pres_user_data(input)?;
+    Ok((
+        input,
+        NormalModeParametersCpWithProtocolVersion {
+            protocol_version,
+            calling_presentation_selector,
+            called_presentation_selector,
+            presentation_context_definition_list,
+            presentation_requirements,
+            user_data_tl,
+            user_data,
+        },
+    ))
+}
+
+pub fn parse_normal_mode_parameters_cpa_with_protocol_version(
+    input: &[u8],
+) -> IResult<&[u8], NormalModeParametersCpaWithProtocolVersion> {
+    let (input, protocol_version) = parse_simple_item(input)?;
+    let (input, responding_presentation_selector) = parse_simple_item(input)?;
+    let (input, presentation_context_definition_result_list) = parse_simple_item(input)?;
+    let (input, user_data_tl) = ber_tl(input)?;
+    let (input, user_data) = parse_osi_pres_user_data(input)?;
+    Ok((
+        input,
+        NormalModeParametersCpaWithProtocolVersion {
+            protocol_version,
+            responding_presentation_selector,
+            presentation_context_definition_result_list,
+            user_data_tl,
+            user_data,
+        },
+    ))
+}
+
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cp(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCp> {
@@ -1015,12 +1101,89 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa(
     ))
 }
 
+fn parse_normal_mode_parameters_cp_with_protocol_version_choice(
+    input: &[u8],
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    let (input, normal_mode_parameters_cp_with_protocol_version) =
+        parse_normal_mode_parameters_cp_with_protocol_version(input)?;
+    Ok((
+        input,
+        OsiPresPduNormalModeParametersCpChoice::NormalModeParametersCpWithProtocolVersionChoice {
+            normal_mode_parameters_cp_with_protocol_version,
+        },
+    ))
+}
+
+fn parse_normal_mode_parameters_cp_choice(
+    input: &[u8],
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    let (input, osi_pres_pdu_normal_mode_parameters_cp) =
+        parse_osi_pres_pdu_normal_mode_parameters_cp(input)?;
+    Ok((
+        input,
+        OsiPresPduNormalModeParametersCpChoice::NormalModeParametersCpChoice {
+            osi_pres_pdu_normal_mode_parameters_cp,
+        },
+    ))
+}
+
+pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
+    input: &[u8],
+    normal_mode_parameters_tl_tag: u8,
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) =
+        match normal_mode_parameters_tl_tag.bitand(0xff) {
+            0x80 => parse_normal_mode_parameters_cp_with_protocol_version_choice(input),
+            _ => parse_normal_mode_parameters_cp_choice(input),
+        }?;
+    Ok((input, osi_pres_pdu_normal_mode_parameters_cp_choice))
+}
+
+fn parse_normal_mode_parameters_cpa_with_protocol_version_choice(
+    input: &[u8],
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
+    let (input, normal_mode_parameters_cpa_with_protocol_version) =
+        parse_normal_mode_parameters_cpa_with_protocol_version(input)?;
+    Ok((
+        input,
+        OsiPresPduNormalModeParametersCpaChoice::NormalModeParametersCpaWithProtocolVersionChoice {
+            normal_mode_parameters_cpa_with_protocol_version,
+        },
+    ))
+}
+
+fn parse_normal_mode_parameters_cpa_choice(
+    input: &[u8],
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
+    let (input, osi_pres_pdu_normal_mode_parameters_cpa) =
+        parse_osi_pres_pdu_normal_mode_parameters_cpa(input)?;
+    Ok((
+        input,
+        OsiPresPduNormalModeParametersCpaChoice::NormalModeParametersCpaChoice {
+            osi_pres_pdu_normal_mode_parameters_cpa,
+        },
+    ))
+}
+
+pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
+    input: &[u8],
+    normal_mode_parameters_tl_tag: u8,
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
+    let (input, osi_pres_pdu_normal_mode_parameters_cpa_choice) =
+        match normal_mode_parameters_tl_tag.bitand(0xff) {
+            0x80 => parse_normal_mode_parameters_cpa_with_protocol_version_choice(input),
+            _ => parse_normal_mode_parameters_cpa_choice(input),
+        }?;
+    Ok((input, osi_pres_pdu_normal_mode_parameters_cpa_choice))
+}
+
 pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
     let (input, pres_tl) = ber_tl(input)?;
     let (input, pres_cp_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
     let (input, normal_mode_parameters_tl) = ber_tl(input)?;
-    let (input, normal_mode_parameters) = parse_osi_pres_pdu_normal_mode_parameters_cp(input)?;
+    let (input, normal_mode_parameters) =
+        parse_osi_pres_pdu_normal_mode_parameters_cp_choice(input, normal_mode_parameters_tl.tag)?;
     Ok((
         input,
         OsiPresCp {
@@ -1038,7 +1201,8 @@ pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
     let (input, pres_cpa_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
     let (input, normal_mode_parameters_tl) = ber_tl(input)?;
-    let (input, normal_mode_parameters) = parse_osi_pres_pdu_normal_mode_parameters_cpa(input)?;
+    let (input, normal_mode_parameters) =
+        parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(input, normal_mode_parameters_tl.tag)?;
     Ok((
         input,
         OsiPresCpa {
