@@ -32,7 +32,7 @@ pub fn parse_ethernet_header(input: &[u8]) -> nom::IResult<&[u8], EthernetHeader
     ))
 }
 
-pub(crate) fn parse_ethernet_layer(input: &[u8], options: QuinPacketOptions) -> QuinPacket {
+pub(crate) fn parse_ethernet_layer<'a>(input: &'a [u8], options: &QuinPacketOptions) -> QuinPacket<'a> {
     let current_layertype = LayerType::Link(LinkLayerType::Ethernet);
 
     let (input, eth_header) = match parse_ethernet_header(input) {

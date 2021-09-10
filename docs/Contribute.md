@@ -14,3 +14,12 @@
 
 ## Rust
 * 项目使用了Rust部分最新特性，请切换Rust版本为Nightly进行开发。
+
+## Usage
+```bash
+# 测试
+cargo run --example parsing_pcap
+cargo run --example parsing_rules
+# 生成静态库和c语言头文件
+cargo build
+```

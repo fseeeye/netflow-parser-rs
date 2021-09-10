@@ -26,6 +26,26 @@ pub enum Action {
     Reject,
 }
 
+impl Into<CAction> for Action {
+    fn into(self) -> CAction {
+        match self {
+            Self::Allow  => CAction::Allow,
+            Self::Alert  => CAction::Alert,
+            Self::Drop   => CAction::Drop,
+            Self::Reject => CAction::Reject,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub enum CAction {
+    Allow,
+    Alert,
+    Drop,
+    Reject,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum Direction {
     #[serde(rename = "->")]

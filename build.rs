@@ -9,6 +9,6 @@ fn main() {
     	.expect("Unable to generate bindings");
     
 	let out_path = PathBuf::from("./target/debug/");
-    bindings.write_to_file(out_path.join("bindings.h"));
-	// bindings.write_to_file(format!("target/debug/{}.h", env::var("CARGO_PKG_NAME").unwrap().replace("-", "_")));
+    // bindings.write_to_file(out_path.join("bindings.h"));
+	bindings.write_to_file(out_path.join(format!("{}.h", env::var("CARGO_PKG_NAME").unwrap().replace("-", "_"))));
 }

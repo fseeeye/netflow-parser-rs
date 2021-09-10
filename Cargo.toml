@@ -15,6 +15,7 @@ crate-type = ["staticlib", "rlib"]
 nom = "7"
 serde = {version = "1.0", features = ["derive"]} # https://serde.rs/
 serde_json = "1.0"
+libc = "0.2"
 
 [dev-dependencies]
 # required by parsing_pcap example and parsing bench

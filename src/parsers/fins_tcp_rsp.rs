@@ -58,7 +58,7 @@ pub fn parse_fins_tcp_rsp_header(input: &[u8]) -> IResult<&[u8], FinsTcpRspHeade
     ))
 }
 
-pub(crate) fn parse_fins_tcp_rsp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+pub(crate) fn parse_fins_tcp_rsp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
     let current_layertype = LayerType::Application(ApplicationLayerType::FinsTcpRsp);
 
     let (input, fins_tcp_rsp_header) = match parse_fins_tcp_rsp_header(input) {

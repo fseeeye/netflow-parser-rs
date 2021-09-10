@@ -37,7 +37,7 @@ pub(crate) fn parse_udp_layer<'a>(
     input: &'a [u8],
     link_layer: LinkLayer,
     network_layer: NetworkLayer<'a>,
-    options: QuinPacketOptions,
+    options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_layertype = LayerType::Transport(TransportLayerType::Udp);
 

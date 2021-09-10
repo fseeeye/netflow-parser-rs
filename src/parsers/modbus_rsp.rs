@@ -598,7 +598,7 @@ pub(crate) fn parse_modbus_rsp_layer<'a>(
     link_layer: LinkLayer,
     network_layer: NetworkLayer<'a>,
     transport_layer: TransportLayer<'a>,
-    options: QuinPacketOptions,
+    options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_layertype = LayerType::Application(ApplicationLayerType::ModbusRsp);
 

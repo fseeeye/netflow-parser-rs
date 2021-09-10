@@ -9,7 +9,7 @@ pub struct EofHeader;
 pub(crate) fn parse_l2_eof_layer<'a>(
     input: &'a [u8],
     link_layer: LinkLayer,
-    _options: QuinPacketOptions,
+    _options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     if input.len() == 0 {
         return QuinPacket::L2(L2Packet {
@@ -30,7 +30,7 @@ pub(crate) fn parse_l3_eof_layer<'a>(
     input: &'a [u8],
     link_layer: LinkLayer,
     network_layer: NetworkLayer<'a>,
-    _options: QuinPacketOptions,
+    _options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     if input.len() == 0 {
         return QuinPacket::L3(L3Packet {
@@ -54,7 +54,7 @@ pub(crate) fn parse_l4_eof_layer<'a>(
     link_layer: LinkLayer,
     network_layer: NetworkLayer<'a>,
     transport_layer: TransportLayer<'a>,
-    _options: QuinPacketOptions,
+    _options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     if input.len() == 0 {
         return QuinPacket::L4(L4Packet {
@@ -81,7 +81,7 @@ pub(crate) fn parse_l5_eof_layer<'a>(
     network_layer: NetworkLayer<'a>,
     transport_layer: TransportLayer<'a>,
     application_layer: ApplicationLayer<'a>,
-    _options: QuinPacketOptions,
+    _options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     if input.len() == 0 {
         return QuinPacket::L5(L5Packet {

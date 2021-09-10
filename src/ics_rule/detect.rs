@@ -1,12 +1,32 @@
 use crate::{QuinPacket, RuleDetector};
 
-use super::rule::{Action};
+use super::rule::{Action, CAction};
 use super::rules::Rules;
 
 #[derive(Debug)]
 pub enum CheckResult {
     Miss,
     Hit(Action),
+}
+
+impl Into<CCheckResult> for CheckResult {
+    fn into(self) -> CCheckResult {
+        match self {
+            Self::Miss => {
+                CCheckResult::Miss
+            },
+            Self::Hit(action) => {
+                CCheckResult::Hit(action.into())
+            }
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub enum CCheckResult {
+    Miss,
+    Hit(CAction),
 }
 
 pub fn detect_ics(rules: &Rules, packet: &QuinPacket) -> CheckResult {

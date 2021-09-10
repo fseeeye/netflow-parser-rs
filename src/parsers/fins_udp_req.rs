@@ -79,7 +79,7 @@ pub fn parse_fins_udp_req_header(input: &[u8]) -> IResult<&[u8], FinsUdpReqHeade
     ))
 }
 
-pub(crate) fn parse_fins_udp_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: QuinPacketOptions) -> QuinPacket<'a> {
+pub(crate) fn parse_fins_udp_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
     let current_layertype = LayerType::Application(ApplicationLayerType::FinsUdpReq);
 
     let (input, fins_udp_req_header) = match parse_fins_udp_req_header(input) {

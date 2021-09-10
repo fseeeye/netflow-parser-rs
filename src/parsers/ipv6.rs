@@ -61,11 +61,11 @@ pub fn parse_ipv6_header(input: &[u8]) -> nom::IResult<&[u8], Ipv6Header> {
     ))
 }
 
-pub(crate) fn parse_ipv6_layer(
-    input: &[u8],
+pub(crate) fn parse_ipv6_layer<'a>(
+    input: &'a [u8],
     link_layer: LinkLayer,
-    options: QuinPacketOptions,
-) -> QuinPacket {
+    options: &QuinPacketOptions,
+) -> QuinPacket<'a> {
     let current_layertype = LayerType::Network(NetworkLayerType::Ipv6);
 
     let (input, ipv6_header) = match parse_ipv6_header(input) {

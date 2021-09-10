@@ -1,3 +1,4 @@
+use core::slice;
 use std::default::Default;
 
 use crate::packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
@@ -57,9 +58,23 @@ impl Default for QuinPacketOptions {
     }
 }
 
+#[no_mangle]
+pub extern "C" fn parse_packet<'a>(input_ptr: *const u8, input_len: usize, options_ptr: *const QuinPacketOptions) -> *const QuinPacket<'a> {
+    let input = unsafe {
+        assert!(!input_ptr.is_null());
+        slice::from_raw_parts(input_ptr, input_len)
+    };
+    let option = unsafe {
+        assert!(!options_ptr.is_null());
+        &*options_ptr
+    };
+
+    &parse_quin_packet(input, option)
+}
+
 /// 解析u8流为QuinPacket的函数
 /// 硬编码默认第一层是link的Ethernet。
-pub fn parse_quin_packet(input: &[u8], options: QuinPacketOptions) -> QuinPacket {
+pub fn parse_quin_packet<'a>(input: &'a [u8], options: &QuinPacketOptions) -> QuinPacket<'a> {
     parse_ethernet_layer(input, options)
 
     // // Tips: 不传递options / xxx_layer等参数，需要用到trait obj

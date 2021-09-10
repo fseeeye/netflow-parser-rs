@@ -78,11 +78,11 @@ pub fn parse_ipv4_header(input: &[u8]) -> nom::IResult<&[u8], Ipv4Header> {
     ))
 }
 
-pub(crate) fn parse_ipv4_layer(
-    input: &[u8],
+pub(crate) fn parse_ipv4_layer<'a>(
+    input: &'a [u8],
     link_layer: LinkLayer,
-    options: QuinPacketOptions,
-) -> QuinPacket {
+    options: &QuinPacketOptions,
+) -> QuinPacket<'a> {
     let current_layertype = LayerType::Network(NetworkLayerType::Ipv4);
 
     let (input, ipv4_header) = match parse_ipv4_header(input) {
