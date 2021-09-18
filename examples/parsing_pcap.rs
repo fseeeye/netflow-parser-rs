@@ -106,7 +106,7 @@ fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
 
     println!("{:?}", &input);
     let runtimer = Instant::now(); // 程序运行计时变量
-    let packet = parse_quin_packet(input, QuinPacketOptions::default());
+    let packet = parse_quin_packet(input, &QuinPacketOptions::default());
     match &packet {
         QuinPacket::L1(l1) => {
             let time = runtimer.elapsed().as_secs_f64();

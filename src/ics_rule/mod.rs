@@ -10,7 +10,7 @@ use std::ffi::CStr;
 use libc::{c_char};
 
 use crate::QuinPacket;
-use self::detect::{CCheckResult};
+use self::detect::{CheckResult};
 
 #[no_mangle]
 pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const Rules {
@@ -26,11 +26,13 @@ pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const Rules {
         panic!("Rules Init failed...");
     };
 
+    println!("Rules Init done.");
+
     &rules
 }
 
 #[no_mangle]
-pub extern "C" fn detect_ics_rules(rules_ptr: *const Rules, packet_ptr: *const QuinPacket) -> CCheckResult {
+pub extern "C" fn detect_ics_rules(rules_ptr: *const Rules, packet_ptr: *const QuinPacket) -> bool {
     let rules = unsafe {
         assert!(!rules_ptr.is_null());
         &*rules_ptr
@@ -40,5 +42,15 @@ pub extern "C" fn detect_ics_rules(rules_ptr: *const Rules, packet_ptr: *const Q
         &*packet_ptr
     };
 
-    detect_ics(rules, packet).into()
+    let rst = detect_ics(rules, packet);
+    match rst {
+        CheckResult::Hit(_) => {
+            println!("[MYPLUGIN] Hit!");
+            true
+        },
+        CheckResult::Miss => {
+            println!("[MYPLUGIN] Miss!");
+            false
+        }
+    }
 }
