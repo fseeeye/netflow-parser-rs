@@ -79,7 +79,7 @@ pub extern "C" fn show_packet(packet_ptr: *const QuinPacket) {
     };
 
     match packet {
-        QuinPacket::L1(l1) => {
+        QuinPacket::L1(_l1) => {
             println!("l1 packet.");
         }
         QuinPacket::L2(l2) => {
