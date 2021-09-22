@@ -1,4 +1,20 @@
-# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.4...v) (2021-08-18)
+# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.4.0...v) (2021-09-22)
+
+
+
+# [0.4.0](https://gitee.com/BoleanTech/parsing-rs/compare/v0.3.4...v0.4.0) (2021-09-18)
+
+
+### Bug Fixes
+
+* **ffi:** change sth. about ffi ([df1dd8b](https://gitee.com/BoleanTech/parsing-rs/commits/df1dd8b0849d8b0231b1d52e9a5410bfd421f812))
+
+
+### Features
+
+* add ics-rules structure ([1c0254a](https://gitee.com/BoleanTech/parsing-rs/commits/1c0254a5d066445a16c2220c9f81bb302679e3c4))
+* check rules demo ([b4409b5](https://gitee.com/BoleanTech/parsing-rs/commits/b4409b53eb3b735091317ea34683d78bff88451c))
+* **rule:** include Modbus automatically generated code of ICS rule ([bbe451d](https://gitee.com/BoleanTech/parsing-rs/commits/bbe451d12d16043efb73c851b682a51a674f71d1))
 
 
 
