@@ -1,6 +1,6 @@
 [package]
 name = "parsing_rs"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2018"
 repository = "https://gitee.com/BoleanTech/parsing-rs"
 

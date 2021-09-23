@@ -1,4 +1,19 @@
-# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.4.0...v) (2021-09-22)
+# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.4.0...v) (2021-09-23)
+
+
+### Bug Fixes
+
+* **protocol:** some pcaps don't include 'protocol version' in osi_pres, made a choice ([1338152](https://gitee.com/BoleanTech/parsing-rs/commits/1338152ee10c645bb6949a33ca596e91640271be))
+
+
+### Features
+
+* **feature:** add ber-tl field ([eeb4cfe](https://gitee.com/BoleanTech/parsing-rs/commits/eeb4cfe4f50095166a1cd15792b79ce8e0a3f204))
+* **protocol:** add mms ([5fd0541](https://gitee.com/BoleanTech/parsing-rs/commits/5fd05410e8af7659558acf6c8720e4f3c2062eac))
+* **protocol:** add mms ([59d8d94](https://gitee.com/BoleanTech/parsing-rs/commits/59d8d94596f1a8fb1e939c58d9c146ee2d09d5b6))
+* **protocol:** mms ([4ae0653](https://gitee.com/BoleanTech/parsing-rs/commits/4ae065370dc4c99f80c4148b5d59ed320492a15b))
+* **protocol:** mms without tag and length when output in debug mod ([beda513](https://gitee.com/BoleanTech/parsing-rs/commits/beda513c8119bc5fda98df9bd2c45be338c11f24))
+* **protocol:** parse mmms without its protocol stack ([d367d31](https://gitee.com/BoleanTech/parsing-rs/commits/d367d31a5eb519b063d8dfda7ee2f8da034b9fe2))
 
 
 
