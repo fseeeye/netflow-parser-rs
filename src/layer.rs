@@ -55,6 +55,7 @@ pub enum ApplicationLayer<'a> {
     FinsTcpRsp(FinsTcpRspHeader<'a>),
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
+	Mms(MmsHeader<'a>),
 }
 
 impl<'a> Into<LayerType> for ApplicationLayer<'a> {
@@ -66,6 +67,7 @@ impl<'a> Into<LayerType> for ApplicationLayer<'a> {
             ApplicationLayer::FinsUdpRsp(_) => LayerType::Application(ApplicationLayerType::FinsUdpRsp),
             ApplicationLayer::ModbusReq(_) => LayerType::Application(ApplicationLayerType::ModbusReq),
             ApplicationLayer::ModbusRsp(_) => LayerType::Application(ApplicationLayerType::ModbusRsp),
+            ApplicationLayer::Mms(_) => LayerType::Application(ApplicationLayerType::Mms),
         }
     }
 }

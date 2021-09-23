@@ -14,8 +14,9 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
-        "../pcap/ip/ipv4-options.pcap",
-        "../pcap/ICS/modbus/test/mod_2.pcap",
+		"../pcap/ICS/iec61850/mms/mms_3.pcap",
+        // "../pcap/ip/ipv4-options.pcap",
+        // "../pcap/ICS/modbus/test/mod_2.pcap",
         // "./benches/modbus_fins_test.pcap",
     ];
 
@@ -136,8 +137,8 @@ fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
         }
         QuinPacket::L5(l5) => {
             let time = runtimer.elapsed().as_secs_f64();
-            println!("l5 packet: {:?}", l5);
-            println!("l5 app_layer: {:?}", l5.application_layer);
+            println!("l5 packet.");
+            println!("l5 app_layer:\n{:#?}", l5.application_layer);
             println!("  in time: {:?}", time);
         }
     };

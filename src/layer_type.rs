@@ -41,6 +41,7 @@ pub enum ApplicationLayerType {
     FinsTcpRsp,
     FinsUdpReq,
     FinsUdpRsp,
+	Mms,
     ModbusReq,
     ModbusRsp,
 }
