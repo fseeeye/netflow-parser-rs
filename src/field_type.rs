@@ -50,6 +50,14 @@ pub fn address6(input: &[u8]) -> nom::IResult<&[u8], Ipv6Addr> {
     }
 }
 
+#[inline(always)]
+pub fn slice_u8_2(input: &[u8]) -> nom::IResult<&[u8], [u8;2]> {
+    let (input, num_u16) = be_u16(input)?;
+    Ok((
+        input,
+        [(num_u16 >> 8) as u8, num_u16 as u8]
+    ))
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct BerTL {

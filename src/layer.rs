@@ -1,4 +1,6 @@
-use crate::{LayerType, layer_type::{ApplicationLayerType, LinkLayerType, NetworkLayerType, TransportLayerType}, parsers::*};
+use crate::LayerType;
+use crate::layer_type::{ApplicationLayerType, LinkLayerType, NetworkLayerType, TransportLayerType};
+use crate::parsers::*;
 
 /// LinkLayer是表示link层各类协议信息的类型。
 #[derive(Debug, PartialEq, Clone)]
@@ -56,6 +58,8 @@ pub enum ApplicationLayer<'a> {
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
 	Mms(MmsHeader<'a>),
+    S7comm(S7commHeader),
+    Iso(IsoHeader),
 }
 
 impl<'a> Into<LayerType> for ApplicationLayer<'a> {
@@ -68,6 +72,8 @@ impl<'a> Into<LayerType> for ApplicationLayer<'a> {
             ApplicationLayer::ModbusReq(_) => LayerType::Application(ApplicationLayerType::ModbusReq),
             ApplicationLayer::ModbusRsp(_) => LayerType::Application(ApplicationLayerType::ModbusRsp),
             ApplicationLayer::Mms(_) => LayerType::Application(ApplicationLayerType::Mms),
+            ApplicationLayer::S7comm(_) => LayerType::Application(ApplicationLayerType::S7comm),
+            ApplicationLayer::Iso(_) => LayerType::Application(ApplicationLayerType::Iso),
         }
     }
 }

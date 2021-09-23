@@ -44,19 +44,16 @@ use super::parse_l5_eof_layer;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MmsHeader<'a> {
-    pub mmsap_header: MmsapHeader,
     pub osi_protocol_stack: OsiProtocolStack<'a>,
     pub mms_pdu: MmsPdu<'a>,
 }
 
 pub fn parse_mms_header(input: &[u8]) -> IResult<&[u8], MmsHeader> {
-    let (input, mmsap_header) = parse_mmsap_header(input)?;
     let (input, osi_protocol_stack) = parse_osi_protocol_stack(input)?;
     let (input, mms_pdu) = parse_mms_pdu(input)?;
     Ok((
         input,
         MmsHeader {
-            mmsap_header,
             osi_protocol_stack,
             mms_pdu
         }
@@ -107,57 +104,6 @@ pub struct SimpleItem<'a> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SimpleU8Data {
     pub data: u8,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Tpkt {
-    pub version: u8,
-    pub reserved: u8,
-    pub length: u16,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub enum CotpPduData {
-    ConnectRequest {
-         destination_reference: u16,
-         source_reference: u16,
-         bit_mask: u8,
-         parameter_src_tsap: u8,
-         parameter_src_length: u8,
-         source_tsap: u16,
-         parameter_dst_tsap: u8,
-         parameter_dst_length: u8,
-         destination_tsap: u16,
-    },
-    ConnectConfirm {
-         destination_reference: u16,
-         source_reference: u16,
-         bit_mask: u8,
-         parameter_src_tsap: u8,
-         parameter_src_length: u8,
-         source_tsap: u16,
-         parameter_dst_tsap: u8,
-         parameter_dst_length: u8,
-         destination_tsap: u16,
-         parameter_tpdu_size: u8,
-         parameter_tpdu_length: u8,
-         tpdu_size: u8,
-    },
-    CotpPduDataData {
-         bit_mask: u8,
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct CotpPdu {
-    pub pdu_type: u8,
-    pub cotp_pdu_data: CotpPduData,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Cotp {
-    pub length: u8,
-    pub cotp_pdu: CotpPdu,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -746,12 +692,6 @@ pub enum MmsPduChoice<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct MmsapHeader {
-    pub tpkt: Tpkt,
-    pub cotp: Cotp,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MmsPdu<'a> {
     pub mms_pdu_choice: MmsPduChoice<'a>,
 }
@@ -774,122 +714,6 @@ pub fn parse_simple_u8_data(input: &[u8]) -> IResult<&[u8], SimpleU8Data> {
         input,
         SimpleU8Data {
             data
-        }
-    ))
-}
-
-pub fn parse_tpkt(input: &[u8]) -> IResult<&[u8], Tpkt> {
-    let (input, version) = u8(input)?;
-    let (input, reserved) = u8(input)?;
-    let (input, length) = be_u16(input)?;
-    Ok((
-        input,
-        Tpkt {
-            version,
-            reserved,
-            length
-        }
-    ))
-}
-
-fn parse_connect_request(input: &[u8]) -> IResult<&[u8], CotpPduData> {
-    let (input, destination_reference) = be_u16(input)?;
-    let (input, source_reference) = be_u16(input)?;
-    let (input, bit_mask) = u8(input)?;
-    let (input, parameter_src_tsap) = u8(input)?;
-    let (input, parameter_src_length) = u8(input)?;
-    let (input, source_tsap) = be_u16(input)?;
-    let (input, parameter_dst_tsap) = u8(input)?;
-    let (input, parameter_dst_length) = u8(input)?;
-    let (input, destination_tsap) = be_u16(input)?;
-    Ok((
-        input,
-        CotpPduData::ConnectRequest {
-            destination_reference,
-            source_reference,
-            bit_mask,
-            parameter_src_tsap,
-            parameter_src_length,
-            source_tsap,
-            parameter_dst_tsap,
-            parameter_dst_length,
-            destination_tsap
-        }
-    ))
-}
-
-fn parse_connect_confirm(input: &[u8]) -> IResult<&[u8], CotpPduData> {
-    let (input, destination_reference) = be_u16(input)?;
-    let (input, source_reference) = be_u16(input)?;
-    let (input, bit_mask) = u8(input)?;
-    let (input, parameter_src_tsap) = u8(input)?;
-    let (input, parameter_src_length) = u8(input)?;
-    let (input, source_tsap) = be_u16(input)?;
-    let (input, parameter_dst_tsap) = u8(input)?;
-    let (input, parameter_dst_length) = u8(input)?;
-    let (input, destination_tsap) = be_u16(input)?;
-    let (input, parameter_tpdu_size) = u8(input)?;
-    let (input, parameter_tpdu_length) = u8(input)?;
-    let (input, tpdu_size) = u8(input)?;
-    Ok((
-        input,
-        CotpPduData::ConnectConfirm {
-            destination_reference,
-            source_reference,
-            bit_mask,
-            parameter_src_tsap,
-            parameter_src_length,
-            source_tsap,
-            parameter_dst_tsap,
-            parameter_dst_length,
-            destination_tsap,
-            parameter_tpdu_size,
-            parameter_tpdu_length,
-            tpdu_size
-        }
-    ))
-}
-
-fn parse_cotp_pdu_data_data(input: &[u8]) -> IResult<&[u8], CotpPduData> {
-    let (input, bit_mask) = u8(input)?;
-    Ok((
-        input,
-        CotpPduData::CotpPduDataData {
-            bit_mask
-        }
-    ))
-}
-
-pub fn parse_cotp_pdu_data(input: &[u8], pdu_type: u8) -> IResult<&[u8], CotpPduData> {
-    let (input, cotp_pdu_data) = match pdu_type {
-        0xe0 => parse_connect_request(input),
-        0xd0 => parse_connect_confirm(input),
-        0xf0 => parse_cotp_pdu_data_data(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
-    }?;
-    Ok((input, cotp_pdu_data))
-}
-
-pub fn parse_cotp_pdu(input: &[u8]) -> IResult<&[u8], CotpPdu> {
-    let (input, pdu_type) = u8(input)?;
-    let (input, cotp_pdu_data) = parse_cotp_pdu_data(input, pdu_type)?;
-    Ok((
-        input,
-        CotpPdu {
-            pdu_type,
-            cotp_pdu_data
-        }
-    ))
-}
-
-pub fn parse_cotp(input: &[u8]) -> IResult<&[u8], Cotp> {
-    let (input, length) = u8(input)?;
-    let (input, cotp_pdu) = parse_cotp_pdu(input)?;
-    Ok((
-        input,
-        Cotp {
-            length,
-            cotp_pdu
         }
     ))
 }
@@ -2497,18 +2321,6 @@ pub fn parse_mms_pdu_choice(input: &[u8], _mms_pdu_choice_tl_tag: u8) -> IResult
         _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
     }?;
     Ok((input, mms_pdu_choice))
-}
-
-pub fn parse_mmsap_header(input: &[u8]) -> IResult<&[u8], MmsapHeader> {
-    let (input, tpkt) = parse_tpkt(input)?;
-    let (input, cotp) = parse_cotp(input)?;
-    Ok((
-        input,
-        MmsapHeader {
-            tpkt,
-            cotp
-        }
-    ))
 }
 
 pub fn parse_mms_pdu(input: &[u8]) -> IResult<&[u8], MmsPdu> {

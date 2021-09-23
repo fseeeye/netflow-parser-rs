@@ -44,6 +44,8 @@ pub enum ApplicationLayerType {
 	Mms,
     ModbusReq,
     ModbusRsp,
+    S7comm,
+    Iso,
 }
 
 #[repr(C)]

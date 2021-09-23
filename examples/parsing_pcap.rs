@@ -14,7 +14,8 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
-		"../pcap/ICS/iec61850/mms/mms_3.pcap",
+        "../pcap/ICS/s7/test/setup_comm.pcap"
+		// "../pcap/ICS/iec61850/mms/mms_3.pcap",
         // "../pcap/ip/ipv4-options.pcap",
         // "../pcap/ICS/modbus/test/mod_2.pcap",
         // "./benches/modbus_fins_test.pcap",
