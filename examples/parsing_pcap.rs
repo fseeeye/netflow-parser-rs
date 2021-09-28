@@ -14,7 +14,14 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
-        "../pcap/ICS/s7/test/setup_comm.pcap"
+        "../pcap/ICS/s7/test/setup_comm.pcap",
+        "../pcap/ICS/s7/test/plc_stop.pcap",
+        "../pcap/ICS/s7/test/pi_service.pcap",
+        "../pcap/ICS/s7/test/read_var.pcap",
+        "../pcap/ICS/s7/test/write_var.pcap",
+        "../pcap/ICS/s7/test/download.pcap",
+        "../pcap/ICS/s7/test/upload.pcap",
+        "../pcap/ICS/s7/test/read_szl.pcap"
 		// "../pcap/ICS/iec61850/mms/mms_3.pcap",
         // "../pcap/ip/ipv4-options.pcap",
         // "../pcap/ICS/modbus/test/mod_2.pcap",
@@ -134,12 +141,14 @@ fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
             println!("l4 packet: {:?}", l4);
             println!("l4 dst port: {:?}", l4.get_dst_port());
             println!("l4 src port: {:?}", l4.get_src_port());
+            println!("Error: {:?}", l4.error);
             println!("  in time: {:?}", time);
         }
         QuinPacket::L5(l5) => {
             let time = runtimer.elapsed().as_secs_f64();
             println!("l5 packet.");
             println!("l5 app_layer:\n{:#?}", l5.application_layer);
+            println!("Error: {:?}", l5.error);
             println!("  in time: {:?}", time);
         }
     };

@@ -58,7 +58,7 @@ pub enum ApplicationLayer<'a> {
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
 	Mms(MmsHeader<'a>),
-    S7comm(S7commHeader),
+    S7comm(S7commHeader<'a>),
     Iso(IsoHeader),
 }
 
