@@ -14,16 +14,22 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
-        "../pcap/ICS/s7/test/setup_comm.pcap",
-        "../pcap/ICS/s7/test/plc_stop.pcap",
-        "../pcap/ICS/s7/test/pi_service.pcap",
-        "../pcap/ICS/s7/test/read_var.pcap",
-        "../pcap/ICS/s7/test/write_var.pcap",
-        "../pcap/ICS/s7/test/download.pcap",
-        "../pcap/ICS/s7/test/upload.pcap",
-        "../pcap/ICS/s7/test/read_szl.pcap"
+        // BACnet
+        "../pcap/ICS/bacnet/test/bacnet_ipv4_udp.pcap",
+        // S7comm
+        // "../pcap/ICS/s7/test/setup_comm.pcap",
+        // "../pcap/ICS/s7/test/plc_stop.pcap",
+        // "../pcap/ICS/s7/test/pi_service.pcap",
+        // "../pcap/ICS/s7/test/read_var.pcap",
+        // "../pcap/ICS/s7/test/write_var.pcap",
+        // "../pcap/ICS/s7/test/download.pcap",
+        // "../pcap/ICS/s7/test/upload.pcap",
+        // "../pcap/ICS/s7/test/read_szl.pcap"
+        // Mms
 		// "../pcap/ICS/iec61850/mms/mms_3.pcap",
+        // Ipv4 Option
         // "../pcap/ip/ipv4-options.pcap",
+        // Modbus
         // "../pcap/ICS/modbus/test/mod_2.pcap",
         // "./benches/modbus_fins_test.pcap",
     ];

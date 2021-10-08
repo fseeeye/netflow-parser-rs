@@ -60,6 +60,7 @@ pub enum ApplicationLayer<'a> {
 	Mms(MmsHeader<'a>),
     S7comm(S7commHeader<'a>),
     Iso(IsoHeader),
+    Bacnet(BacnetHeader<'a>),
 }
 
 impl<'a> Into<LayerType> for ApplicationLayer<'a> {
@@ -74,6 +75,7 @@ impl<'a> Into<LayerType> for ApplicationLayer<'a> {
             ApplicationLayer::Mms(_) => LayerType::Application(ApplicationLayerType::Mms),
             ApplicationLayer::S7comm(_) => LayerType::Application(ApplicationLayerType::S7comm),
             ApplicationLayer::Iso(_) => LayerType::Application(ApplicationLayerType::Iso),
+            ApplicationLayer::Bacnet(_) => LayerType::Application(ApplicationLayerType::Bacnet),
         }
     }
 }

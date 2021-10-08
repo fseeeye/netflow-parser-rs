@@ -7,7 +7,7 @@ use crate::packet_level::{L3Packet, L4Packet};
 use crate::packet_quin::{QuinPacket, QuinPacketOptions};
 use crate::LayerType;
 
-use super::{parse_fins_udp_req_layer, parse_fins_udp_rsp_layer, parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
+use super::{parse_bacnet_layer, parse_fins_udp_req_layer, parse_fins_udp_rsp_layer, parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct UdpHeader {
@@ -77,6 +77,10 @@ pub(crate) fn parse_udp_layer<'a>(
             let transport_layer = TransportLayer::Udp(udp_header);
             parse_fins_udp_rsp_layer(input, link_layer, network_layer, transport_layer, options)
         }
+        47808 => {
+            let transport_layer = TransportLayer::Udp(udp_header);
+            parse_bacnet_layer(input, link_layer, network_layer, transport_layer, options)
+        }
         _ => match udp_header.dst_port {
             502 => {
                 let transport_layer = TransportLayer::Udp(udp_header);
@@ -85,6 +89,10 @@ pub(crate) fn parse_udp_layer<'a>(
             9600 => {
                 let transport_layer = TransportLayer::Udp(udp_header);
                 parse_fins_udp_req_layer(input, link_layer, network_layer, transport_layer, options)
+            }
+            47808 => {
+                let transport_layer = TransportLayer::Udp(udp_header);
+                parse_bacnet_layer(input, link_layer, network_layer, transport_layer, options)
             }
             _ => {
                 let transport_layer = TransportLayer::Udp(udp_header);

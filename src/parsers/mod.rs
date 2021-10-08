@@ -13,6 +13,7 @@ pub(crate) mod mms;
 pub(crate) mod modbus_req;
 pub(crate) mod modbus_rsp;
 pub(crate) mod s7comm;
+pub(crate) mod bacnet;
 
 pub(crate) use eof::*;
 pub(crate) use ethernet::{parse_ethernet_layer, EthernetHeader};
@@ -29,3 +30,4 @@ pub(crate) use mms::{parse_mms_layer, MmsHeader};
 pub(crate) use modbus_req::{parse_modbus_req_layer, ModbusReqHeader};
 pub(crate) use modbus_rsp::{parse_modbus_rsp_layer, ModbusRspHeader};
 pub(crate) use s7comm::{parse_s7comm_layer, S7commHeader};
+pub(crate) use bacnet::{parse_bacnet_layer, BacnetHeader};

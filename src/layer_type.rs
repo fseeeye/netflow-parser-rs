@@ -46,11 +46,16 @@ pub enum ApplicationLayerType {
     ModbusRsp,
     S7comm,
     Iso,
+    Bacnet,
 }
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash, Serialize, Deserialize)]
 pub enum ApplicationLayerNaiveType {
     Fins,
+    Mms,
     Modbus,
+    S7comm,
+    Iso,
+    Bacnet
 }
