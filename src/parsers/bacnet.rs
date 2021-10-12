@@ -367,10 +367,10 @@ pub enum BacnetObjectPropertyReferenceInfo {
          instance_number: u32,
     },
     PropertyIdentifier {
-         property_identifier: u8,
+         property_identifier: u32,
     },
-    EndIdentifier {
-        
+    PropertyArrayIndex {
+         property_array_index: u32,
     }
 }
 
@@ -489,18 +489,100 @@ pub enum ConfirmedServiceRequest {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub enum BacnetObjectPropertyReferenceAckInfo {
+    ObjectIdentifier {
+         object_type: u16,
+         instance_number: u32,
+    },
+    PropertyIdentifier {
+         property_identifier: u32,
+    },
+    PropertyArrayIndex {
+         property_array_index: u32,
+    },
+    PropertyValueOpen {
+         app_context_tag_number: u8,
+         app_tag_class: u8,
+         app_length_value_type: u8,
+         object_type: u16,
+         instance_number: u32,
+    },
+    PropertyValueClose {}
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct BacnetObjectPropertyReferenceAckItem {
+    pub context_tag_number: u8,
+    pub tag_class: u8,
+    pub length_value_type: u8,
+    pub bacnet_object_property_reference_ack_info: BacnetObjectPropertyReferenceAckInfo,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum ConfirmedServiceAck {
+    ConfirmedEventNotificationAck {
+        
+    },
+    GetEnrollmentSummaryAck {
+        
+    },
+    AtomicReadFile {
+        
+    },
+    AtomicReadFileAck {
+        
+    },
+    CreateObject {
+        
+    },
+    ReadPropertyAck {
+         property_items: Vec<BacnetObjectPropertyReferenceAckItem>,
+    },
+    ReadPropertyConditionalAck {
+        
+    },
+    ReadPropertyMultipleAck {
+        
+    },
+    ConfirmedPrivateTransferAck {
+        
+    },
+    VtOpenAck {
+        
+    },
+    VtDataAck {
+        
+    },
+    AuthenticateAck {
+        
+    },
+    ReadRangeAck {
+        
+    },
+    GetEventInformationACK {
+        
+    },
+    AuditLogQueryAck {
+        
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ApduInfo {
     ComfirmedServiceRequest {
          unknow_bit: u8,
          response_segments: u8,
          max_adpu_size: u8,
          invoke_id: u8,
-         service_choice: u8,
          segmented_req_info: SegmentedReqInfo,
+         service_choice: u8,
          confirmed_service_request: ConfirmedServiceRequest,
     },
     ComplexAckPdu {
-        
+         invoke_id: u8,
+         segmented_req_info: SegmentedReqInfo,
+         service_choice: u8,
+         confirmed_service_ack: ConfirmedServiceAck,
     }
 }
 
@@ -1325,52 +1407,60 @@ pub fn parse_segmented_req_info(input: &[u8], pdu_flags: u8) -> IResult<&[u8], S
     Ok((input, segmented_req_info))
 }
 
-fn parse_bacnet_object_property_reference_info_object_identifier(input: &[u8]) -> IResult<&[u8], BacnetObjectPropertyReferenceInfo> {
-    let (input, (object_type, instance_number)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
-        tuple((take_bits(10usize), take_bits(22usize)))
-    )(input)?;
-    Ok((
-        input,
-        BacnetObjectPropertyReferenceInfo::ObjectIdentifier {
-            object_type, instance_number
-        }
-    ))
-}
 
-fn parse_bacnet_object_property_reference_info_property_identifier(input: &[u8]) -> IResult<&[u8], BacnetObjectPropertyReferenceInfo> {
-    let (input, property_identifier) = u8(input)?;
-    Ok((
-        input,
-        BacnetObjectPropertyReferenceInfo::PropertyIdentifier {
-            property_identifier
-        }
-    ))
-}
 
-fn parse_bacnet_object_property_reference_info_end_identifier(input: &[u8]) -> IResult<&[u8], BacnetObjectPropertyReferenceInfo> {
-    Ok((
-        input,
-        BacnetObjectPropertyReferenceInfo::EndIdentifier {
-            
-        }
-    ))
-}
-
-pub fn parse_bacnet_object_property_reference_info(input: &[u8], context_tag_number: u8) -> IResult<&[u8], BacnetObjectPropertyReferenceInfo> {
-    let (input, bacnet_object_property_reference_info) = match context_tag_number {
-        0x0 => parse_bacnet_object_property_reference_info_object_identifier(input),
-        0x01 => parse_bacnet_object_property_reference_info_property_identifier(input),
-        0x02 => parse_bacnet_object_property_reference_info_end_identifier(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
-    }?;
-    Ok((input, bacnet_object_property_reference_info))
+pub fn parse_bacnet_object_property_reference_info(input: &[u8], context_tag_number: u8, length_value_type: u8) -> IResult<&[u8], BacnetObjectPropertyReferenceInfo> {
+    if context_tag_number == 0 {
+        let (input, (object_type, instance_number)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
+            tuple((take_bits(10usize), take_bits(22usize)))
+        )(input)?;
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceInfo::ObjectIdentifier {
+                object_type, instance_number
+            }
+        ))
+    }
+    else if context_tag_number == 1 {
+        let (input, property_identifier) = match take_bits::<_, _, _, nom::error::Error<(&[u8], usize)>>((length_value_type * 8) as usize)((input, 0 as usize)) {
+            Ok(((input_remain, _offset), rst)) => (input_remain, rst),
+            Err(_e) => return Err(nom::Err::Error(nom::error::Error::new(
+                input,
+                nom::error::ErrorKind::Fail
+            )))
+        };
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceInfo::PropertyIdentifier {
+                property_identifier
+            }
+        ))
+    }
+    else if context_tag_number == 2 {
+        let (input, property_array_index) = match take_bits::<_, _, _, nom::error::Error<(&[u8], usize)>>((length_value_type * 8) as usize)((input, 0 as usize)) {
+            Ok(((input_remain, _offset), rst)) => (input_remain, rst),
+            Err(_e) => return Err(nom::Err::Error(nom::error::Error::new(
+                input,
+                nom::error::ErrorKind::Fail
+            )))
+        };
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceInfo::PropertyArrayIndex {
+                property_array_index
+            }
+        ))
+    }
+    else {
+        return Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify)))
+    }
 }
 
 pub fn parse_bacnet_object_property_reference_item(input: &[u8]) -> IResult<&[u8], BacnetObjectPropertyReferenceItem> {
     let (input, (context_tag_number, tag_class, length_value_type)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
         tuple((take_bits(4usize), take_bits(1usize), take_bits(3usize)))
     )(input)?;
-    let (input, bacnet_object_property_reference_info) = parse_bacnet_object_property_reference_info(input, context_tag_number)?;
+    let (input, bacnet_object_property_reference_info) = parse_bacnet_object_property_reference_info(input, context_tag_number, length_value_type)?;
     Ok((
         input,
         BacnetObjectPropertyReferenceItem {
@@ -1488,8 +1578,24 @@ fn parse_confirmed_service_request_delete_object(input: &[u8]) -> IResult<&[u8],
     ))
 }
 
+fn get_property_items_with_bacnet_object_property_reference_item(input: &[u8]) -> IResult<&[u8], Vec<BacnetObjectPropertyReferenceItem>> {
+    let mut property_items = Vec::new();
+    let mut _property_items: BacnetObjectPropertyReferenceItem;
+    let mut input = input;
+
+    while input.len() > 0 {
+        (input, _property_items) = parse_bacnet_object_property_reference_item(input)?;
+        property_items.push(_property_items);
+    }
+
+    Ok((
+        input,
+        property_items
+    ))
+}
+
 fn parse_confirmed_service_request_read_property(input: &[u8]) -> IResult<&[u8], ConfirmedServiceRequest> {
-    let (input, property_items) = count(parse_bacnet_object_property_reference_item, 3 as usize)(input)?;
+    let (input, property_items) = get_property_items_with_bacnet_object_property_reference_item(input)?;
     Ok((
         input,
         ConfirmedServiceRequest::ReadProperty {
@@ -1730,31 +1836,296 @@ pub fn parse_confirmed_service_request(input: &[u8], service_choice: u8) -> IRes
 
 
 
+pub fn parse_bacnet_object_property_reference_ack_info(input: &[u8], context_tag_number: u8, length_value_type: u8) -> IResult<&[u8], BacnetObjectPropertyReferenceAckInfo> {
+    if context_tag_number == 0 {
+        let (input, (object_type, instance_number)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
+            tuple((take_bits(10usize), take_bits(22usize)))
+        )(input)?;
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceAckInfo::ObjectIdentifier {
+                object_type, instance_number
+            }
+        ))
+    }
+    else if context_tag_number == 1 {
+        let (input, property_identifier) = match take_bits::<_, _, _, nom::error::Error<(&[u8], usize)>>((length_value_type * 8) as usize)((input, 0 as usize)) {
+            Ok(((input_remain, _offset), rst)) => (input_remain, rst),
+            Err(_e) => return Err(nom::Err::Error(nom::error::Error::new(
+                input,
+                nom::error::ErrorKind::Fail
+            )))
+        };
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceAckInfo::PropertyIdentifier {
+                property_identifier
+            }
+        ))
+    }
+    else if context_tag_number == 2 {
+        let (input, property_array_index) = match take_bits::<_, _, _, nom::error::Error<(&[u8], usize)>>((length_value_type * 8) as usize)((input, 0 as usize)) {
+            Ok(((input_remain, _offset), rst)) => (input_remain, rst),
+            Err(_e) => return Err(nom::Err::Error(nom::error::Error::new(
+                input,
+                nom::error::ErrorKind::Fail
+            )))
+        };
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceAckInfo::PropertyArrayIndex {
+                property_array_index
+            }
+        ))
+    }
+    else if context_tag_number == 3 && length_value_type == 6 {
+        let (input, (app_context_tag_number, app_tag_class, app_length_value_type)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
+            tuple((take_bits(4usize), take_bits(1usize), take_bits(3usize)))
+        )(input)?;
+        let (input, (object_type, instance_number)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
+            tuple((take_bits(10usize), take_bits(22usize)))
+        )(input)?;
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceAckInfo::PropertyValueOpen {
+                app_context_tag_number, app_tag_class, app_length_value_type,
+                object_type, instance_number
+            }
+        ))
+    }
+    else if context_tag_number == 3 && length_value_type == 7 {
+        Ok((
+            input,
+            BacnetObjectPropertyReferenceAckInfo::PropertyValueClose {}
+        ))
+    }
+    else {
+        return Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify)))
+    }
+}
+
+pub fn parse_bacnet_object_property_reference_ack_item(input: &[u8]) -> IResult<&[u8], BacnetObjectPropertyReferenceAckItem> {
+    let (input, (context_tag_number, tag_class, length_value_type)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
+        tuple((take_bits(4usize), take_bits(1usize), take_bits(3usize)))
+    )(input)?;
+    let (input, bacnet_object_property_reference_ack_info) = parse_bacnet_object_property_reference_ack_info(input, context_tag_number, length_value_type)?;
+    Ok((
+        input,
+        BacnetObjectPropertyReferenceAckItem {
+            context_tag_number, tag_class, length_value_type,
+            bacnet_object_property_reference_ack_info
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_confirmed_event_notification_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::ConfirmedEventNotificationAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_get_enrollment_summary_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::GetEnrollmentSummaryAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_atomic_read_file(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::AtomicReadFile {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_atomic_read_file_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::AtomicReadFileAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_create_object(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::CreateObject {
+            
+        }
+    ))
+}
+
+fn get_property_items_with_bacnet_object_property_reference_ack_item(input: &[u8]) -> IResult<&[u8], Vec<BacnetObjectPropertyReferenceAckItem>> {
+    let mut property_items = Vec::new();
+    let mut _property_items: BacnetObjectPropertyReferenceAckItem;
+    let mut input = input;
+
+    while input.len() > 0 {
+        (input, _property_items) = parse_bacnet_object_property_reference_ack_item(input)?;
+        property_items.push(_property_items);
+    }
+
+    Ok((
+        input,
+        property_items
+    ))
+}
+
+fn parse_confirmed_service_ack_read_property_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    let (input, property_items) = get_property_items_with_bacnet_object_property_reference_ack_item(input)?;
+    Ok((
+        input,
+        ConfirmedServiceAck::ReadPropertyAck {
+            property_items
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_read_property_conditional_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::ReadPropertyConditionalAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_read_property_multiple_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::ReadPropertyMultipleAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_confirmed_private_transfer_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::ConfirmedPrivateTransferAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_vt_open_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::VtOpenAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_vt_data_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::VtDataAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_authenticate_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::AuthenticateAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_read_range_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::ReadRangeAck {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_get_event_information_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::GetEventInformationACK {
+            
+        }
+    ))
+}
+
+fn parse_confirmed_service_ack_audit_log_query_ack(input: &[u8]) -> IResult<&[u8], ConfirmedServiceAck> {
+    Ok((
+        input,
+        ConfirmedServiceAck::AuditLogQueryAck {
+            
+        }
+    ))
+}
+
+pub fn parse_confirmed_service_ack(input: &[u8], service_choice: u8) -> IResult<&[u8], ConfirmedServiceAck> {
+    let (input, confirmed_service_ack) = match service_choice {
+        0x03 => parse_confirmed_service_ack_confirmed_event_notification_ack(input),
+        0x04 => parse_confirmed_service_ack_get_enrollment_summary_ack(input),
+        0x06 => parse_confirmed_service_ack_atomic_read_file(input),
+        0x07 => parse_confirmed_service_ack_atomic_read_file_ack(input),
+        0x0a => parse_confirmed_service_ack_create_object(input),
+        0x0c => parse_confirmed_service_ack_read_property_ack(input),
+        0x0d => parse_confirmed_service_ack_read_property_conditional_ack(input),
+        0x0e => parse_confirmed_service_ack_read_property_multiple_ack(input),
+        0x12 => parse_confirmed_service_ack_confirmed_private_transfer_ack(input),
+        0x15 => parse_confirmed_service_ack_vt_open_ack(input),
+        0x17 => parse_confirmed_service_ack_vt_data_ack(input),
+        0x18 => parse_confirmed_service_ack_authenticate_ack(input),
+        0x1a => parse_confirmed_service_ack_read_range_ack(input),
+        0x1d => parse_confirmed_service_ack_get_event_information_ack(input),
+        0x21 => parse_confirmed_service_ack_audit_log_query_ack(input),
+        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+    }?;
+    Ok((input, confirmed_service_ack))
+}
+
+
+
 pub fn parse_apdu_info(input: &[u8], apdu_type: u8, pdu_flags: u8) -> IResult<&[u8], ApduInfo> {
     if apdu_type == 0 {
         let (input, (unknow_bit, response_segments, max_adpu_size)) = bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(
             tuple((take_bits(1usize), take_bits(3usize), take_bits(4usize)))
         )(input)?;
         let (input, invoke_id) = u8(input)?;
-        let (input, service_choice) = u8(input)?;
         let (input, segmented_req_info) = parse_segmented_req_info(input, pdu_flags)?;
+        let (input, service_choice) = u8(input)?;
         let (input, confirmed_service_request) = parse_confirmed_service_request(input, service_choice)?;
         Ok((
             input,
             ApduInfo::ComfirmedServiceRequest {
                 unknow_bit, response_segments, max_adpu_size,
                 invoke_id,
-                service_choice,
                 segmented_req_info,
+                service_choice,
                 confirmed_service_request
             }
         ))
     }
     else if apdu_type == 3 {
+        let (input, invoke_id) = u8(input)?;
+        let (input, segmented_req_info) = parse_segmented_req_info(input, pdu_flags)?;
+        let (input, service_choice) = u8(input)?;
+        let (input, confirmed_service_ack) = parse_confirmed_service_ack(input, service_choice)?;
         Ok((
             input,
             ApduInfo::ComplexAckPdu {
-                
+                invoke_id,
+                segmented_req_info,
+                service_choice,
+                confirmed_service_ack
             }
         ))
     }
