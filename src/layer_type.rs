@@ -31,31 +31,31 @@ pub enum NetworkLayerType {
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum TransportLayerType {
     Tcp,
-    Udp
+    Udp,
 }
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum ApplicationLayerType {
+    ModbusReq,
+    ModbusRsp,
     FinsTcpReq,
     FinsTcpRsp,
     FinsUdpReq,
     FinsUdpRsp,
-	Mms,
-    ModbusReq,
-    ModbusRsp,
+    Mms,
     S7comm,
-    Iso,
     Bacnet,
+    IsoOnTcp,
 }
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash, Serialize, Deserialize)]
 pub enum ApplicationLayerNaiveType {
+    Modbus,
     Fins,
     Mms,
-    Modbus,
     S7comm,
-    Iso,
-    Bacnet
+    Bacnet,
+    IsoOnTcp,
 }

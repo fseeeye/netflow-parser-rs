@@ -1,8 +1,7 @@
+/// Layer是包含协议解析结果的数据结构
 use crate::LayerType;
 use crate::layer_type::{ApplicationLayerType, LinkLayerType, NetworkLayerType, TransportLayerType};
-use crate::parsers::*;
-
-/// LinkLayer是表示link层各类协议信息的类型。
+use crate::parsers::*;/// LinkLayer是表示link层各类协议信息的类型。
 #[derive(Debug, PartialEq, Clone)]
 pub enum LinkLayer {
     Ethernet(EthernetHeader),
@@ -57,25 +56,25 @@ pub enum ApplicationLayer<'a> {
     FinsTcpRsp(FinsTcpRspHeader<'a>),
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
-	Mms(MmsHeader<'a>),
+    Mms(MmsHeader<'a>),
     S7comm(S7commHeader<'a>),
-    Iso(IsoHeader),
     Bacnet(BacnetHeader<'a>),
+    IsoOnTcp(IsoOnTcpHeader),
 }
 
 impl<'a> Into<LayerType> for ApplicationLayer<'a> {
     fn into(self) -> LayerType {
         match self {
+            ApplicationLayer::ModbusReq(_) => LayerType::Application(ApplicationLayerType::ModbusReq),
+            ApplicationLayer::ModbusRsp(_) => LayerType::Application(ApplicationLayerType::ModbusRsp),
             ApplicationLayer::FinsTcpReq(_) => LayerType::Application(ApplicationLayerType::FinsTcpReq),
             ApplicationLayer::FinsTcpRsp(_) => LayerType::Application(ApplicationLayerType::FinsTcpRsp),
             ApplicationLayer::FinsUdpReq(_) => LayerType::Application(ApplicationLayerType::FinsUdpReq),
             ApplicationLayer::FinsUdpRsp(_) => LayerType::Application(ApplicationLayerType::FinsUdpRsp),
-            ApplicationLayer::ModbusReq(_) => LayerType::Application(ApplicationLayerType::ModbusReq),
-            ApplicationLayer::ModbusRsp(_) => LayerType::Application(ApplicationLayerType::ModbusRsp),
             ApplicationLayer::Mms(_) => LayerType::Application(ApplicationLayerType::Mms),
             ApplicationLayer::S7comm(_) => LayerType::Application(ApplicationLayerType::S7comm),
-            ApplicationLayer::Iso(_) => LayerType::Application(ApplicationLayerType::Iso),
             ApplicationLayer::Bacnet(_) => LayerType::Application(ApplicationLayerType::Bacnet),
+            ApplicationLayer::IsoOnTcp(_) => LayerType::Application(ApplicationLayerType::IsoOnTcp),
         }
     }
 }

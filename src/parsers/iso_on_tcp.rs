@@ -12,24 +12,24 @@ use super::{parse_l5_eof_layer, parse_mms_layer, parse_s7comm_layer};
 
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct IsoHeader {
+pub struct IsoOnTcpHeader {
     pub tpkt: Tpkt,
     pub cotp: Cotp,
 }
 
-pub fn parse_iso_header(input: &[u8]) -> IResult<&[u8], IsoHeader> {
+pub fn parse_iso_header(input: &[u8]) -> IResult<&[u8], IsoOnTcpHeader> {
     let (input, tpkt) = parse_tpkt(input)?;
     let (input, cotp) = parse_cotp(input)?;
     Ok((
         input,
-        IsoHeader {
+        IsoOnTcpHeader {
             tpkt,
             cotp
         }
     ))
 }
 
-pub(crate) fn parse_iso_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
+pub(crate) fn parse_iso_on_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
     let (input, iso_header) = match parse_iso_header(input) {
         Ok(o) => o,
         Err(_e) => {
@@ -50,7 +50,7 @@ pub(crate) fn parse_iso_layer<'a>(input: &'a [u8], link_layer: LinkLayer, networ
             let (input, next_iso_pdu_type) = match peek(u8)(input) {
                 Ok(o) => o,
                 Err(nom::Err::Error((_, _))) => {
-                    let application_layer = ApplicationLayer::Iso(iso_header);
+                    let application_layer = ApplicationLayer::IsoOnTcp(iso_header);
                     return QuinPacket::L5(
                         L5Packet {
                             link_layer,
@@ -63,7 +63,7 @@ pub(crate) fn parse_iso_layer<'a>(input: &'a [u8], link_layer: LinkLayer, networ
                     )
                 }
                 _ => {
-                    let application_layer = ApplicationLayer::Iso(iso_header);
+                    let application_layer = ApplicationLayer::IsoOnTcp(iso_header);
                     return QuinPacket::L5(
                         L5Packet {
                             link_layer,
@@ -86,7 +86,7 @@ pub(crate) fn parse_iso_layer<'a>(input: &'a [u8], link_layer: LinkLayer, networ
             }
         },
         _ => {
-            let application_layer = ApplicationLayer::Iso(iso_header);
+            let application_layer = ApplicationLayer::IsoOnTcp(iso_header);
             parse_l5_eof_layer(input, link_layer, network_layer, transport_layer, application_layer, options)
         }
     }
