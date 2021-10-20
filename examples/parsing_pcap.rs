@@ -14,8 +14,10 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
+        // Dnp3
+        "../pcap/ICS/dnp3/test/dnp3_simple.pcap",
         // BACnet
-        "../pcap/ICS/bacnet/test/bacnet_ipv4_udp.pcap",
+        // "../pcap/ICS/bacnet/test/bacnet_ipv4_udp.pcap",
         // S7comm
         // "../pcap/ICS/s7/test/setup_comm.pcap",
         // "../pcap/ICS/s7/test/plc_stop.pcap",
@@ -147,14 +149,22 @@ fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
             println!("l4 packet: {:?}", l4);
             println!("l4 dst port: {:?}", l4.get_dst_port());
             println!("l4 src port: {:?}", l4.get_src_port());
-            println!("Error: {:?}", l4.error);
+            if l4.error.is_none() {
+                println!("Error: {}", String::from(format!("{:?}", l4.error)).green());
+            } else {
+                println!("Error: {}", String::from(format!("{:?}", l4.error)).red());
+            }
             println!("  in time: {:?}", time);
         }
         QuinPacket::L5(l5) => {
             let time = runtimer.elapsed().as_secs_f64();
             println!("l5 packet.");
             println!("l5 app_layer:\n{:#?}", l5.application_layer);
-            println!("Error: {:?}", l5.error);
+            if l5.error.is_none() {
+                println!("Error: {}", String::from(format!("{:?}", l5.error)).green());
+            } else {
+                println!("Error: {}", String::from(format!("{:?}", l5.error)).red());
+            }
             println!("  in time: {:?}", time);
         }
     };

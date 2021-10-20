@@ -33,6 +33,7 @@ mod packet_quin;
 mod parsers;
 mod traits;
 mod ics_rule;
+mod utils;
 pub mod field_type;
 
 pub use errors::ParseError;

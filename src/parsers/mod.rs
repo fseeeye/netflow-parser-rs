@@ -1,5 +1,6 @@
 pub(crate) mod eof;
 pub(crate) mod bacnet;
+pub(crate) mod dnp3;
 pub(crate) mod ethernet;
 pub(crate) mod fins_tcp_req;
 pub(crate) mod fins_tcp_rsp;
@@ -17,6 +18,7 @@ pub(crate) mod udp;
 
 pub(crate) use eof::*;
 pub(crate) use bacnet::{parse_bacnet_layer, BacnetHeader};
+pub(crate) use dnp3::{parse_dnp3_layer, Dnp3Header};
 pub(crate) use ethernet::{parse_ethernet_layer, EthernetHeader};
 pub(crate) use fins_tcp_req::{parse_fins_tcp_req_layer, FinsTcpReqHeader};
 pub(crate) use fins_tcp_rsp::{parse_fins_tcp_rsp_layer, FinsTcpRspHeader};

@@ -156,7 +156,7 @@ pub fn ber_tl(input: &[u8]) -> nom::IResult<&[u8], BerTL> {
 					(input, tmp) = be_u16(input)?;
 				}
 			}
-		}else{
+		} else {
 			let (input, slice) = take((length - 128) as usize)(input)?;
 			let mut length: u8 = 0;
 			for i in slice {
