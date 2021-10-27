@@ -60,6 +60,7 @@ pub enum ApplicationLayer<'a> {
     S7comm(S7commHeader<'a>),
     Bacnet(BacnetHeader<'a>),
     Dnp3(Dnp3Header<'a>),
+    Iec104(Iec104Header),
     IsoOnTcp(IsoOnTcpHeader),
 }
 
@@ -76,6 +77,7 @@ impl<'a> Into<LayerType> for ApplicationLayer<'a> {
             ApplicationLayer::S7comm(_) => LayerType::Application(ApplicationLayerType::S7comm),
             ApplicationLayer::Bacnet(_) => LayerType::Application(ApplicationLayerType::Bacnet),
             ApplicationLayer::Dnp3(_) => LayerType::Application(ApplicationLayerType::Dnp3),
+            ApplicationLayer::Iec104(_) => LayerType::Application(ApplicationLayerType::Iec104),
             ApplicationLayer::IsoOnTcp(_) => LayerType::Application(ApplicationLayerType::IsoOnTcp),
         }
     }

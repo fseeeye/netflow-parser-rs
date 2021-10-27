@@ -14,8 +14,10 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
+        // IEC104
+        "../pcap/ICS/iec104/test/iec104_i.pcap",
         // Dnp3
-        "../pcap/ICS/dnp3/test/dnp3_simple.pcap",
+        // "../pcap/ICS/dnp3/test/dnp3_simple.pcap",
         // BACnet
         // "../pcap/ICS/bacnet/test/bacnet_ipv4_udp.pcap",
         // S7comm

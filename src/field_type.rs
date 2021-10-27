@@ -100,6 +100,18 @@ pub fn slice_u8_2(input: &[u8]) -> nom::IResult<&[u8], [u8;2]> {
 }
 
 #[inline(always)]
+pub fn slice_u8_3(input: &[u8]) -> nom::IResult<&[u8], [u8;3]> {
+    let (input, num1) = u8(input)?;
+    let (input, num2) = u8(input)?;
+    let (input, num3) = u8(input)?;
+
+    Ok((
+        input,
+        [num1, num2, num3]
+    ))
+}
+
+#[inline(always)]
 pub fn slice_u8_4(input: &[u8]) -> nom::IResult<&[u8], [u8;4]> {
     let (input, num1) = u8(input)?;
     let (input, num2) = u8(input)?;

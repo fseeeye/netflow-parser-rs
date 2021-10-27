@@ -47,6 +47,7 @@ pub enum ApplicationLayerType {
     S7comm,
     Bacnet,
     Dnp3,
+    Iec104,
     IsoOnTcp,
 }
 
@@ -59,5 +60,6 @@ pub enum ApplicationLayerNaiveType {
     S7comm,
     Bacnet,
     Dnp3,
+    Iec104,
     IsoOnTcp,
 }
