@@ -61,6 +61,7 @@ pub enum ApplicationLayer<'a> {
     Bacnet(BacnetHeader<'a>),
     Dnp3(Dnp3Header<'a>),
     Iec104(Iec104Header),
+    Opcua(OpcuaHeader),
     IsoOnTcp(IsoOnTcpHeader),
 }
 
@@ -78,6 +79,7 @@ impl<'a> Into<LayerType> for ApplicationLayer<'a> {
             ApplicationLayer::Bacnet(_) => LayerType::Application(ApplicationLayerType::Bacnet),
             ApplicationLayer::Dnp3(_) => LayerType::Application(ApplicationLayerType::Dnp3),
             ApplicationLayer::Iec104(_) => LayerType::Application(ApplicationLayerType::Iec104),
+            ApplicationLayer::Opcua(_) => LayerType::Application(ApplicationLayerType::Opcua),
             ApplicationLayer::IsoOnTcp(_) => LayerType::Application(ApplicationLayerType::IsoOnTcp),
         }
     }

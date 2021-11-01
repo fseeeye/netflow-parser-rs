@@ -14,8 +14,10 @@ use std::time::Instant;
 fn main() {
     // change paths by yourself.
     let paths = [
+        // OPC UA
+        "../pcap/ICS/opcua/test/opcua_hello.pcap",
         // IEC104
-        "../pcap/ICS/iec104/test/iec104_i.pcap",
+        // "../pcap/ICS/iec104/test/iec104_i.pcap",
         // Dnp3
         // "../pcap/ICS/dnp3/test/dnp3_simple.pcap",
         // BACnet
@@ -123,7 +125,7 @@ fn parse_pcap(path: &str) {
 fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
     use parsing_rs::*;
 
-    println!("{:?}", &input);
+    // println!("{:?}", &input);
     let runtimer = Instant::now(); // 程序运行计时变量
     let packet = parse_quin_packet(input, &QuinPacketOptions::default());
     match &packet {

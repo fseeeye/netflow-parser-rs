@@ -48,6 +48,7 @@ pub enum ApplicationLayerType {
     Bacnet,
     Dnp3,
     Iec104,
+    Opcua,
     IsoOnTcp,
 }
 
@@ -61,5 +62,6 @@ pub enum ApplicationLayerNaiveType {
     Bacnet,
     Dnp3,
     Iec104,
+    Opcua,
     IsoOnTcp,
 }
