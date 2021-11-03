@@ -61,7 +61,7 @@ pub enum ApplicationLayer<'a> {
     Bacnet(BacnetHeader<'a>),
     Dnp3(Dnp3Header<'a>),
     Iec104(Iec104Header),
-    Opcua(OpcuaHeader),
+    Opcua(OpcuaHeader<'a>),
     IsoOnTcp(IsoOnTcpHeader),
 }
 

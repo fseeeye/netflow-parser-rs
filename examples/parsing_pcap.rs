@@ -16,6 +16,9 @@ fn main() {
     let paths = [
         // OPC UA
         "../pcap/ICS/opcua/test/opcua_hello.pcap",
+        "../pcap/ICS/opcua/test/opcua_ack.pcap",
+        "../pcap/ICS/opcua/test/opcua_error.pcap",
+        "../pcap/ICS/opcua/test/opcua_msg.pcap",
         // IEC104
         // "../pcap/ICS/iec104/test/iec104_i.pcap",
         // Dnp3
