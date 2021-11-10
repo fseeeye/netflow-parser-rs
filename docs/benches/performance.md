@@ -9,18 +9,20 @@
 ### Parsing-rs & pypkt
 ```bash
 # install pypkt (https://gitee.com/bolean-tech/bolean-pypkt-c/)
+sudo apt-get install cmake libpcap-dev libpcre3-dev libclang-dev
+# if you get errors when installing clang, please check: https://stackoverflow.com/questions/67383617/unable-to-install-rstudio-cannot-install-libclang-dev
 git clone https://gitee.com/bolean-tech/bolean-pypkt-c.git
 cd bolean-pypkt-c
 mkdir build && cd build
 cmake ..
 make
-sudo make install
+sudo make install # files install to /usr/local/include/pypkt/ & /usr/local/lib/libpypkt.so & /usr/local/bin/libpypkt.so
 # install cargo-criterion (https://github.com/bheisler/cargo-criterion)
 cargo install cargo-criterion
 # download parsing-rs
 git clone https://gitee.com/BoleanTech/parsing-rs.git
 # into ./benches dir and do benchmarking
-cd ./benches
+cd ./parsing-rs/benches
 cargo criterion --bench parsing --all-features
 ```
 
