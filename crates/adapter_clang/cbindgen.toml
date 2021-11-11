@@ -115,7 +115,6 @@ parse_deps = true
 #
 # default: there is no whitelist (NOTE: this is the opposite of [])
 include = [
-    "parsing_rs",
     "parsing_icsrule",
     "parsing_parser"
 ]
@@ -134,10 +133,7 @@ clean = false
 # bindings for.
 #
 # default: []
-extra_bindings = [
-    "parsing_icsrule",
-    "parsing_parser"
-]
+extra_bindings = []
 
 [parse.expand]
 crates = []

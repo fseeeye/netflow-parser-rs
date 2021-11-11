@@ -9,10 +9,6 @@ repository = "https://gitee.com/BoleanTech/parsing-rs"
 exclude = ["benches"]
 members = ["crates/*"]
 
-# ref: https://doc.rust-lang.org/reference/linkage.html
-[lib]
-crate-type = ["staticlib", "cdylib", "rlib"]
-
 [dependencies]
 parsing_icsrule = { path = "crates/parsing_icsrule", version = "0.5.0" }
 parsing_parser = { path = "crates/parsing_parser", version = "0.5.0" }

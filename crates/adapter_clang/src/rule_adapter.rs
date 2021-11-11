@@ -1,8 +1,8 @@
 use std::ffi::CStr;
 use libc::{c_char};
 
-use parsing_rs::parser::QuinPacket;
-use parsing_rs::icsrule::{
+use parsing_parser::QuinPacket;
+use parsing_icsrule::{
     Rules,
     detect_ics,
     CheckResult

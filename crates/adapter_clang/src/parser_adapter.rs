@@ -1,6 +1,6 @@
 use core::slice;
 
-use parsing_rs::parser::{
+use parsing_parser::{
     parse_quin_packet,
     QuinPacket,
     LinkLevel, NetLevel, TransLevel
