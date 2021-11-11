@@ -1,0 +1,16 @@
+[package]
+name = "adapter_clang"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+# required by ffi
+cbindgen = "0.20.0"
+
+[dependencies]
+# parsing-rs
+parsing_rs = { path = "../../", version = "0.5.0" }
+# required by ffi
+libc = "0.2"

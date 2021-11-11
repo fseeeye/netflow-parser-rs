@@ -1,4 +1,4 @@
-use parsing_rs::{Rules};
+use parsing_rs::icsrule::Rules;
 
 fn main() {
     let file_str = "./examples/ics_rules.json";

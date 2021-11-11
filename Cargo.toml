@@ -1,31 +1,27 @@
 [package]
 name = "parsing_rs"
-version = "0.4.1"
+version = "0.5.0"
 edition = "2021"
 repository = "https://gitee.com/BoleanTech/parsing-rs"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
 exclude = ["benches"]
+members = ["crates/*"]
 
+# ref: https://doc.rust-lang.org/reference/linkage.html
 [lib]
-crate-type = ["staticlib", "rlib"]
+crate-type = ["staticlib", "cdylib", "rlib"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-nom = "7"
-serde = {version = "1.0", features = ["derive"]} # https://serde.rs/
-serde_json = "1.0"
-libc = "0.2"
+parsing_icsrule = { path = "crates/parsing_icsrule", version = "0.5.0" }
+parsing_parser = { path = "crates/parsing_parser", version = "0.5.0" }
 
 [dev-dependencies]
 # required by examples and benchmark
 pcap-parser = "0.11.1"
 colored = "2"
 walkdir = "2.3.2"
-
-[build-dependencies]
-# required by ffi
-cbindgen = "0.20.0"
 
 [[example]]
 name = "parsing_pcap"

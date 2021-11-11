@@ -1,5 +1,5 @@
 use colored::*;
-use parsing_rs::{QuinPacket, Rules, detect_ics};
+use parsing_rs::prelude::*;
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use walkdir::{DirEntry, WalkDir};
@@ -126,8 +126,6 @@ fn parse_pcap(path: &str) {
 }
 
 fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
-    use parsing_rs::*;
-
     // println!("{:?}", &input);
     let runtimer = Instant::now(); // 程序运行计时变量
     let packet = parse_quin_packet(input, &QuinPacketOptions::default());

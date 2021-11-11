@@ -22,24 +22,27 @@
 //!     }
 //! };
 //! ```
-//! 这仅仅是一个分级五元组Packet结构，我们将会支持更多种类数据结构的Packet以支持多元化使用场景。
-#![feature(destructuring_assignment)]
+//! 这仅仅是一个分级五元组Packet结构，我们将会支持更多种类数据结构的Packet解析结果以支持多元化使用场景。
 
-mod errors;
-mod layer;
-mod layer_type;
-mod packet_level;
-mod packet_quin;
-mod parsers;
-mod traits;
-mod ics_rule;
-mod utils;
-pub mod field_type;
 
-pub use errors::ParseError;
-pub use layer::{NetworkLayer, TransportLayer};
-pub use layer_type::{LayerType, LinkLayerType, NetworkLayerType, TransportLayerType, ApplicationLayerType};
-pub use packet_level::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
-pub use packet_quin::{parse_quin_packet, QuinPacket, QuinPacketOptions};
-pub use traits::*;
-pub use ics_rule::{Rules, detect_ics};
+pub mod parser {
+    pub use parsing_parser::*;
+}
+
+pub mod icsrule {
+    pub use parsing_icsrule::*;
+}
+
+pub mod prelude {
+    pub use crate::parser::{
+        parse_quin_packet,
+        QuinPacketOptions,
+        QuinPacket,
+        LinkLevel, NetLevel, TransLevel
+    };
+
+    pub use crate::icsrule::{
+        Rules,
+        detect_ics
+    };
+}
