@@ -1,4 +1,30 @@
-# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.4.0...v) (2021-09-23)
+# [](https://gitee.com/BoleanTech/parsing-rs/compare/v0.5.0...v) (2021-11-11)
+
+
+
+# [0.5.0](https://gitee.com/BoleanTech/parsing-rs/compare/v0.4.1...v0.5.0) (2021-11-11)
+
+
+### Bug Fixes
+
+* **benchmark:** fix benchmark error ([7a7406a](https://gitee.com/BoleanTech/parsing-rs/commits/7a7406ac6540bd13d8337e1430cc7fa38d26eb49))
+* **protocol:** improve BACnet protocol ([a2cbf93](https://gitee.com/BoleanTech/parsing-rs/commits/a2cbf935dc210810823884247bc0158382541609))
+
+
+### Features
+
+* **all:** convert to Rust 2021 ([18c9185](https://gitee.com/BoleanTech/parsing-rs/commits/18c9185fd0033a5fbe445c01fd573c3bb65c771c))
+* **all:** update to version 0.5.0🎉 ([51dc8d6](https://gitee.com/BoleanTech/parsing-rs/commits/51dc8d6c4e43648a9945b5b03f073c4bc1bf6859))
+* **protocol:** add DNP3 ([051711a](https://gitee.com/BoleanTech/parsing-rs/commits/051711add5284a2798a4a5efa6768de20f55374d))
+* **protocol:** add IEC60870-104 (with IEC60870-ASDU) ([1b8da0b](https://gitee.com/BoleanTech/parsing-rs/commits/1b8da0b322e937f2734ecd8db18d9aca66a9d2ad))
+* **protocol:** add Opcua protocol ([ede6652](https://gitee.com/BoleanTech/parsing-rs/commits/ede665246239e339dc46641a1f1ab4c88bceff36))
+* **protocol:** init BACnet protocol ([33f0751](https://gitee.com/BoleanTech/parsing-rs/commits/33f075134f411edc25f809a395cb6ad80efd3e7a))
+* **protocol:** initially complete "S7comm" ([bc0934f](https://gitee.com/BoleanTech/parsing-rs/commits/bc0934f63123e4e59aea49a3de44ad5fe75d2e22))
+* split ISO-on-TCP & add slice built-in parser ([ed00c92](https://gitee.com/BoleanTech/parsing-rs/commits/ed00c9214d5608e56ab571a3e5105326765948dc))
+
+
+
+## [0.4.1](https://gitee.com/BoleanTech/parsing-rs/compare/v0.4.0...v0.4.1) (2021-09-23)
 
 
 ### Bug Fixes
@@ -27,9 +53,9 @@
 
 ### Features
 
+* **rule:** include Modbus automatically generated code of ICS rule ([bbe451d](https://gitee.com/BoleanTech/parsing-rs/commits/bbe451d12d16043efb73c851b682a51a674f71d1))
 * add ics-rules structure ([1c0254a](https://gitee.com/BoleanTech/parsing-rs/commits/1c0254a5d066445a16c2220c9f81bb302679e3c4))
 * check rules demo ([b4409b5](https://gitee.com/BoleanTech/parsing-rs/commits/b4409b53eb3b735091317ea34683d78bff88451c))
-* **rule:** include Modbus automatically generated code of ICS rule ([bbe451d](https://gitee.com/BoleanTech/parsing-rs/commits/bbe451d12d16043efb73c851b682a51a674f71d1))
 
 
 
