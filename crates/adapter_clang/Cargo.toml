@@ -11,6 +11,8 @@ cbindgen = "0.20.0"
 
 [dependencies]
 # parsing-rs
-parsing_rs = { path = "../../", version = "0.5.0" }
+parsing_rs = { path = "../../" }
+# parsing_parser = { path = "../parsing_parser" }
+# parsing_icsrule = { path = "../parsing_icsrule" }
 # required by ffi
 libc = "0.2"
