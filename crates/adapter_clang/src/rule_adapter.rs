@@ -19,10 +19,10 @@ pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const Rules {
     let file_str = file.to_str().unwrap();
 
     if !rules.init(file_str) {
-        panic!("Rules Init failed...");
+        panic!("[PARSING-RS] Rules Init failed...");
     };
 
-    println!("Rules Init done.");
+    println!("[PARSING-RS] Rules Init done.");
 
     &rules
 }
@@ -41,11 +41,11 @@ pub extern "C" fn detect_ics_rules(rules_ptr: *const Rules, packet_ptr: *const Q
     let rst = detect_ics(rules, packet);
     match rst {
         CheckResult::Hit(_) => {
-            println!("[MYPLUGIN] Hit!");
+            // println!("Hit!");
             true
         },
         CheckResult::Miss => {
-            println!("[MYPLUGIN] Miss!");
+            // println!("Miss!");
             false
         }
     }
