@@ -38,6 +38,15 @@
 typedef struct QuinPacket QuinPacket;
 
 /**
+ * QuinPacketOptions为QuinPacket解析选项，提供多种解析特性。
+ * 支持default：
+ * ```
+ * parse_quin_packet(input, QuinPacketOptions::default())
+ * ```
+ */
+typedef struct QuinPacketOptions QuinPacketOptions;
+
+/**
  * Rules是存储规则集合的数据结构。
  * > Tips: 目前数据结构处于待完善阶段。
  */
@@ -45,8 +54,12 @@ typedef struct Rules Rules;
 
 bool detect_ics_rules(const struct Rules *rules_ptr, const struct QuinPacket *packet_ptr);
 
+const struct QuinPacketOptions *init_parse_option(void);
+
 const struct Rules *init_rules(const char *file_ptr);
 
-const struct QuinPacket *parse_packet(const uint8_t *input_ptr, uint16_t input_len);
+const struct QuinPacket *parse_packet(const uint8_t *input_ptr,
+                                      uint16_t input_len,
+                                      const struct QuinPacketOptions *option_ptr);
 
 void show_packet(const struct QuinPacket *packet_ptr);
