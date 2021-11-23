@@ -82,7 +82,7 @@ pub fn parse_ipv4_layer<'a>(
     link_layer: LinkLayer,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Network(NetworkProtocol::Ipv4);
+    let current_prototype = ProtocolType::Network(NetworkProtocol::Ipv4);
 
     let (input, ipv4_header) = match parse_ipv4_header(input) {
         Ok(o) => o,
@@ -95,7 +95,7 @@ pub fn parse_ipv4_layer<'a>(
         }
     };
 
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         let network_layer = NetworkLayer::Ipv4(ipv4_header);
         return QuinPacket::L3(L3Packet {
             link_layer,

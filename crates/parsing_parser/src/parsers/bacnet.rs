@@ -62,7 +62,7 @@ pub fn parse_bacnet_header(input: &[u8]) -> IResult<&[u8], BacnetHeader> {
 }
 
 pub fn parse_bacnet_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Application(ApplicationProtocol::Bacnet);
+    let current_prototype = ProtocolType::Application(ApplicationProtocol::Bacnet);
 
     let (input, bacnet_header) = match parse_bacnet_header(input) {
         Ok(o) => o,
@@ -79,7 +79,7 @@ pub fn parse_bacnet_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_la
         }
     };
 
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         let application_layer = ApplicationLayer::Bacnet(bacnet_header);
         return QuinPacket::L5(
             L5Packet {

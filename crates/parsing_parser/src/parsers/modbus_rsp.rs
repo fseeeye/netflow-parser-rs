@@ -599,7 +599,7 @@ pub fn parse_modbus_rsp_layer<'a>(
     transport_layer: TransportLayer<'a>,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Application(ApplicationProtocol::ModbusRsp);
+    let current_prototype = ProtocolType::Application(ApplicationProtocol::ModbusRsp);
 
     let (input, modbus_rsp) = match parse_modbus_rsp_header(input) {
         Ok(o) => o,
@@ -616,7 +616,7 @@ pub fn parse_modbus_rsp_layer<'a>(
 
     let application_layer = ApplicationLayer::ModbusRsp(modbus_rsp);
 
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         return QuinPacket::L5(L5Packet {
             link_layer,
             network_layer,

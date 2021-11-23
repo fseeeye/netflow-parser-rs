@@ -65,7 +65,7 @@ pub fn parse_ipv6_layer<'a>(
     link_layer: LinkLayer,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Network(NetworkProtocol::Ipv6);
+    let current_prototype = ProtocolType::Network(NetworkProtocol::Ipv6);
 
     let (input, ipv6_header) = match parse_ipv6_header(input) {
         Ok(o) => o,
@@ -78,7 +78,7 @@ pub fn parse_ipv6_layer<'a>(
         }
     };
 
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         let network_layer = NetworkLayer::Ipv6(ipv6_header);
         return QuinPacket::L3(L3Packet {
             link_layer,

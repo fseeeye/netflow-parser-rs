@@ -57,7 +57,7 @@ pub fn parse_fins_tcp_req_header(input: &[u8]) -> IResult<&[u8], FinsTcpReqHeade
 }
 
 pub fn parse_fins_tcp_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Application(ApplicationProtocol::FinsTcpReq);
+    let current_prototype = ProtocolType::Application(ApplicationProtocol::FinsTcpReq);
 
     let (input, fins_tcp_req_header) = match parse_fins_tcp_req_header(input) {
         Ok(o) => o,
@@ -74,7 +74,7 @@ pub fn parse_fins_tcp_req_layer<'a>(input: &'a [u8], link_layer: LinkLayer, netw
         }
     };
 
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         let application_layer = ApplicationLayer::FinsTcpReq(fins_tcp_req_header);
         return QuinPacket::L5(
             L5Packet {

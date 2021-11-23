@@ -38,7 +38,7 @@ pub fn parse_udp_layer<'a>(
     network_layer: NetworkLayer<'a>,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Transport(TransportProtocol::Udp);
+    let current_prototype = ProtocolType::Transport(TransportProtocol::Udp);
 
     let (input, udp_header) = match parse_udp_header(input) {
         Ok(o) => o,
@@ -52,7 +52,7 @@ pub fn parse_udp_layer<'a>(
         }
     };
 
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         let transport_layer = TransportLayer::Udp(udp_header);
         return QuinPacket::L4(L4Packet {
             link_layer,

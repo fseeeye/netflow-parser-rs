@@ -444,7 +444,7 @@ pub fn parse_modbus_req_layer<'a>(
     transport_layer: TransportLayer<'a>,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
-    let current_layertype = ProtocolType::Application(ApplicationProtocol::ModbusReq);
+    let current_prototype = ProtocolType::Application(ApplicationProtocol::ModbusReq);
 
     let (input, modbus_req) = match parse_modbus_req_header(input) {
         Ok(o) => o,
@@ -461,7 +461,7 @@ pub fn parse_modbus_req_layer<'a>(
 
     let application_layer = ApplicationLayer::ModbusReq(modbus_req);
     
-    if Some(current_layertype) == options.stop {
+    if Some(current_prototype) == options.stop {
         return QuinPacket::L5(L5Packet {
             link_layer,
             network_layer,
