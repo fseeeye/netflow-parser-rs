@@ -1,6 +1,6 @@
 //! 包含 suricata rule (Surule) 用到的所有数据结构
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -8,11 +8,9 @@ use std::str::FromStr;
 use super::utils::is_default;
 use super::SuruleParseError;
 
-
 /*
  *  Suricata Header Element types
  */
-
 /// Direction type (Suricata Header Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
@@ -28,7 +26,6 @@ impl Default for Direction {
         Self::Single
     }
 }
-
 
 /*
  *  Suricata Body (Option) Element types
@@ -124,18 +121,15 @@ impl Content {
     }
 }
 
-
 /// Distance modifier type (Suricata Body Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Default, Debug, Clone)]
 pub struct Distance(pub CountOrName);
 
-
 /// FileData type (Suricata Body Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Default, Debug, Clone)]
 pub struct FileData;
-
 
 /// Flowbits type (Suricata Body Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -143,10 +137,7 @@ pub struct FileData;
 #[repr(C)]
 pub struct Flowbits {
     pub command: FlowbitCommand,
-    #[cfg_attr(
-        feature = "serde",
-        serde(skip_serializing_if = "Vec::is_empty")
-    )]
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
     pub names: Vec<String>,
 }
 
@@ -202,20 +193,18 @@ impl FromStr for FlowbitCommand {
     }
 }
 
-
 /// Within modifier type (Suricata Body Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Default, Debug, Clone)]
 pub struct Within(pub CountOrName);
 
-
 /*
  *  Extra Types
  */
 
-/// CountOrName type 
-/// 
-/// 用于扩展 suricate body 的可选字段，使其的值可以是 i64 或者 String 
+/// CountOrName type
+///
+/// 用于扩展 suricate body 的可选字段，使其的值可以是 i64 或者 String
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub enum CountOrName {
@@ -232,7 +221,7 @@ impl Default for CountOrName {
 }
 
 /// Generic option type
-/// 
+///
 /// A generic option, used for unknown rule options.
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
