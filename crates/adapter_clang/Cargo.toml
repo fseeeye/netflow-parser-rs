@@ -1,12 +1,12 @@
 [package]
-name = "adapter_clang"
+name = "adapter_parser"
 version = "0.1.0"
 edition = "2021"
 
 # ref: https://doc.rust-lang.org/reference/linkage.html
 [lib]
 name = "parser_rs"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib", "staticlib", "cdylib"]
 
 [build-dependencies]
 # required by ffi

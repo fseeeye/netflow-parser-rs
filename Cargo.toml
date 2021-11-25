@@ -7,7 +7,12 @@ repository = "https://gitee.com/BoleanTech/parsing-rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
 exclude = ["benches"]
-members = ["crates/*"]
+members = [
+    "crates/adapter_clang",
+    "crates/parsing_icsrule",
+    "crates/parsing_parser",
+    "crates/parsing_suricata",
+]
 
 [dependencies]
 parsing_icsrule = { path = "crates/parsing_icsrule", version = "0.5.0" }

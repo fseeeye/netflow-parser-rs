@@ -1,0 +1,17 @@
+[package]
+name = "parsing_suricata"
+version = "0.1.0"
+edition = "2021"
+authors = ["Fseeeye <liyifan@bolean.com.cn>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nom = "7"
+anyhow = "1.0"
+thiserror = "1.0"
+# https://doc.rust-lang.org/cargo/reference/features.html#optional-dependencies
+serde = { version = "1.0", features = ["derive"], optional = true }
+
+[features]
+default = ["serde"]
