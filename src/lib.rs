@@ -2,9 +2,9 @@
 //!
 //! ## Example
 //! ```
-//! use parsing_rs::*;
+//! use parsing_rs::prelude::*;
 //!
-//! match parse_quin_enum_packet(input, QuinPacketOptions::default()) {
+//! match parse_quin_packet(input, QuinPacketOptions::default()) {
 //!     QuinPacket::L1(l1) => {
 //!         println!("l1 packet: {:?}", l1);
 //!     }

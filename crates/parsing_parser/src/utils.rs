@@ -3,7 +3,6 @@ pub fn crc16_check(crc16: u16, bytes: &[u8], mut seed: u16, table: [u16; 256]) -
     for &byte in bytes {
         seed = table[((seed ^ (byte as u16)) & 0xffu16) as usize] ^ (seed >> 8);
     }
-
     !seed == crc16
 }
 
@@ -94,9 +93,10 @@ mod tests {
 
     #[test]
     fn crc16_0x3d65_check_test() {
-        let crc16: u16 = 0xce7a;
+        // let crc16: u16 = 0xce7a;
+        let crc16 : u16 = 0x3185;
         let bytes: &[u8] = &[0xc0, 0xd7, 0x00];
         let seed: u16 = 0;
-        assert_eq!(!crc16_0x3d65_check(crc16, bytes, seed), true);
+        assert!(!crc16_0x3d65_check(crc16, bytes, seed));
     }
 }

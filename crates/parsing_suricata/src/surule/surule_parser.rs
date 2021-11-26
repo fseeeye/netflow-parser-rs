@@ -208,5 +208,24 @@ mod tests {
             metadata:created_at 2010_07_30, updated_at 2010_07_30;)"#;
         let (remaining_input, _suricata_rule) = parse_suricata_rule(input).unwrap();
         assert_eq!(remaining_input, "");
+        // assert_eq!(suricata_rule, Surule {
+        //     action: "alert".into(),
+        //     protocol: "tcp".into(),
+        //     src_addr: "$EXTERNAL_NET".into(),
+        //     src_port: "any".into(),
+        //     direction: types::Direction::Single,
+        //     dst_addr: "$HOME_NET".into(),
+        //     dst_port: "445".into(),
+        //     options: vec![
+        //         SuruleElement::Message("ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()),
+        //         SuruleElement::Flow("established,to_server".to_string()),
+        //         SuruleElement::Content(types::Content {
+        //             pattern: "\"|ff|SMB\"".to_string(),
+        //             depth: 0,
+        //             distance: types::Distance(types::CountOrName::Value(0)),
+
+        //         })
+        //     ]
+        // });
     }
 }
