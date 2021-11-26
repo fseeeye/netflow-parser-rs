@@ -1,8 +1,9 @@
 use nom::IResult;
 
 use super::element_parser;
+use super::error::SuruleParseError;
+use super::surule::{Surule, SuruleElement};
 use super::{types, utils};
-use super::{Surule, SuruleElement, SuruleParseError};
 
 /// 从字符流中取出 含值可选元素 的值字符串
 ///
@@ -169,16 +170,9 @@ pub fn parse_suricata_rule(input: &str) -> IResult<&str, Surule, SuruleParseErro
 
     Ok((
         input,
-        Surule {
-            action: action.to_string(),
-            protocol: protocol.to_string(),
-            src_addr: src_addr.to_string(),
-            src_port: src_port.to_string(),
-            direction,
-            dst_addr: dst_addr.to_string(),
-            dst_port: dst_port.to_string(),
-            options,
-        },
+        Surule::new(
+            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options,
+        ),
     ))
 }
 
@@ -188,7 +182,7 @@ mod tests {
 
     #[test]
     pub fn test_parse_suricata_rule() {
-        let input = r#"alert tcp $EXTERNAL_NET any -> $HOME_NET 445 (
+        let input = r#"alert tcp $EXTERNAL_NET any -> $HOME_NET [445,3389] (
             msg:"ET DOS NetrWkstaUserEnum Request with large Preferred Max Len";
             flow:established,to_server; 
             content:"|ff|SMB"; content:"|10 00 00 00|";
@@ -208,94 +202,103 @@ mod tests {
             metadata:created_at 2010_07_30, updated_at 2010_07_30;)"#;
         let (remaining_input, suricata_rule) = parse_suricata_rule(input).unwrap();
         assert_eq!(remaining_input, "");
-        assert_eq!(suricata_rule, Surule {
-            action: "alert".into(),
-            protocol: "tcp".into(),
-            src_addr: "$EXTERNAL_NET".into(),
-            src_port: "any".into(),
-            direction: types::Direction::Single,
-            dst_addr: "$HOME_NET".into(),
-            dst_port: "445".into(),
-            options: vec![
-                SuruleElement::Message("ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()),
-                SuruleElement::Flow("established,to_server".to_string()),
-                SuruleElement::Content(types::Content {
-                    pattern: "\"|ff|SMB\"".to_string(),
-                    depth: 0,
-                    distance: types::Distance(types::CountOrName::Value(0)),
-                    endswith: false,
-                    fast_pattern: false,
-                    nocase: false,
-                    offset: 0,
-                    startswith: false,
-                    within: types::Within(types::CountOrName::Value(0))
-                }),
-                SuruleElement::Content(types::Content {
-                    pattern: "\"|10 00 00 00|\"".to_string(),
-                    depth: 0,
-                    distance: types::Distance(types::CountOrName::Value(0)),
-                    endswith: false,
-                    fast_pattern: false,
-                    nocase: false,
-                    offset: 0,
-                    startswith: false,
-                    within: types::Within(types::CountOrName::Value(0))
-                }),
-                SuruleElement::Distance(types::Distance(types::CountOrName::Value(0))),
-                SuruleElement::Content(types::Content {
-                    pattern: "\"|02 00|\"".to_string(),
-                    depth: 0,
-                    distance: types::Distance(types::CountOrName::Value(0)),
-                    endswith: false,
-                    fast_pattern: false,
-                    nocase: false,
-                    offset: 0,
-                    startswith: false,
-                    within: types::Within(types::CountOrName::Value(0))
-                }),
-                SuruleElement::Distance(types::Distance(types::CountOrName::Value(14))),
-                SuruleElement::Within(types::Within(types::CountOrName::Value(2))),
-                SuruleElement::ByteJump(types::ByteJump {
-                    count: 4,
-                    offset: 12,
-                    relative: true,
-                    multiplier: 2,
-                    endian: types::Endian::Little,
-                    string: false,
-                    hex: false,
-                    dec: false,
-                    oct: false,
-                    align: false,
-                    from_beginning: false,
-                    from_end: false,
-                    post_offset: 0,
-                    dce: false,
-                    bitmask: 0
-                }),
-                SuruleElement::Content(types::Content {
-                    pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
-                    depth: 0,
-                    distance: types::Distance(types::CountOrName::Value(0)),
-                    endswith: false,
-                    fast_pattern: false,
-                    nocase: false,
-                    offset: 0,
-                    startswith: false,
-                    within: types::Within(types::CountOrName::Value(0))
-                }),
-                SuruleElement::Distance(types::Distance(types::CountOrName::Value(12))),
-                SuruleElement::Within(types::Within(types::CountOrName::Value(8))),
-                SuruleElement::GenericOption(types::GenericOption {
-                    name: "byte_test".to_string(),
-                    val: Some("4,>,2,0,relative".to_string())
-                }),
-                SuruleElement::Reference("cve,2006-6723".to_string()),
-                SuruleElement::Reference("url,doc.emergingthreats.net/bin/view/Main/2003236".to_string()),
-                SuruleElement::Classtype("attempted-dos".to_string()),
-                SuruleElement::Sid(2003236),
-                SuruleElement::Rev(4),
-                SuruleElement::Metadata("created_at 2010_07_30, updated_at 2010_07_30".to_string())
-            ]
-        });
+        assert_eq!(
+            suricata_rule,
+            Surule::new(
+                "alert",
+                "tcp",
+                "$EXTERNAL_NET",
+                "any",
+                types::Direction::Single,
+                "$HOME_NET",
+                "[445,3389]",
+                vec![
+                    SuruleElement::Message(
+                        "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()
+                    ),
+                    SuruleElement::Flow("established,to_server".to_string()),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|ff|SMB\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|10 00 00 00|\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Distance(types::Distance(types::CountOrName::Value(0))),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|02 00|\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Distance(types::Distance(types::CountOrName::Value(14))),
+                    SuruleElement::Within(types::Within(types::CountOrName::Value(2))),
+                    SuruleElement::ByteJump(types::ByteJump {
+                        count: 4,
+                        offset: 12,
+                        relative: true,
+                        multiplier: 2,
+                        endian: types::Endian::Little,
+                        string: false,
+                        hex: false,
+                        dec: false,
+                        oct: false,
+                        align: false,
+                        from_beginning: false,
+                        from_end: false,
+                        post_offset: 0,
+                        dce: false,
+                        bitmask: 0
+                    }),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Distance(types::Distance(types::CountOrName::Value(12))),
+                    SuruleElement::Within(types::Within(types::CountOrName::Value(8))),
+                    SuruleElement::GenericOption(types::GenericOption {
+                        name: "byte_test".to_string(),
+                        val: Some("4,>,2,0,relative".to_string())
+                    }),
+                    SuruleElement::Reference("cve,2006-6723".to_string()),
+                    SuruleElement::Reference(
+                        "url,doc.emergingthreats.net/bin/view/Main/2003236".to_string()
+                    ),
+                    SuruleElement::Classtype("attempted-dos".to_string()),
+                    SuruleElement::Sid(2003236),
+                    SuruleElement::Rev(4),
+                    SuruleElement::Metadata(
+                        "created_at 2010_07_30, updated_at 2010_07_30".to_string()
+                    )
+                ]
+            )
+        );
     }
 }

@@ -8,6 +8,7 @@ use super::SuruleParseError;
 /*
  *  Utility Parsers
  */
+
 /// 处理输入
 #[inline(always)]
 fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseError<&str>>> {
@@ -82,9 +83,11 @@ pub(super) fn parse_list(input: &str) -> Result<&str, nom::Err<SuruleParseError<
 }
 
 /// 从字符流中解析列表
-/// 
+///
 /// 该列表可能被 [] 包裹，表示多值；也可能没被包裹，表示单一值
-pub(super) fn parse_list_maybe_from_stream(input: &str) -> IResult<&str, &str, SuruleParseError<&str>> {
+pub(super) fn parse_list_maybe_from_stream(
+    input: &str,
+) -> IResult<&str, &str, SuruleParseError<&str>> {
     let input = handle_stream(input)?;
     let mut depth = 0;
     let mut end = 0;
@@ -125,7 +128,8 @@ pub(super) fn parse_direction_from_stream(
     if let Ok((input, direction)) = nom::branch::alt::<_, _, nom::error::Error<&str>, _>((
         nom::bytes::complete::tag("->"),
         nom::bytes::complete::tag("<>"),
-    ))(input) {
+    ))(input)
+    {
         match direction {
             "->" => Ok((input, types::Direction::Single)),
             "<>" => Ok((input, types::Direction::Both)),
@@ -330,11 +334,23 @@ mod tests {
     #[test]
     fn test_direction() {
         // Ok
-        assert_eq!(parse_direction_from_stream("->"), Ok(("", types::Direction::Single)));
-        assert_eq!(parse_direction_from_stream("<>"), Ok(("", types::Direction::Both)));
-        assert_eq!(parse_direction_from_stream(" <>a\n"), Ok(("a\n", types::Direction::Both)));
+        assert_eq!(
+            parse_direction_from_stream("->"),
+            Ok(("", types::Direction::Single))
+        );
+        assert_eq!(
+            parse_direction_from_stream("<>"),
+            Ok(("", types::Direction::Both))
+        );
+        assert_eq!(
+            parse_direction_from_stream(" <>a\n"),
+            Ok(("a\n", types::Direction::Both))
+        );
         // Err
-        assert_eq!(parse_direction_from_stream(""), Err(SuruleParseError::EmptyStr.into()));
+        assert_eq!(
+            parse_direction_from_stream(""),
+            Err(SuruleParseError::EmptyStr.into())
+        );
         assert_eq!(
             parse_direction_from_stream("xx<>"),
             Err(SuruleParseError::InvalidDirection("xx<>".into()).into())
