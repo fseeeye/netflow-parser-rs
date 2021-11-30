@@ -1,31 +1,119 @@
 //! 包含 suricata rule (Surule) 用到的所有数据结构
+use ipnet::Ipv4Net;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use std::fmt::{Display, Formatter};
+use std::net::Ipv4Addr;
 use std::str::FromStr;
 
+use parsing_parser::ProtocolType;
+
+use super::element_parser::handle_value;
 use super::utils::is_default;
 use super::SuruleParseError;
+use super::types;
+
 
 /*
  *  Suricata Header Element types
  */
+
+/// Action type (Suricata Header Element)
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub enum Action {
+    #[cfg_attr(feature = "serde", serde(rename = "alert"))]
+    Alert,
+    #[cfg_attr(feature = "serde", serde(rename = "pass"))]
+    Pass,
+    #[cfg_attr(feature = "serde", serde(rename = "drop"))]
+    Drop,
+    #[cfg_attr(feature = "serde", serde(rename = "reject"))]
+    Reject,
+    #[cfg_attr(feature = "serde", serde(rename = "rejectsrc"))]
+    RejectSrc,
+    #[cfg_attr(feature = "serde", serde(rename = "rejectdst"))]
+    RejectDst,
+    #[cfg_attr(feature = "serde", serde(rename = "rejectboth"))]
+    RejectBoth
+}
+
+/// Protocol type (Suricata Header Element)
+/// use parsing_parser::protocol::ProtocolType
+pub type Protocol = ProtocolType;
+
+/// IP List type (Suricata Header Element: src_addr & dst_addr)
+/// 
+/// 目前暂不支持：
+///     * yaml settings
+/// 目前支持不完善：
+///     * ip range
+///     * 暂时用 vec 存储 ip 规则，检测时遍历比较。
+///  ref: https://suricata.readthedocs.io/en/latest/rules/intro.html#source-and-destination
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct IpAddressList {
+    pub accept: Option<Vec<IpAddress>>, // None represent Any
+    pub except: Option<Vec<IpAddress>>  // None represent No Exception
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub enum IpAddress {
+    V4Addr(Ipv4Addr),
+    V4Range(Ipv4Net), // 简易 ip range 方案
+}
+
+impl FromStr for IpAddress {
+    type Err = nom::Err<SuruleParseError<&'static str>>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let make_err = |reason| SuruleParseError::InvalidIpAddr(reason).into();
+
+        let ip_addr_str = handle_value(s)
+            .map_err(|_| make_err("empty value.".to_string()))?;
+
+        match ip_addr_str.parse::<Ipv4Addr>() {
+            Ok(single_addr) => Ok(types::IpAddress::V4Addr(single_addr)),
+            Err(_) => { // maybe it's a range
+                let single_range = ip_addr_str
+                    .parse::<Ipv4Net>()
+                    .map_err(|_| make_err(ip_addr_str.to_string()))?;
+                Ok(types::IpAddress::V4Range(single_range))
+            }
+        }
+    }
+}
+
+/// Port type (Suricata Header Element)
+/// 
+///  ref: https://suricata.readthedocs.io/en/latest/rules/intro.html#ports-source-and-destination
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Port {
+    
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub enum PortList {
+    #[cfg_attr(feature = "serde", serde(rename = "any"))]
+    Any,
+    #[cfg_attr(feature = "serde", serde(rename = "limit"))]
+    Limit()
+}
+
 /// Direction type (Suricata Header Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Direction {
-    #[cfg_attr(feature = "serde", serde(rename = "single"))] // Warning: not "unidirectional" ?
-    Single,
-    #[cfg_attr(feature = "serde", serde(rename = "both"))] // Warning: not "bidirectional" ?
-    Both,
+    #[cfg_attr(feature = "serde", serde(rename = "uni"))]
+    Uni,
+    #[cfg_attr(feature = "serde", serde(rename = "bi"))]
+    Bi,
 }
 
-impl Default for Direction {
-    fn default() -> Self {
-        Self::Single
-    }
-}
 
 /*
  *  Suricata Body (Option) Element types

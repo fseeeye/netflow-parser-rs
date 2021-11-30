@@ -1,9 +1,16 @@
 use nom::IResult;
 
-use super::element_parser;
-use super::error::SuruleParseError;
-use super::surule::{Surule, SuruleElement};
-use super::{types, utils};
+use std::fs;
+
+use super::{
+    // mods
+    types, utils,
+    // structs
+    Surule, SuruleElement, error::SuruleParseError,
+    // funcs
+    element_parser
+};
+
 
 /// 从字符流中取出 含值可选元素 的值字符串
 ///
@@ -112,41 +119,42 @@ fn parse_option_element(input: &str) -> IResult<&str, SuruleElement, SuruleParse
     }
 }
 
-/// 解析 Suricata Rule 字符串
-pub fn parse_suricata_rule(input: &str) -> IResult<&str, Surule, SuruleParseError<&str>> {
+pub fn parse_surule_from_file(filepath: &str) -> Option<Surule>  {
+    let rule_str = match fs::read_to_string(filepath) {
+        Ok(o) => o,
+        Err(e) => {
+            println!("encountered io error while reading surule file: {:?}", e);
+            return None;
+        }
+    };
+
+    match parse_surule(&rule_str) {
+        Ok((_remain, surule)) => Some(surule),
+        Err(nom::Err::Error(e)) | Err(nom::Err::Failure(e)) => {
+            println!("{}", e);
+            None
+        },
+        Err(nom::Err::Incomplete(_)) => {
+            println!("encountered unknow error: nom incomplete.");
+            None
+        }
+    }
+}
+
+/// 解析 Suricata Rule 字符串 -> Surule 结构体
+pub fn parse_surule(input: &str) -> IResult<&str, Surule, SuruleParseError<&str>> {
     // parse header elements
     let (input, (action, protocol, src_addr, src_port, direction, dst_addr, dst_port)): (
         &str,
-        (&str, &str, &str, &str, types::Direction, &str, &str),
+        (types::Action, types::Protocol, types::IpAddressList, &str, types::Direction, types::IpAddressList, &str),
     ) = nom::sequence::tuple((
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::take_until_whitespace,
-        ),
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::take_until_whitespace,
-        ),
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::parse_list_maybe_from_stream,
-        ),
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::parse_list_maybe_from_stream,
-        ),
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::parse_direction_from_stream,
-        ),
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::parse_list_maybe_from_stream,
-        ),
-        nom::sequence::preceded(
-            nom::character::complete::multispace0,
-            element_parser::parse_list_maybe_from_stream,
-        ),
+        element_parser::parse_action_from_stream,
+        element_parser::parse_protocol_from_stream,
+        element_parser::parse_ip_list_from_stream,
+        element_parser::take_list_maybe_from_stream,
+        element_parser::parse_direction_from_stream,
+        element_parser::parse_ip_list_from_stream,
+        element_parser::take_list_maybe_from_stream,
     ))(input)?;
 
     // parse option elements
@@ -176,13 +184,21 @@ pub fn parse_suricata_rule(input: &str) -> IResult<&str, Surule, SuruleParseErro
     ))
 }
 
+
 #[cfg(test)]
 mod tests {
+    use std::net::Ipv4Addr;
+    use std::vec;
+    use std::str::FromStr;
+
+    use ipnet::Ipv4Net;
+    use parsing_parser::TransportProtocol;
+
     use super::*;
 
     #[test]
     pub fn test_parse_suricata_rule() {
-        let input = r#"alert tcp $EXTERNAL_NET any -> $HOME_NET [445,3389] (
+        let input = r#"alert tcp ["192.168.0.0/16", !"192.168.0.3"] any -> "192.168.0.110" [445,3389] (
             msg:"ET DOS NetrWkstaUserEnum Request with large Preferred Max Len";
             flow:established,to_server; 
             content:"|ff|SMB"; content:"|10 00 00 00|";
@@ -200,17 +216,29 @@ mod tests {
             sid:2003236;
             rev:4;
             metadata:created_at 2010_07_30, updated_at 2010_07_30;)"#;
-        let (remaining_input, suricata_rule) = parse_suricata_rule(input).unwrap();
+        let (remaining_input, suricata_rule) = parse_surule(input).unwrap();
         assert_eq!(remaining_input, "");
         assert_eq!(
             suricata_rule,
             Surule::new(
-                "alert",
-                "tcp",
-                "$EXTERNAL_NET",
+                types::Action::Alert,
+                types::Protocol::Transport(TransportProtocol::Tcp),
+                types::IpAddressList {
+                    accept: Some(vec![
+                        types::IpAddress::V4Range(Ipv4Net::from_str("192.168.0.0/16").unwrap()),
+                    ]),
+                    except: Some(vec![
+                        types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
+                    ])
+                },
                 "any",
-                types::Direction::Single,
-                "$HOME_NET",
+                types::Direction::Uni,
+                types::IpAddressList {
+                    accept: Some(vec![
+                        types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.110").unwrap())
+                    ]),
+                    except: None
+                },
                 "[445,3389]",
                 vec![
                     SuruleElement::Message(
@@ -300,5 +328,120 @@ mod tests {
                 ]
             )
         );
+    }
+
+    #[test]
+    pub fn test_parse_suricata_rule_file() {
+        let surule = parse_surule_from_file("../../examples/suricata3.rule").unwrap();
+        assert_eq!(
+            surule, 
+            Surule::new(
+                types::Action::Alert,
+                types::Protocol::Transport(TransportProtocol::Tcp),
+                types::IpAddressList {
+                    accept: Some(vec![
+                        types::IpAddress::V4Range(Ipv4Net::from_str("192.168.0.0/16").unwrap()),
+                    ]),
+                    except: Some(vec![
+                        types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
+                    ])
+                },
+                "any",
+                types::Direction::Uni,
+                types::IpAddressList {
+                    accept: Some(vec![
+                        types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.110").unwrap())
+                    ]),
+                    except: None
+                },
+                "[445,3389]",
+                vec![
+                    SuruleElement::Message(
+                        "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()
+                    ),
+                    SuruleElement::Flow("established,to_server".to_string()),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|ff|SMB\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|10 00 00 00|\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Distance(types::Distance(types::CountOrName::Value(0))),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|02 00|\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Distance(types::Distance(types::CountOrName::Value(14))),
+                    SuruleElement::Within(types::Within(types::CountOrName::Value(2))),
+                    SuruleElement::ByteJump(types::ByteJump {
+                        count: 4,
+                        offset: 12,
+                        relative: true,
+                        multiplier: 2,
+                        endian: types::Endian::Little,
+                        string: false,
+                        hex: false,
+                        dec: false,
+                        oct: false,
+                        align: false,
+                        from_beginning: false,
+                        from_end: false,
+                        post_offset: 0,
+                        dce: false,
+                        bitmask: 0
+                    }),
+                    SuruleElement::Content(types::Content {
+                        pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
+                        depth: 0,
+                        distance: types::Distance(types::CountOrName::Value(0)),
+                        endswith: false,
+                        fast_pattern: false,
+                        nocase: false,
+                        offset: 0,
+                        startswith: false,
+                        within: types::Within(types::CountOrName::Value(0))
+                    }),
+                    SuruleElement::Distance(types::Distance(types::CountOrName::Value(12))),
+                    SuruleElement::Within(types::Within(types::CountOrName::Value(8))),
+                    SuruleElement::GenericOption(types::GenericOption {
+                        name: "byte_test".to_string(),
+                        val: Some("4,>,2,0,relative".to_string())
+                    }),
+                    SuruleElement::Reference("cve,2006-6723".to_string()),
+                    SuruleElement::Reference(
+                        "url,doc.emergingthreats.net/bin/view/Main/2003236".to_string()
+                    ),
+                    SuruleElement::Classtype("attempted-dos".to_string()),
+                    SuruleElement::Sid(2003236),
+                    SuruleElement::Rev(4),
+                    SuruleElement::Metadata(
+                        "created_at 2010_07_30, updated_at 2010_07_30".to_string()
+                    )
+                ]
+            )
+        )
     }
 }

@@ -35,6 +35,15 @@ pub(super) fn strip_quotes(input: &str) -> String {
     rst.iter().collect::<String>()
 }
 
+/// 移除字符串前后的 []
+pub(super) fn strip_brackets(input: &str) -> &str {
+    input
+        .strip_prefix('[')
+        .unwrap_or(input)
+        .strip_suffix(']')
+        .unwrap_or(input)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
