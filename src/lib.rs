@@ -3,8 +3,9 @@
 //! ## Example
 //! ```
 //! use parsing_rs::prelude::*;
-//!
-//! match parse_quin_packet(input, QuinPacketOptions::default()) {
+//! 
+//! let input = &[1,2,3,4,5,6];
+//! match parse_quin_packet(input, &QuinPacketOptions::default()) {
 //!     QuinPacket::L1(l1) => {
 //!         println!("l1 packet: {:?}", l1);
 //!     }
