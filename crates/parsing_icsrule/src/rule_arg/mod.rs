@@ -8,16 +8,16 @@ pub use self::modbus_rsp::ModbusRspArg;
 
 use serde::{Deserialize, Serialize};
 use parsing_parser::L5Packet;
-use super::detect::RuleDetector;
+use super::detect::IcsRuleDetector;
 
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "proname", content = "args")]
-pub enum RuleArgs {
+pub enum IcsRuleArgs {
     Modbus(Vec<ModbusArg>)
 }
 
-impl RuleDetector for RuleArgs {
+impl IcsRuleDetector for IcsRuleArgs {
     fn detect(&self, l5: &L5Packet) -> bool {
         match self {
             Self::Modbus(modbus_args) => {

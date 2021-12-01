@@ -89,7 +89,7 @@ fn parse_pcap(path: &str) {
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
 
     let rule_path = "./examples/ics_rules.json";
-    let mut rules = Rules::new();
+    let mut rules = HmIcsRules::new();
     assert_eq!(rules.init(rule_path), true);
 
     loop {
@@ -108,7 +108,7 @@ fn parse_pcap(path: &str) {
                         // println!("{:?}", _b.data);
                         // let packet = parse_packet(&_b.data);
                         let packet = parse_ethernet_quin_packet(&_b.data);
-                        let res = detect_ics(&rules, &packet);
+                        let res = rules.detect(&packet);
                         println!("rule check: {:?}", res);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),

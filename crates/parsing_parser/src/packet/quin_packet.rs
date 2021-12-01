@@ -6,9 +6,10 @@ use crate::ProtocolType;
 
 /// QuinPacket是由 Level1 - Level5 Packet 构成的枚举结构，使用示例如下：
 /// ```
-/// use parsing_rs::*;
+/// use parsing_parser::*;
 ///
-/// match parse_quin_packet(input, QuinPacketOptions::default()) {
+/// let input = &[1,2,3,4,5,6];
+/// match parse_quin_packet(input, &QuinPacketOptions::default()) {
 ///     QuinPacket::L1(l1) => {
 ///         println!("l1 packet: {:?}", l1);
 ///     }
@@ -44,7 +45,10 @@ pub enum QuinPacket<'a> {
 /// QuinPacketOptions为QuinPacket解析选项，提供多种解析特性。
 /// 支持default：
 /// ```
-/// parse_quin_packet(input, QuinPacketOptions::default())
+/// use parsing_parser::{parse_quin_packet, QuinPacketOptions};
+/// 
+/// let input = &[1,2,3,4,5,6];
+/// parse_quin_packet(input, &QuinPacketOptions::default());
 /// ```
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct QuinPacketOptions {

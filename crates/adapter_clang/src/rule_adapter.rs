@@ -2,15 +2,12 @@ use std::ffi::CStr;
 use libc::{c_char};
 
 use parsing_parser::QuinPacket;
-use parsing_icsrule::{
-    Rules,
-    detect_ics,
-    CheckResult
-};
+use parsing_icsrule::HmIcsRules;
+use parsing_rule::{Rule, DetectResult};
 
 #[no_mangle]
-pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const Rules {
-    let mut rules = Rules::new();
+pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const HmIcsRules {
+    let mut rules = HmIcsRules::new();
 
     let file = unsafe {
         assert!(!file_ptr.is_null());
@@ -28,7 +25,7 @@ pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const Rules {
 }
 
 #[no_mangle]
-pub extern "C" fn detect_ics_rules(rules_ptr: *const Rules, packet_ptr: *const QuinPacket) -> bool {
+pub extern "C" fn detect_ics_rules(rules_ptr: *const HmIcsRules, packet_ptr: *const QuinPacket) -> bool {
     let rules = unsafe {
         assert!(!rules_ptr.is_null());
         &*rules_ptr
@@ -38,13 +35,13 @@ pub extern "C" fn detect_ics_rules(rules_ptr: *const Rules, packet_ptr: *const Q
         &*packet_ptr
     };
 
-    let rst = detect_ics(rules, packet);
+    let rst = rules.detect(packet);
     match rst {
-        CheckResult::Hit(_) => {
+        DetectResult::Hit(_) => {
             // println!("Hit!");
             true
         },
-        CheckResult::Miss => {
+        DetectResult::Miss => {
             // println!("Miss!");
             false
         }

@@ -9,6 +9,7 @@ authors = ["Fseeeye <liyifan@bolean.com.cn>"]
 [dependencies]
 # parsing-rs
 parsing_parser = { path = "../parsing_parser" }
+parsing_rule = { path = "../parsing_rule" }
 # others
 nom = "7"
 anyhow = "1.0"

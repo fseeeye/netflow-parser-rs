@@ -4,20 +4,22 @@
 mod element_parser;
 mod error;
 mod surule_parser;
-mod types;
 mod utils;
+
+pub mod types;
 
 pub use error::SuruleParseError;
 pub use surule_parser::{parse_surule, parse_surule_from_file};
 
 
+use self::types::Action;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Surule {
-    pub action: types::Action,
+    pub action: Action,
     pub protocol: types::Protocol,
     pub src_addr: types::IpAddressList,
     pub src_port: types::PortList,
@@ -29,7 +31,7 @@ pub struct Surule {
 
 impl Surule {
     pub fn new(
-        action: types::Action,
+        action: Action,
         protocol: types::Protocol,
         src_addr: types::IpAddressList,
         src_port: types::PortList,

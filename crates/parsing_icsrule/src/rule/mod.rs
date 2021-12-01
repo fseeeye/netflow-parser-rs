@@ -1,18 +1,18 @@
-mod basic_rule;
-mod modbus_rule;
-mod rules;
+mod basis;
+mod hm_rules;
 
-pub(crate) use self::basic_rule::Action;
-pub use self::rules::Rules;
+pub(crate) use self::basis::Action;
+pub use self::hm_rules::HmIcsRules;
+
 
 use serde::{Deserialize, Serialize};
-use super::rule_arg::RuleArgs;
-use self::basic_rule::BasicRule;
+use super::rule_arg::IcsRuleArgs;
+use self::basis::IcsRuleBasis;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Rule {
+pub struct IcsRule {
     #[serde(flatten)]
-    pub basic: BasicRule,
+    pub basic: IcsRuleBasis,
     #[serde(flatten)]
-    pub args: RuleArgs,
+    pub args: IcsRuleArgs,
 }

@@ -1,9 +1,9 @@
-use parsing_rs::icsrule::Rules;
+use parsing_rs::icsrule::HmIcsRules;
 
 fn main() {
     let file_str = "./examples/ics_rules.json";
 
-    let mut rules = Rules::new();
+    let mut rules = HmIcsRules::new();
 
     if rules.init(file_str) {
         println!("{:?}", rules);

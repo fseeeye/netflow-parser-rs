@@ -4,7 +4,7 @@ use std::fs;
 
 use super::{
     // mods
-    types, utils,
+    types::{self, Action}, utils,
     // structs
     Surule, SuruleElement, error::SuruleParseError,
     // funcs
@@ -43,7 +43,7 @@ fn take_option_value(input: &str) -> IResult<&str, &str, SuruleParseError<&str>>
     ))
 }
 
-/// 从字符流中取出 可选元素 的名称和符号
+/// 从字符流中取出 可选元素 的名称和其后面的符号
 fn take_option_name(input: &str) -> IResult<&str, (&str, char), SuruleParseError<&str>> {
     // let (input, (name_str, sep)) = nom::sequence::tuple((
     //     nom::sequence::preceded(
@@ -146,7 +146,7 @@ pub fn parse_surule(input: &str) -> IResult<&str, Surule, SuruleParseError<&str>
     // parse header elements
     let (input, (action, protocol, src_addr, src_port, direction, dst_addr, dst_port)): (
         &str,
-        (types::Action, types::Protocol, types::IpAddressList, types::PortList, types::Direction, types::IpAddressList, types::PortList),
+        (Action, types::Protocol, types::IpAddressList, types::PortList, types::Direction, types::IpAddressList, types::PortList),
     ) = nom::sequence::tuple((
         element_parser::parse_action_from_stream,
         element_parser::parse_protocol_from_stream,
@@ -221,7 +221,7 @@ mod tests {
         assert_eq!(
             suricata_rule,
             Surule::new(
-                types::Action::Alert,
+                Action::Alert,
                 types::Protocol::Transport(TransportProtocol::Tcp),
                 types::IpAddressList {
                     accept: Some(vec![
@@ -345,7 +345,7 @@ mod tests {
         assert_eq!(
             surule, 
             Surule::new(
-                types::Action::Alert,
+                Action::Alert,
                 types::Protocol::Transport(TransportProtocol::Tcp),
                 types::IpAddressList {
                     accept: Some(vec![

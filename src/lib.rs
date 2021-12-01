@@ -24,7 +24,9 @@
 //! };
 //! ```
 //! 这仅仅是一个分级五元组Packet结构，我们将会支持更多种类数据结构的Packet解析结果以支持多元化使用场景。
-
+pub mod rule {
+    pub use parsing_rule::*;
+}
 
 pub mod parser {
     pub use parsing_parser::*;
@@ -42,8 +44,11 @@ pub mod prelude {
         LinkLevel, NetLevel, TransLevel
     };
 
-    pub use crate::icsrule::{
-        Rules,
-        detect_ics
+    pub use crate::icsrule::HmIcsRules;
+
+    pub use crate::rule::{
+        DetectResult,
+        Rule,
+        RuleAction
     };
 }

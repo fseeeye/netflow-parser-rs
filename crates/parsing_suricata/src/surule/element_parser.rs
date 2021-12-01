@@ -5,9 +5,8 @@ use anyhow::Result;
 
 use parsing_parser::{TransportProtocol, NetworkProtocol};
 
-use super::types;
+use super::types::{self, SurList, Action};
 use super::SuruleParseError;
-use super::types::SurList;
 use super::utils::{strip_quotes, strip_brackets};
 
 
@@ -160,7 +159,7 @@ pub(super) fn take_list_members(
 /// 从字符流中解析 Action
 pub(super) fn parse_action_from_stream(
     input: &str
-) -> IResult<&str, types::Action, SuruleParseError<&str>> {
+) -> IResult<&str, Action, SuruleParseError<&str>> {
     let make_err = |reason| SuruleParseError::InvalidAction(reason).into();
 
     let input = handle_stream(input)
@@ -168,13 +167,13 @@ pub(super) fn parse_action_from_stream(
     let (input, action_str) = take_until_whitespace(input)
         .map_err(|_| make_err(input.to_string()))?;
     let action = match action_str {
-        "alert"      => types::Action::Alert,
-        "pass"       => types::Action::Pass,
-        "drop"       => types::Action::Drop,
-        "reject"     => types::Action::Reject,
-        "rejectsrc"  => types::Action::RejectSrc,
-        "rejectdst"  => types::Action::RejectDst,
-        "rejectboth" => types::Action::RejectBoth,
+        "alert"      => Action::Alert,
+        "pass"       => Action::Pass,
+        "drop"       => Action::Drop,
+        "reject"     => Action::Reject,
+        "rejectsrc"  => Action::RejectSrc,
+        "rejectdst"  => Action::RejectDst,
+        "rejectboth" => Action::RejectBoth,
         _ => return Err(SuruleParseError::InvalidAction(action_str.to_string()).into())
     };
 
@@ -253,7 +252,7 @@ where
 
     // parse ip address list
     let mut rst_list = L::default();
-    if list_str == "any" {
+    if list_str == "any" || list_str == "all" {
         return Ok((input, rst_list))
     } else if list_str.starts_with('!') { // exception: !...
         list_str = &list_str[1..];
@@ -520,13 +519,13 @@ mod tests {
 
     #[test]
     fn test_action() {
-        assert_eq!(parse_action_from_stream("alert\n \t xxx"), Ok(("\n \t xxx", types::Action::Alert)));
-        assert_eq!(parse_action_from_stream("\t    pass xxx"), Ok((" xxx", types::Action::Pass)));
-        assert_eq!(parse_action_from_stream("\n    drop xxx"), Ok((" xxx", types::Action::Drop)));
-        assert_eq!(parse_action_from_stream("\r  reject xxx"), Ok((" xxx", types::Action::Reject)));
-        assert_eq!(parse_action_from_stream(" rejectsrc xxx"), Ok((" xxx", types::Action::RejectSrc)));
-        assert_eq!(parse_action_from_stream(" rejectdst xxx"), Ok((" xxx", types::Action::RejectDst)));
-        assert_eq!(parse_action_from_stream("rejectboth xxx"), Ok((" xxx", types::Action::RejectBoth)));
+        assert_eq!(parse_action_from_stream("alert\n \t xxx"), Ok(("\n \t xxx", Action::Alert)));
+        assert_eq!(parse_action_from_stream("\t    pass xxx"), Ok((" xxx", Action::Pass)));
+        assert_eq!(parse_action_from_stream("\n    drop xxx"), Ok((" xxx", Action::Drop)));
+        assert_eq!(parse_action_from_stream("\r  reject xxx"), Ok((" xxx", Action::Reject)));
+        assert_eq!(parse_action_from_stream(" rejectsrc xxx"), Ok((" xxx", Action::RejectSrc)));
+        assert_eq!(parse_action_from_stream(" rejectdst xxx"), Ok((" xxx", Action::RejectDst)));
+        assert_eq!(parse_action_from_stream("rejectboth xxx"), Ok((" xxx", Action::RejectBoth)));
     }
 
     #[test]

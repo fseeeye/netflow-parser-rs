@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use parsing_parser::{ApplicationLayer, L5Packet};
-use crate::detect::RuleDetector;
+use crate::detect::IcsRuleDetector;
 use super::{ModbusReqArg, modbus_rsp::ModbusRspArg};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -10,7 +10,7 @@ pub enum ModbusArg {
     ModbusRsp(ModbusRspArg),
 }
 
-impl RuleDetector for ModbusArg {
+impl IcsRuleDetector for ModbusArg {
     fn detect(&self, l5: &L5Packet) -> bool {
         match self {
             Self::ModbusReq(modbus_req_arg) => {

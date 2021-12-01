@@ -1,18 +1,18 @@
 use std::{collections::{BTreeSet, HashMap}, fs};
 use parsing_parser::ApplicationNaiveProtocol;
 
-use super::{ Rule, RuleArgs };
+use super::{ IcsRule, IcsRuleArgs };
 
 
-/// Rules是存储规则集合的数据结构。
+/// HmIcsRules是存储规则集合的数据结构，它采用 HashMap 来存取所有规则。
 /// > Tips: 目前数据结构处于待完善阶段。
 #[derive(Debug)]
-pub struct Rules {
-    pub rules_inner: HashMap<u32, Rule>,
+pub struct HmIcsRules {
+    pub rules_inner: HashMap<u32, IcsRule>,
     pub rules_map: HashMap<ApplicationNaiveProtocol, BTreeSet<u32>>,
 }
 
-impl Rules {
+impl HmIcsRules {
     pub fn new() -> Self {
         let rules_inner = HashMap::new();
         let rules_map = HashMap::new();
@@ -30,7 +30,7 @@ impl Rules {
         };
 
         // convert json str to vec<Rule>
-        let rules_vec: Vec<Rule> = match serde_json::from_str(file_contents.as_str()) {
+        let rules_vec: Vec<IcsRule> = match serde_json::from_str(file_contents.as_str()) {
             Ok(o) => o,
             Err(_e) => {
                 println!("{:?}", _e);
@@ -41,8 +41,8 @@ impl Rules {
         // init attributes of Rules
         for rule in rules_vec {
             let rid = rule.basic.rid;
-            let protocol_type = match rule.args{
-                RuleArgs::Modbus(..) => ApplicationNaiveProtocol::Modbus,
+            let protocol_type = match rule.args {
+                IcsRuleArgs::Modbus(..) => ApplicationNaiveProtocol::Modbus,
             };
             (*self.rules_map.entry(protocol_type).or_insert(BTreeSet::<u32>::new())).insert(rid);
             self.rules_inner.insert(rid, rule);

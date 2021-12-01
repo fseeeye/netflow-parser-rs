@@ -1,11 +1,14 @@
-use std::net::IpAddr;
 use serde::{Deserialize, Serialize};
+
+use std::net::IpAddr;
+
 use parsing_parser::{L5Packet, NetLevel, TransLevel};
-use crate::detect::RuleDetector;
+
+use crate::detect::IcsRuleDetector;
 
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct BasicRule {
+pub struct IcsRuleBasis {
     pub rid: u32,
     pub action: Action,
     pub src_ip: Option<IpAddr>,
@@ -16,7 +19,7 @@ pub struct BasicRule {
     pub msg: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum Action {
     Allow,
@@ -25,7 +28,7 @@ pub enum Action {
     Reject,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Direction {
     #[serde(rename = "->")]
     Uni,
@@ -33,7 +36,7 @@ pub enum Direction {
     Bi,
 }
 
-impl RuleDetector for BasicRule {
+impl IcsRuleDetector for IcsRuleBasis {
     fn detect(&self, l5: &L5Packet) -> bool {
         let packet_src_ip = l5.get_src_ip();
         let packet_dst_ip = l5.get_dst_ip();

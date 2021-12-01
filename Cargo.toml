@@ -9,14 +9,16 @@ repository = "https://gitee.com/BoleanTech/parsing-rs"
 exclude = ["benches"]
 members = [
     "crates/adapter_clang",
-    "crates/parsing_icsrule",
     "crates/parsing_parser",
+    "crates/parsing_rule",
+    "crates/parsing_icsrule",
     "crates/parsing_suricata",
 ]
 
 [dependencies]
-parsing_icsrule = { path = "crates/parsing_icsrule", version = "0.5.0" }
 parsing_parser = { path = "crates/parsing_parser", version = "0.5.0" }
+parsing_rule = { path = "crates/parsing_rule", version = "0.1.0" }
+parsing_icsrule = { path = "crates/parsing_icsrule", version = "0.5.1" }
 
 [dev-dependencies]
 # required by examples and benchmark

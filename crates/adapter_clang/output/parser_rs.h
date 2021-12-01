@@ -6,6 +6,12 @@
 
 
 /**
+ * HmIcsRules是存储规则集合的数据结构，它采用 HashMap 来存取所有规则。
+ * > Tips: 目前数据结构处于待完善阶段。
+ */
+typedef struct HmIcsRules HmIcsRules;
+
+/**
  * QuinPacket是由 Level1 - Level5 Packet 构成的枚举结构，使用示例如下：
  * ```
  * use parsing_rs::*;
@@ -46,17 +52,11 @@ typedef struct QuinPacket QuinPacket;
  */
 typedef struct QuinPacketOptions QuinPacketOptions;
 
-/**
- * Rules是存储规则集合的数据结构。
- * > Tips: 目前数据结构处于待完善阶段。
- */
-typedef struct Rules Rules;
-
-bool detect_ics_rules(const struct Rules *rules_ptr, const struct QuinPacket *packet_ptr);
+bool detect_ics_rules(const struct HmIcsRules *rules_ptr, const struct QuinPacket *packet_ptr);
 
 const struct QuinPacketOptions *init_parse_option(void);
 
-const struct Rules *init_rules(const char *file_ptr);
+const struct HmIcsRules *init_rules(const char *file_ptr);
 
 const struct QuinPacket *parse_packet(const uint8_t *input_ptr,
                                       uint16_t input_len,

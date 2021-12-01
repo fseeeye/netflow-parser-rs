@@ -15,6 +15,7 @@ cbindgen = "0.20.0"
 [dependencies]
 # parsing-rs
 # parsing_rs = { path = "../../" }
+parsing_rule = { path = "../parsing_rule" }
 parsing_parser = { path = "../parsing_parser" }
 parsing_icsrule = { path = "../parsing_icsrule" }
 # required by ffi
