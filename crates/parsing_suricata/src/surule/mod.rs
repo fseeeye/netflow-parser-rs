@@ -20,10 +20,10 @@ pub struct Surule {
     pub action: types::Action,
     pub protocol: types::Protocol,
     pub src_addr: types::IpAddressList,
-    pub src_port: String,
+    pub src_port: types::PortList,
     pub direction: types::Direction,
     pub dst_addr: types::IpAddressList,
-    pub dst_port: String,
+    pub dst_port: types::PortList,
     pub options: Vec<SuruleElement>,
 }
 
@@ -32,21 +32,21 @@ impl Surule {
         action: types::Action,
         protocol: types::Protocol,
         src_addr: types::IpAddressList,
-        src_port: impl ToString,
+        src_port: types::PortList,
         direction: types::Direction,
         dst_addr: types::IpAddressList,
-        dst_port: impl ToString,
+        dst_port: types::PortList,
         options: Vec<SuruleElement>,
     ) -> Self {
         Self {
             action,
             protocol,
             src_addr,
-            src_port: src_port.to_string(),
+            src_port,
             direction,
             dst_addr,
-            dst_port: dst_port.to_string(),
-            options,
+            dst_port,
+            options
         }
     }
 }

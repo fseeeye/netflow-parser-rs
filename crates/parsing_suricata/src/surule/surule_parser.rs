@@ -146,15 +146,15 @@ pub fn parse_surule(input: &str) -> IResult<&str, Surule, SuruleParseError<&str>
     // parse header elements
     let (input, (action, protocol, src_addr, src_port, direction, dst_addr, dst_port)): (
         &str,
-        (types::Action, types::Protocol, types::IpAddressList, &str, types::Direction, types::IpAddressList, &str),
+        (types::Action, types::Protocol, types::IpAddressList, types::PortList, types::Direction, types::IpAddressList, types::PortList),
     ) = nom::sequence::tuple((
         element_parser::parse_action_from_stream,
         element_parser::parse_protocol_from_stream,
-        element_parser::parse_ip_list_from_stream,
-        element_parser::take_list_maybe_from_stream,
+        element_parser::parse_list_from_stream,
+        element_parser::parse_list_from_stream,
         element_parser::parse_direction_from_stream,
-        element_parser::parse_ip_list_from_stream,
-        element_parser::take_list_maybe_from_stream,
+        element_parser::parse_list_from_stream,
+        element_parser::parse_list_from_stream,
     ))(input)?;
 
     // parse option elements
@@ -231,7 +231,10 @@ mod tests {
                         types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
                     ])
                 },
-                "any",
+                types::PortList {
+                    accept: None,
+                    except: None
+                },
                 types::Direction::Uni,
                 types::IpAddressList {
                     accept: Some(vec![
@@ -239,7 +242,13 @@ mod tests {
                     ]),
                     except: None
                 },
-                "[445,3389]",
+                types::PortList {
+                    accept: Some(vec![
+                        types::Port::Single(445),
+                        types::Port::Single(3389),
+                    ]),
+                    except: None
+                },
                 vec![
                     SuruleElement::Message(
                         "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()
@@ -346,7 +355,10 @@ mod tests {
                         types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
                     ])
                 },
-                "any",
+                types::PortList {
+                    accept: None,
+                    except: None
+                },
                 types::Direction::Uni,
                 types::IpAddressList {
                     accept: Some(vec![
@@ -354,7 +366,13 @@ mod tests {
                     ]),
                     except: None
                 },
-                "[445,3389]",
+                types::PortList {
+                    accept: Some(vec![
+                        types::Port::Single(445),
+                        types::Port::Single(3389),
+                    ]),
+                    except: None
+                },
                 vec![
                     SuruleElement::Message(
                         "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()

@@ -1,5 +1,6 @@
 //! 包含 suricata rule (Surule) 用到的所有数据结构
 use ipnet::Ipv4Net;
+use anyhow::{Result};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +15,15 @@ use super::utils::is_default;
 use super::SuruleParseError;
 use super::types;
 
+
+pub trait SurList {
+    type Element: FromStr<Err = nom::Err<SuruleParseError<&'static str>>>;
+
+    fn get_accept(&self) -> &Option<Vec<Self::Element>>;
+    fn get_expect(&self) -> &Option<Vec<Self::Element>>;
+    fn get_accept_mut(&mut self) -> &mut Option<Vec<Self::Element>>;
+    fn get_expect_mut(&mut self) -> &mut Option<Vec<Self::Element>>;
+}
 
 /*
  *  Suricata Header Element types
@@ -40,6 +50,7 @@ pub enum Action {
 }
 
 /// Protocol type (Suricata Header Element)
+/// 
 /// use parsing_parser::protocol::ProtocolType
 pub type Protocol = ProtocolType;
 
@@ -56,6 +67,26 @@ pub type Protocol = ProtocolType;
 pub struct IpAddressList {
     pub accept: Option<Vec<IpAddress>>, // None represent Any
     pub except: Option<Vec<IpAddress>>  // None represent No Exception
+}
+
+impl SurList for IpAddressList {
+    type Element = IpAddress;
+
+    fn get_accept(&self) -> &Option<Vec<Self::Element>> {
+        &self.accept
+    }
+
+    fn get_expect(&self) -> &Option<Vec<Self::Element>> {
+        &self.except
+    }
+
+    fn get_accept_mut(&mut self) -> &mut Option<Vec<Self::Element>> {
+        &mut self.accept
+    }
+
+    fn get_expect_mut(&mut self) -> &mut Option<Vec<Self::Element>> {
+        &mut self.except
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -86,22 +117,84 @@ impl FromStr for IpAddress {
     }
 }
 
-/// Port type (Suricata Header Element)
+/// Port List type (Suricata Header Element)
 /// 
 ///  ref: https://suricata.readthedocs.io/en/latest/rules/intro.html#ports-source-and-destination
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Debug, PartialEq)]
-pub struct Port {
-    
+#[derive(Clone, Debug, PartialEq, Default)]
+pub struct PortList {
+    pub accept: Option<Vec<Port>>,
+    pub except: Option<Vec<Port>>
+}
+
+impl SurList for PortList {
+    type Element = Port;
+
+    fn get_accept(&self) -> &Option<Vec<Self::Element>> {
+        &self.accept
+    }
+
+    fn get_expect(&self) -> &Option<Vec<Self::Element>> {
+        &self.except
+    }
+
+    fn get_accept_mut(&mut self) -> &mut Option<Vec<Self::Element>> {
+        &mut self.accept
+    }
+
+    fn get_expect_mut(&mut self) -> &mut Option<Vec<Self::Element>> {
+        &mut self.except
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
-pub enum PortList {
-    #[cfg_attr(feature = "serde", serde(rename = "any"))]
-    Any,
-    #[cfg_attr(feature = "serde", serde(rename = "limit"))]
-    Limit()
+pub enum Port {
+    Range {max: u16, min: u16},
+    Single(u16)
+}
+
+impl Port {
+    pub fn new_range(min: u16, max: u16) -> Result<Self, SuruleParseError<&'static str>> {
+        if max < min {
+            return Err(SuruleParseError::InvalidPort("max port is smaller than min port!".to_string()));
+        } 
+        Ok(Port::Range { min, max })
+    }
+
+    pub fn contains(&self, port: u16) -> bool {
+        match self {
+            Self::Single(p) => return *p == port,
+            Self::Range{ max, min} => return *min <= port && port <= *max
+        }
+    }
+}
+
+impl FromStr for Port {
+    type Err = nom::Err<SuruleParseError<&'static str>>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let make_err = || SuruleParseError::InvalidPort(s.to_string()).into();
+
+        if let Some((min_str, max_str)) = s.split_once(':') { // range
+            let min = min_str
+                .parse()
+                .map_err(|_| make_err())?;
+            let max = max_str.trim()
+                .parse()
+                .or_else(|e| {
+                    if max_str.trim().is_empty() {
+                        return Ok(u16::MAX)
+                    } else {
+                        return Err(e)
+                    }
+                })
+                .map_err(|_| make_err())?;
+            Ok(Self::new_range(min, max).map_err(|e| e.into())?)
+        } else { // single
+            Ok(Self::Single(s.parse().map_err(|_| make_err())?))
+        }
+    }
 }
 
 /// Direction type (Suricata Header Element)

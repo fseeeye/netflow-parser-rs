@@ -14,6 +14,8 @@ pub enum SuruleParseError<I> {
     ListDeepthOverflow,
     #[error("unterminated list.")]
     UnterminatedList,
+    #[error("invalid list: '{0}'")]
+    InvalidList(String),
     #[error("unterminated value of rule option.")]
     UnterminatedRuleOptionValue,
     #[error("unterminated name of rule option.")]
@@ -28,10 +30,8 @@ pub enum SuruleParseError<I> {
     InvalidProtocol(String),
     #[error("invalid ip address: '{0}'")]
     InvalidIpAddr(String),
-    #[error("invalid ip list: '{0}'")]
-    InvalidIpList(String),
-    #[error("invalid port: '{0}'")]
-    InvalidPortList(String),
+    #[error("invalid port range: '{0}'")]
+    InvalidPort(String),
     #[error("don't find option staring backet")]
     NoOptionElement,
     #[error("sid parsing error: '{0}'")]

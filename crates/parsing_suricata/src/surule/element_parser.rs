@@ -7,6 +7,7 @@ use parsing_parser::{TransportProtocol, NetworkProtocol};
 
 use super::types;
 use super::SuruleParseError;
+use super::types::SurList;
 use super::utils::{strip_quotes, strip_brackets};
 
 
@@ -88,9 +89,6 @@ pub(super) fn take_list_maybe_from_stream(
             }
             _ => {}
         }
-        // if depth == 0 && !(c == '!' && i == 0) {
-        //     break;
-        // }
     }
     if depth != 0 {
         return Err(SuruleParseError::UnterminatedList.into())
@@ -205,129 +203,97 @@ pub(super) fn parse_protocol_from_stream(
     Ok((input, protocol))
 }
 
-// parse_ip_list_from_stream 的辅助函数
+// parse_xxx_list_from_stream 的辅助函数
 // 解析 list (不含 exception 和 nested list)
-fn parse_inner_list(
+fn parse_inner_list<T>(
     input: &str,
-    ip_vec: &mut Option<Vec<types::IpAddress>>
-) -> Result<(), nom::Err<SuruleParseError<&'static str>>> {
+    list_vec: &mut Option<Vec<T>>
+) -> Result<(), nom::Err<SuruleParseError<&'static str>>> 
+where
+    T: FromStr<Err = nom::Err<SuruleParseError<&'static str>>>
+{
     let list_split = strip_brackets(input).split(',');
     for s in list_split {
         let s = handle_value(s)
-            .map_err(|_| SuruleParseError::InvalidIpList("empty list value.".to_string()).into())?;
+            .map_err(|_| SuruleParseError::InvalidList("empty list value.".to_string()).into())?;
         // list 中不会再包含 exception / nested list
-        let ip = types::IpAddress::from_str(s)?;
-        if let Some(v) = ip_vec {
+        let ip = T::from_str(s)?;
+        if let Some(v) = list_vec {
             v.push(ip);
         } else {
-            *ip_vec = Some(vec![ip]);
+            *list_vec = Some(vec![ip]);
         }
     }
     Ok(())
 }
 
 /// 从字符流中解析 IpAddrress List
-pub(super) fn parse_ip_list_from_stream(
+pub(super) fn parse_list_from_stream<L>(
     input: &str
-) -> IResult<&str, types::IpAddressList, SuruleParseError<&str>> {
+) -> IResult<&str, L, SuruleParseError<&str>>
+where
+    L: SurList + Default
+{
     // closures
-    let make_err = |reason| SuruleParseError::InvalidIpList(reason).into();
-    let push_ip = |ip_vec: &mut Option<Vec<types::IpAddress>> , ip: types::IpAddress| {
-        if let Some(v) = ip_vec {
-            v.push(ip);
+    let make_err = |reason| SuruleParseError::InvalidList(reason).into();
+    let push_element = |e_vec: &mut Option<Vec<L::Element>> , e: L::Element| {
+        if let Some(v) = e_vec {
+            v.push(e);
         } else {
-            *ip_vec = Some(vec![ip]);
+            *e_vec = Some(vec![e]);
         }
     };
     
     // preprocess
     let input = handle_stream(input)
         .map_err(|_| make_err("empty stream.".to_string()))?;
-    let (input, ip_list_string) = take_list_maybe_from_stream(input)
+    let (input, list_string) = take_list_maybe_from_stream(input)
         .map(|(input, list_str)| (input, strip_quotes(list_str)))?;
-    let mut ip_list_str = ip_list_string.as_str();
+    let mut list_str = list_string.as_str();
 
     // parse ip address list
-    let mut ip_list = types::IpAddressList::default();
-    if ip_list_str.starts_with('!') { // exception: !...
-        ip_list_str = &ip_list_str[1..];
+    let mut rst_list = L::default();
+    if list_str == "any" {
+        return Ok((input, rst_list))
+    } else if list_str.starts_with('!') { // exception: !...
+        list_str = &list_str[1..];
 
-        if ip_list_str.starts_with('[') && ip_list_str.ends_with(']') { // exception list: ![..., ...]
-            parse_inner_list(ip_list_str, &mut ip_list.except)?;
+        if list_str.starts_with('[') && list_str.ends_with(']') { // exception list: ![..., ...]
+            parse_inner_list(list_str, rst_list.get_expect_mut())?;
         } else { // single exception value: !1.1.1.1
-            let ip = types::IpAddress::from_str(ip_list_str)?;
-            push_ip(&mut ip_list.except, ip);
+            *rst_list.get_expect_mut() = Some(vec![L::Element::from_str(list_str)?]);
         }
 
-        Ok((input, ip_list))
-    } else { // acception
-        if ip_list_str.starts_with('[') && ip_list_str.ends_with(']') { // first list: [..., ...]
-            // let ip_list_split = strip_brackets(ip_list_str).split(',');
-            for s in take_list_members(ip_list_str)? {
+        Ok((input, rst_list))
+    } else { // acception: ...
+        if list_str.starts_with('[') && list_str.ends_with(']') { // first list: [..., ...]
+            for s in take_list_members(list_str)? {
                 let s = handle_value(s)
                     .map_err(|_| make_err("empty list value.".to_string()))?;
                 if s.starts_with('!') { // exception element: [!...]
                     let s = &s[1..];
                     if s.starts_with('[') && s.ends_with(']') { // exception list: [![..., ...]]
-                        parse_inner_list(s, &mut ip_list.except)?;
+                        parse_inner_list(s, rst_list.get_expect_mut())?;
                     } else { // exception single value: [!1.1.1.1]
-                        let ip = types::IpAddress::from_str(s)?;
-                        push_ip(&mut ip_list.except, ip);
+                        let element = L::Element::from_str(s)?;
+                        push_element(rst_list.get_expect_mut(), element);
                     }
                 } else { // acception element: [...]
                     if s.starts_with('[') && s.ends_with(']') { // acception list: [[..., ...]]
-                        parse_inner_list(s, &mut ip_list.accept)?;
+                        parse_inner_list(s, rst_list.get_accept_mut())?;
                     } else { // acception single value: [1.1.1.1]
-                        let ip = types::IpAddress::from_str(s)?;
-                        push_ip(&mut ip_list.accept, ip);
+                        let element = L::Element::from_str(s)?;
+                        push_element(rst_list.get_accept_mut(), element);
                     }
                 }
             }
         } else { // single value: 1.1.1.1
-            let ip = types::IpAddress::from_str(ip_list_str)?;
-            push_ip(&mut ip_list.accept, ip);
+            *rst_list.get_accept_mut() = Some(vec![L::Element::from_str(list_str)?]);
         }
 
-        Ok((input, ip_list))
+        Ok((input, rst_list))
     }
 }
-
-// TODO
-// /// 从字符流中解析 Port List
-// pub(super) fn parse_port_list_from_stream(
-//     input: &str
-// ) -> IResult<&str, Vec<u16>, SuruleParseError<&str>> {
-//     let make_err = |reason| SuruleParseError::InvalidPortList(reason).into();
-
-//     let input = handle_stream(input)
-//         .map_err(|_| make_err("empty stream.".to_string()))?;
-//     let (input, port_list_str) = take_list_maybe_from_stream(input)?;
-
-//     if port_list_str.starts_with('[') && port_list_str.ends_with(']') { // it's a port list
-//         let mut port_list: Vec<u16> = Vec::new();
-//         let port_list_split = port_list_str
-//             .strip_prefix('[')
-//             .ok_or(make_err(port_list_str.to_string()))?
-//             .strip_suffix(']')
-//             .ok_or(make_err(port_list_str.to_string()))?
-//             .split(',');
-//         for p in port_list_split {
-//             let p = handle_value(p)
-//                 .map_err(|_| make_err("empty value.".to_string()))?;
-//             port_list.push(p
-//                 .parse::<u16>()
-//                 .map_err(|_| make_err(p.to_string()))?)
-//         }
-//         Ok((input, port_list))
-//     } else {
-//         let p = handle_value(port_list_str)
-//             .map_err(|_| make_err("empty value.".to_string()))?;
-//         Ok((
-//             input, 
-//             vec![p.parse::<u16>().map_err(|_| make_err(p.to_string()))?]
-//         ))
-//     }
-// }
 
 /// 从字符流中解析 Direction
 pub(super) fn parse_direction_from_stream(
@@ -582,7 +548,15 @@ mod tests {
     #[test]
     fn test_ip_list() {
         assert_eq!(
-            parse_ip_list_from_stream(r#" !["10.0.0.0/8", "192.168.0.1"] xxx"#),
+            parse_list_from_stream(r#"any xxx"#),
+            Ok((" xxx", types::IpAddressList {
+                accept: None,
+                except: None
+            }))
+        );
+
+        assert_eq!(
+            parse_list_from_stream(r#" !["10.0.0.0/8", "192.168.0.1"] xxx"#),
             Ok((" xxx", types::IpAddressList {
                 accept: None,
                 except: Some(vec![
@@ -591,20 +565,9 @@ mod tests {
                 ])
             }))
         );
-
-        assert_eq!(
-            parse_ip_list_from_stream(r#" ["10.0.0.0/8",!["10.0.0.1","10.0.0.2"]] xxx"#),
-            Ok((" xxx", types::IpAddressList {
-                accept: Some(vec![types::IpAddress::V4Range(Ipv4Net::from_str("10.0.0.0/8").unwrap())]),
-                except: Some(vec![
-                    types::IpAddress::V4Addr(Ipv4Addr::from_str("10.0.0.1").unwrap()),
-                    types::IpAddress::V4Addr(Ipv4Addr::from_str("10.0.0.2").unwrap())
-                    ])
-                }))
-            );
         
         // 使用示例
-        let (_, rst) = parse_ip_list_from_stream(r#" ["10.0.0.0/8", !["10.0.0.1", "10.0.0.2"]] xxx"#).unwrap();
+        let (_, rst) = parse_list_from_stream::<types::IpAddressList>(r#" ["10.0.0.0/8", !["10.0.0.1", "10.0.0.2"]] xxx"#).unwrap();
         let test_ip = Ipv4Addr::from_str("10.0.0.2").unwrap();
         if let Some(a) = rst.except {
             for ia in a {
@@ -625,6 +588,79 @@ mod tests {
             }
             assert!(false)
         }
+    }
+
+    #[test]
+    fn test_port_list() {
+        assert_eq!(
+            parse_list_from_stream("[80, 81, 82] xxx"),
+            Ok((
+                " xxx",
+                types::PortList {
+                    accept: Some(vec![
+                        types::Port::Single(80),
+                        types::Port::Single(81),
+                        types::Port::Single(82),
+                    ]),
+                    except: None
+                }
+            ))
+        );
+
+        assert_eq!(
+            parse_list_from_stream(" [80: 82] xxx"),
+            Ok((
+                " xxx",
+                types::PortList {
+                    accept: Some(vec![
+                        types::Port::new_range(80, 82).unwrap(),
+                    ]),
+                    except: None
+                }
+            ))
+        );
+
+        assert_eq!(
+            parse_list_from_stream("[1024:] xxx"),
+            Ok((
+                " xxx",
+                types::PortList {
+                    accept: Some(vec![
+                        types::Port::new_range(1024, u16::MAX).unwrap(),
+                    ]),
+                    except: None
+                }
+            ))
+        );
+
+        assert_eq!(
+            parse_list_from_stream(" !80 xxx"),
+            Ok((
+                " xxx",
+                types::PortList {
+                    accept: None,
+                    except: Some(vec![
+                        types::Port::Single(80)
+                    ])
+                }
+            ))
+        );
+
+        assert_eq!(
+            parse_list_from_stream(" [80:100,![86,87]] xxx"),
+            Ok((
+                " xxx",
+                types::PortList {
+                    accept: Some(vec![
+                        types::Port::new_range(80, 100).unwrap()
+                    ]),
+                    except: Some(vec![
+                        types::Port::Single(86),
+                        types::Port::Single(87)
+                    ])
+                }
+            ))
+        )
     }
 
     #[test]
