@@ -11,6 +11,7 @@ stages:
 before_script: 
   - mkdir -p /.cargo
   - echo "[source]\n[source.crates-io]\nreplace-with = 'tuna'\n\n[source.tuna]\nregistry = \"https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git\"" >> /.cargo/config.toml
+  - cat /.cargo/config.toml
   - sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list && rm -Rf /var/lib/apt/lists/* && apt-get update -yqq
   - apt-get install -yqq --no-install-recommends build-essential
 
