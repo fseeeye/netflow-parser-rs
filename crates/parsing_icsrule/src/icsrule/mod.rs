@@ -6,7 +6,7 @@ pub use self::hm_rules::HmIcsRules;
 
 
 use serde::{Deserialize, Serialize};
-use super::rule_arg::IcsRuleArgs;
+use super::icsrule_arg::IcsRuleArgs;
 use self::basis::IcsRuleBasis;
 
 #[derive(Serialize, Deserialize, Debug)]

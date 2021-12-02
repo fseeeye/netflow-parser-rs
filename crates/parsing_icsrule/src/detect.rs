@@ -1,7 +1,7 @@
 use parsing_parser::{QuinPacket, L5Packet};
 use parsing_rule::*;
 
-use super::rule::{HmIcsRules, Action};
+use super::icsrule::{HmIcsRules, Action};
 
 
 pub trait IcsRuleDetector {
