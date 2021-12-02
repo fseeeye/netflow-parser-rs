@@ -1,12 +1,11 @@
 use std::str::FromStr;
 
-use nom::IResult;
 use anyhow::Result;
+use nom::IResult;
 
-use super::elements::{self, SurList, Action};
-use super::SuruleParseError;
-use super::utils::{strip_quotes, strip_brackets};
-
+use super::types::*;
+use crate::surule::utils::{strip_brackets, strip_quotes};
+use crate::surule::SuruleParseError;
 
 /*
  *  Utility Parsers
@@ -14,7 +13,7 @@ use super::utils::{strip_quotes, strip_brackets};
 
 /// 处理已被从字符流中提取出来的输入
 #[inline(always)]
-pub(super) fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseError>> {
+pub(crate) fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseError>> {
     let input = input.trim();
     if input.is_empty() {
         Err(SuruleParseError::EmptyStr.into())
@@ -25,7 +24,7 @@ pub(super) fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseErro
 
 /// 处理字符流输入
 #[inline(always)]
-pub(super) fn handle_stream(input: &str) -> Result<&str, nom::Err<SuruleParseError>> {
+pub(crate) fn handle_stream(input: &str) -> Result<&str, nom::Err<SuruleParseError>> {
     let input = input.trim_start();
     if input.is_empty() {
         Err(SuruleParseError::EmptyStr.into())
@@ -36,13 +35,13 @@ pub(super) fn handle_stream(input: &str) -> Result<&str, nom::Err<SuruleParseErr
 
 /// 获得所有字符，直到碰到空白字符
 #[inline(always)]
-pub(super) fn take_until_whitespace(input: &str) -> IResult<&str, &str, SuruleParseError> {
+pub(crate) fn take_until_whitespace(input: &str) -> IResult<&str, &str, SuruleParseError> {
     nom::bytes::complete::is_not(" \t\r\n")(input)
 }
 
 /// 解析数字 u64
 #[inline(always)]
-pub(super) fn parse_u64<'a>(
+pub(crate) fn parse_u64<'a>(
     input: &'a str,
     context: &str,
 ) -> Result<u64, nom::Err<SuruleParseError>> {
@@ -57,9 +56,7 @@ pub(super) fn parse_u64<'a>(
 ///
 /// 这函数实际上并不返回数组，而只是解析出完整且正确的列表字符串。
 /// 该列表可能被 [] 包裹，表示多值；也可能没被包裹，表示单一值
-pub(super) fn take_list_maybe_from_stream(
-    input: &str,
-) -> IResult<&str, &str, SuruleParseError> {
+pub(crate) fn take_list_maybe_from_stream(input: &str) -> IResult<&str, &str, SuruleParseError> {
     let mut depth = 0;
     let mut end = 0;
     let input = handle_stream(input)?;
@@ -75,7 +72,7 @@ pub(super) fn take_list_maybe_from_stream(
             '[' => {
                 depth += 1;
                 if depth > 2 {
-                    return Err(SuruleParseError::ListDeepthOverflow.into())
+                    return Err(SuruleParseError::ListDeepthOverflow.into());
                 }
             }
             ']' => {
@@ -88,22 +85,20 @@ pub(super) fn take_list_maybe_from_stream(
         }
     }
     if depth != 0 {
-        return Err(SuruleParseError::UnterminatedList.into())
+        return Err(SuruleParseError::UnterminatedList.into());
     }
     Ok((&input[end + 1..], &input[0..end + 1]))
 }
 
 /// 从列表字符串中提取出元素
-pub(super) fn take_list_members(
-    input: &str
-) -> Result<Vec<&str>, nom::Err<SuruleParseError>> {
+pub(crate) fn take_list_members(input: &str) -> Result<Vec<&str>, nom::Err<SuruleParseError>> {
     let mut members = Vec::new();
     let mut depth: usize = 0;
     let mut start: usize;
     let mut end: usize;
     let mut is_in_list: bool = false;
     let input = handle_value(input)?;
-    
+
     if (input.starts_with("[")) && input.ends_with("]") {
         start = 1;
     } else if input.starts_with("![") && input.ends_with("]") {
@@ -119,17 +114,15 @@ pub(super) fn take_list_members(
                 depth += 1;
                 if depth == 2 {
                     is_in_list = true;
-                }
-                else if depth > 2 {
-                    return Err(SuruleParseError::ListDeepthOverflow.into())
+                } else if depth > 2 {
+                    return Err(SuruleParseError::ListDeepthOverflow.into());
                 }
             }
             ']' => {
                 depth -= 1;
                 if depth == 1 {
                     is_in_list = false;
-                }
-                else if depth == 0 {
+                } else if depth == 0 {
                     members.push(&input[start..end]);
                     break;
                 }
@@ -144,58 +137,51 @@ pub(super) fn take_list_members(
         }
     }
     if depth != 0 {
-        return Err(SuruleParseError::UnterminatedList.into())
+        return Err(SuruleParseError::UnterminatedList.into());
     }
 
     Ok(members)
 }
-
 
 /*
  *  Rule Header Element Parsers
  */
 
 /// 从字符流中解析 Action
-pub(super) fn parse_action_from_stream(
-    input: &str
-) -> IResult<&str, Action, SuruleParseError> {
+pub(crate) fn parse_action_from_stream(input: &str) -> IResult<&str, Action, SuruleParseError> {
     let make_err = |reason| SuruleParseError::InvalidAction(reason).into();
 
-    let input = handle_stream(input)
-        .map_err(|_| make_err("empty stream.".to_string()))?;
-    let (input, action_str) = take_until_whitespace(input)
-        .map_err(|_| make_err(input.to_string()))?;
+    let input = handle_stream(input).map_err(|_| make_err("empty stream.".to_string()))?;
+    let (input, action_str) =
+        take_until_whitespace(input).map_err(|_| make_err(input.to_string()))?;
     let action = match action_str {
-        "alert"      => Action::Alert,
-        "pass"       => Action::Pass,
-        "drop"       => Action::Drop,
-        "reject"     => Action::Reject,
-        "rejectsrc"  => Action::RejectSrc,
-        "rejectdst"  => Action::RejectDst,
+        "alert" => Action::Alert,
+        "pass" => Action::Pass,
+        "drop" => Action::Drop,
+        "reject" => Action::Reject,
+        "rejectsrc" => Action::RejectSrc,
+        "rejectdst" => Action::RejectDst,
         "rejectboth" => Action::RejectBoth,
-        _ => return Err(SuruleParseError::InvalidAction(action_str.to_string()).into())
+        _ => return Err(SuruleParseError::InvalidAction(action_str.to_string()).into()),
     };
 
     Ok((input, action))
 }
 
 /// 从字符流中解析 Protocol
-/// 
+///
 /// 目前仅支持：tcp / udp
 /// Warning: 由于 parsing_parser 尚未支持 HTTP 协议，所以目前还无法实现 http 规则
-pub(super) fn parse_protocol_from_stream(
-    input: &str
-) -> IResult<&str, elements::Protocol, SuruleParseError> {
+pub(crate) fn parse_protocol_from_stream(input: &str) -> IResult<&str, Protocol, SuruleParseError> {
     let make_err = |reason| SuruleParseError::InvalidProtocol(reason).into();
 
-    let input = handle_stream(input)
-        .map_err(|_| make_err(input.to_string()))?;
-    let (input, protocol_str) = take_until_whitespace(input)
-        .map_err(|_| make_err(input.to_string()))?;
+    let input = handle_stream(input).map_err(|_| make_err(input.to_string()))?;
+    let (input, protocol_str) =
+        take_until_whitespace(input).map_err(|_| make_err(input.to_string()))?;
     let protocol = match protocol_str {
-        "tcp" => elements::Protocol::Tcp,
-        "udp" => elements::Protocol::Udp,
-        _ => return Err(SuruleParseError::InvalidProtocol(protocol_str.to_string()).into())
+        "tcp" => Protocol::Tcp,
+        "udp" => Protocol::Udp,
+        _ => return Err(SuruleParseError::InvalidProtocol(protocol_str.to_string()).into()),
     };
 
     Ok((input, protocol))
@@ -205,10 +191,10 @@ pub(super) fn parse_protocol_from_stream(
 // 解析 list (不含 exception 和 nested list)
 fn parse_inner_list<T>(
     input: &str,
-    list_vec: &mut Option<Vec<T>>
-) -> Result<(), nom::Err<SuruleParseError>> 
+    list_vec: &mut Option<Vec<T>>,
+) -> Result<(), nom::Err<SuruleParseError>>
 where
-    T: FromStr<Err = nom::Err<SuruleParseError>>
+    T: FromStr<Err = nom::Err<SuruleParseError>>,
 {
     let list_split = strip_brackets(input).split(',');
     for s in list_split {
@@ -226,66 +212,75 @@ where
 }
 
 /// 从字符流中解析 IpAddrress List
-pub(super) fn parse_list_from_stream<L>(
-    input: &str
-) -> IResult<&str, L, SuruleParseError>
+pub(crate) fn parse_list_from_stream<L>(input: &str) -> IResult<&str, L, SuruleParseError>
 where
-    L: SurList + Default
+    L: SurList + Default,
 {
     // closures
     let make_err = |reason| SuruleParseError::InvalidList(reason).into();
-    let push_element = |e_vec: &mut Option<Vec<L::Element>> , e: L::Element| {
+    let push_element = |e_vec: &mut Option<Vec<L::Element>>, e: L::Element| {
         if let Some(v) = e_vec {
             v.push(e);
         } else {
             *e_vec = Some(vec![e]);
         }
     };
-    
+
     // preprocess
-    let input = handle_stream(input)
-        .map_err(|_| make_err("empty stream.".to_string()))?;
+    let input = handle_stream(input).map_err(|_| make_err("empty stream.".to_string()))?;
     let (input, list_string) = take_list_maybe_from_stream(input)
         .map(|(input, list_str)| (input, strip_quotes(list_str)))?;
     let mut list_str = list_string.as_str();
 
     // parse ip address list
     let mut rst_list = L::default();
-    if list_str == "any" || list_str == "all" || list_str == "$HTTP_PORTS" { // Warning: 目前尚不支持配置文件，所以替换了 $HTTP_PORTS
-        return Ok((input, rst_list))
-    } else if list_str.starts_with('!') { // exception: !...
+    if list_str == "any" || list_str == "all" || list_str == "$HTTP_PORTS" {
+        // Warning: 目前尚不支持配置文件，所以替换了 $HTTP_PORTS
+        return Ok((input, rst_list));
+    } else if list_str.starts_with('!') {
+        // exception: !...
         list_str = &list_str[1..];
 
-        if list_str.starts_with('[') && list_str.ends_with(']') { // exception list: ![..., ...]
+        if list_str.starts_with('[') && list_str.ends_with(']') {
+            // exception list: ![..., ...]
             parse_inner_list(list_str, rst_list.get_expect_mut())?;
-        } else { // single exception value: !1.1.1.1
+        } else {
+            // single exception value: !1.1.1.1
             *rst_list.get_expect_mut() = Some(vec![L::Element::from_str(list_str)?]);
         }
 
         Ok((input, rst_list))
-    } else { // acception: ...
-        if list_str.starts_with('[') && list_str.ends_with(']') { // first list: [..., ...]
+    } else {
+        // acception: ...
+        if list_str.starts_with('[') && list_str.ends_with(']') {
+            // first list: [..., ...]
             for s in take_list_members(list_str)? {
-                let s = handle_value(s)
-                    .map_err(|_| make_err("empty list value.".to_string()))?;
-                if s.starts_with('!') { // exception element: [!...]
+                let s = handle_value(s).map_err(|_| make_err("empty list value.".to_string()))?;
+                if s.starts_with('!') {
+                    // exception element: [!...]
                     let s = &s[1..];
-                    if s.starts_with('[') && s.ends_with(']') { // exception list: [![..., ...]]
+                    if s.starts_with('[') && s.ends_with(']') {
+                        // exception list: [![..., ...]]
                         parse_inner_list(s, rst_list.get_expect_mut())?;
-                    } else { // exception single value: [!1.1.1.1]
+                    } else {
+                        // exception single value: [!1.1.1.1]
                         let element = L::Element::from_str(s)?;
                         push_element(rst_list.get_expect_mut(), element);
                     }
-                } else { // acception element: [...]
-                    if s.starts_with('[') && s.ends_with(']') { // acception list: [[..., ...]]
+                } else {
+                    // acception element: [...]
+                    if s.starts_with('[') && s.ends_with(']') {
+                        // acception list: [[..., ...]]
                         parse_inner_list(s, rst_list.get_accept_mut())?;
-                    } else { // acception single value: [1.1.1.1]
+                    } else {
+                        // acception single value: [1.1.1.1]
                         let element = L::Element::from_str(s)?;
                         push_element(rst_list.get_accept_mut(), element);
                     }
                 }
             }
-        } else { // single value: 1.1.1.1
+        } else {
+            // single value: 1.1.1.1
             *rst_list.get_accept_mut() = Some(vec![L::Element::from_str(list_str)?]);
         }
 
@@ -294,21 +289,20 @@ where
 }
 
 /// 从字符流中解析 Direction
-pub(super) fn parse_direction_from_stream(
+pub(crate) fn parse_direction_from_stream(
     input: &str,
-) -> IResult<&str, elements::Direction, SuruleParseError> {
+) -> IResult<&str, Direction, SuruleParseError> {
     let make_err = |reason| SuruleParseError::InvalidDirection(reason).into();
 
-    let input = handle_stream(input)
-        .map_err(|_| make_err("empty stream.".to_string()))?;
+    let input = handle_stream(input).map_err(|_| make_err("empty stream.".to_string()))?;
     if let Ok((input, direction)) = nom::branch::alt::<_, _, nom::error::Error<&str>, _>((
         nom::bytes::complete::tag("->"),
         nom::bytes::complete::tag("<>"),
     ))(input)
     {
         match direction {
-            "->" => Ok((input, elements::Direction::Uni)),
-            "<>" => Ok((input, elements::Direction::Bi)),
+            "->" => Ok((input, Direction::Uni)),
+            "<>" => Ok((input, Direction::Bi)),
             _ => Err(make_err(direction.to_string())),
         }
     } else {
@@ -316,28 +310,23 @@ pub(super) fn parse_direction_from_stream(
     }
 }
 
-
 /*
  *  Rule Body Element Value Parsers
  */
 
 /// 解析 CountOrName
-pub(super) fn parse_count_or_name(
-    input: &str,
-) -> Result<elements::CountOrName, nom::Err<SuruleParseError>> {
+pub(crate) fn parse_count_or_name(input: &str) -> Result<CountOrName, nom::Err<SuruleParseError>> {
     let input = handle_value(input)?;
     // 如果 input 没能解析成功为 CountOrName::Value(i64)，那么就作为 CountOrName::Var(String)
     if let Ok(distance) = input.parse::<i64>() {
-        Ok(elements::CountOrName::Value(distance))
+        Ok(CountOrName::Value(distance))
     } else {
-        Ok(elements::CountOrName::Var(input.to_string()))
+        Ok(CountOrName::Var(input.to_string()))
     }
 }
 
 /// 解析 ByteJump
-pub(super) fn parse_byte_jump(
-    input: &str,
-) -> Result<elements::ByteJump, nom::Err<SuruleParseError>> {
+pub(crate) fn parse_byte_jump(input: &str) -> Result<ByteJump, nom::Err<SuruleParseError>> {
     // 内部工具函数：创建解析错误
     let make_err = |reason| SuruleParseError::InvalidByteJump(reason).into();
 
@@ -356,7 +345,7 @@ pub(super) fn parse_byte_jump(
     }
 
     // step2: 从 Vec 中依次解析 ByteJump 各字段
-    let mut byte_jump = elements::ByteJump {
+    let mut byte_jump = ByteJump {
         count: values[0]
             .trim()
             .parse()
@@ -376,10 +365,10 @@ pub(super) fn parse_byte_jump(
         match name {
             "relative" => byte_jump.relative = true,
             "little" => {
-                byte_jump.endian = elements::Endian::Little;
+                byte_jump.endian = Endian::Little;
             }
             "big" => {
-                byte_jump.endian = elements::Endian::Big;
+                byte_jump.endian = Endian::Big;
             }
             "align" => {
                 byte_jump.align = true;
@@ -438,9 +427,7 @@ pub(super) fn parse_byte_jump(
 }
 
 /// 解析 Flowbits
-pub(super) fn parse_flowbits(
-    input: &str,
-) -> Result<elements::Flowbits, nom::Err<SuruleParseError>> {
+pub(crate) fn parse_flowbits(input: &str) -> Result<Flowbits, nom::Err<SuruleParseError>> {
     // 内部工具函数：创建解析错误
     let make_err = |reason| SuruleParseError::Flowbit(reason).into();
 
@@ -457,26 +444,26 @@ pub(super) fn parse_flowbits(
 
     let (_, (command, names)) =
         nom::sequence::tuple((command_parser, nom::combinator::opt(name_parser)))(input)?;
-    let command = elements::FlowbitCommand::from_str(command)?;
+    let command = FlowbitCommand::from_str(command)?;
 
     match command {
-        elements::FlowbitCommand::IsNotSet
-        | elements::FlowbitCommand::Unset
-        | elements::FlowbitCommand::Toggle
-        | elements::FlowbitCommand::IsSet
-        | elements::FlowbitCommand::Set => {
+        FlowbitCommand::IsNotSet
+        | FlowbitCommand::Unset
+        | FlowbitCommand::Toggle
+        | FlowbitCommand::IsSet
+        | FlowbitCommand::Set => {
             let names = names
                 .ok_or_else(|| make_err(format!("{} requires argument", command)))?
                 .split('|')
                 .map(|s| s.trim().to_string())
                 .collect();
-            Ok(elements::Flowbits { command, names })
+            Ok(Flowbits { command, names })
         }
-        elements::FlowbitCommand::NoAlert => {
+        FlowbitCommand::NoAlert => {
             if names.is_some() {
                 Err(make_err("noalert don't need any arguments".to_string()))
             } else {
-                Ok(elements::Flowbits {
+                Ok(Flowbits {
                     command,
                     names: vec![],
                 })
@@ -484,7 +471,6 @@ pub(super) fn parse_flowbits(
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -504,12 +490,27 @@ mod tests {
     fn test_take_list_str() {
         // Ok
         assert_eq!(take_list_maybe_from_stream("[]"), Ok(("", "[]")));
-        assert_eq!(take_list_maybe_from_stream("[1,[1,2],[1,2,3]]a"), Ok(("a", "[1,[1,2],[1,2,3]]")));
-        assert_eq!(take_list_maybe_from_stream(" [[hel]lo]a\r\n"), Ok(("a\r\n", "[[hel]lo]")));
-        assert_eq!(take_list_maybe_from_stream("aaa bbb ccc"), Ok((" bbb ccc", "aaa")));
+        assert_eq!(
+            take_list_maybe_from_stream("[1,[1,2],[1,2,3]]a"),
+            Ok(("a", "[1,[1,2],[1,2,3]]"))
+        );
+        assert_eq!(
+            take_list_maybe_from_stream(" [[hel]lo]a\r\n"),
+            Ok(("a\r\n", "[[hel]lo]"))
+        );
+        assert_eq!(
+            take_list_maybe_from_stream("aaa bbb ccc"),
+            Ok((" bbb ccc", "aaa"))
+        );
         // Err
-        assert_eq!(take_list_maybe_from_stream(""), Err(SuruleParseError::EmptyStr.into()));
-        assert_eq!(take_list_maybe_from_stream("\r"), Err(SuruleParseError::EmptyStr.into()));
+        assert_eq!(
+            take_list_maybe_from_stream(""),
+            Err(SuruleParseError::EmptyStr.into())
+        );
+        assert_eq!(
+            take_list_maybe_from_stream("\r"),
+            Err(SuruleParseError::EmptyStr.into())
+        );
         assert_eq!(
             take_list_maybe_from_stream("[[1,2]"),
             Err(SuruleParseError::UnterminatedList.into())
@@ -518,24 +519,45 @@ mod tests {
 
     #[test]
     fn test_action() {
-        assert_eq!(parse_action_from_stream("alert\n \t xxx"), Ok(("\n \t xxx", Action::Alert)));
-        assert_eq!(parse_action_from_stream("\t    pass xxx"), Ok((" xxx", Action::Pass)));
-        assert_eq!(parse_action_from_stream("\n    drop xxx"), Ok((" xxx", Action::Drop)));
-        assert_eq!(parse_action_from_stream("\r  reject xxx"), Ok((" xxx", Action::Reject)));
-        assert_eq!(parse_action_from_stream(" rejectsrc xxx"), Ok((" xxx", Action::RejectSrc)));
-        assert_eq!(parse_action_from_stream(" rejectdst xxx"), Ok((" xxx", Action::RejectDst)));
-        assert_eq!(parse_action_from_stream("rejectboth xxx"), Ok((" xxx", Action::RejectBoth)));
+        assert_eq!(
+            parse_action_from_stream("alert\n \t xxx"),
+            Ok(("\n \t xxx", Action::Alert))
+        );
+        assert_eq!(
+            parse_action_from_stream("\t    pass xxx"),
+            Ok((" xxx", Action::Pass))
+        );
+        assert_eq!(
+            parse_action_from_stream("\n    drop xxx"),
+            Ok((" xxx", Action::Drop))
+        );
+        assert_eq!(
+            parse_action_from_stream("\r  reject xxx"),
+            Ok((" xxx", Action::Reject))
+        );
+        assert_eq!(
+            parse_action_from_stream(" rejectsrc xxx"),
+            Ok((" xxx", Action::RejectSrc))
+        );
+        assert_eq!(
+            parse_action_from_stream(" rejectdst xxx"),
+            Ok((" xxx", Action::RejectDst))
+        );
+        assert_eq!(
+            parse_action_from_stream("rejectboth xxx"),
+            Ok((" xxx", Action::RejectBoth))
+        );
     }
 
     #[test]
     fn test_protocol() {
         assert_eq!(
             parse_protocol_from_stream(" tcp xxx"),
-            Ok((" xxx", elements::Protocol::Tcp))
+            Ok((" xxx", Protocol::Tcp))
         );
         assert_eq!(
             parse_protocol_from_stream(" udp xxx"),
-            Ok((" xxx", elements::Protocol::Udp))
+            Ok((" xxx", Protocol::Udp))
         );
     }
 
@@ -543,39 +565,48 @@ mod tests {
     fn test_ip_list() {
         assert_eq!(
             parse_list_from_stream(r#"any xxx"#),
-            Ok((" xxx", elements::IpAddressList {
-                accept: None,
-                except: None
-            }))
+            Ok((
+                " xxx",
+                IpAddressList {
+                    accept: None,
+                    except: None
+                }
+            ))
         );
 
         assert_eq!(
             parse_list_from_stream(r#" !["10.0.0.0/8", "192.168.0.1"] xxx"#),
-            Ok((" xxx", elements::IpAddressList {
-                accept: None,
-                except: Some(vec![
-                    elements::IpAddress::V4Range(Ipv4Net::from_str("10.0.0.0/8").unwrap()),
-                    elements::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.1").unwrap())
-                ])
-            }))
+            Ok((
+                " xxx",
+                IpAddressList {
+                    accept: None,
+                    except: Some(vec![
+                        IpAddress::V4Range(Ipv4Net::from_str("10.0.0.0/8").unwrap()),
+                        IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.1").unwrap())
+                    ])
+                }
+            ))
         );
-        
+
         // 使用示例
-        let (_, rst) = parse_list_from_stream::<elements::IpAddressList>(r#" ["10.0.0.0/8", !["10.0.0.1", "10.0.0.2"]] xxx"#).unwrap();
+        let (_, rst) = parse_list_from_stream::<IpAddressList>(
+            r#" ["10.0.0.0/8", !["10.0.0.1", "10.0.0.2"]] xxx"#,
+        )
+        .unwrap();
         let test_ip = Ipv4Addr::from_str("10.0.0.2").unwrap();
         if let Some(a) = rst.except {
             for ia in a {
                 match ia {
-                    elements::IpAddress::V4Addr(addr) => {
+                    IpAddress::V4Addr(addr) => {
                         if addr == test_ip {
                             // do sth.
-                            return
+                            return;
                         }
-                    },
-                    elements::IpAddress::V4Range(range) => {
+                    }
+                    IpAddress::V4Range(range) => {
                         if range.contains(&test_ip) {
                             // do sth.
-                            return
+                            return;
                         }
                     }
                 }
@@ -590,12 +621,8 @@ mod tests {
             parse_list_from_stream("[80, 81, 82] xxx"),
             Ok((
                 " xxx",
-                elements::PortList {
-                    accept: Some(vec![
-                        elements::Port::Single(80),
-                        elements::Port::Single(81),
-                        elements::Port::Single(82),
-                    ]),
+                PortList {
+                    accept: Some(vec![Port::Single(80), Port::Single(81), Port::Single(82),]),
                     except: None
                 }
             ))
@@ -605,10 +632,8 @@ mod tests {
             parse_list_from_stream(" [80: 82] xxx"),
             Ok((
                 " xxx",
-                elements::PortList {
-                    accept: Some(vec![
-                        elements::Port::new_range(80, 82).unwrap(),
-                    ]),
+                PortList {
+                    accept: Some(vec![Port::new_range(80, 82).unwrap(),]),
                     except: None
                 }
             ))
@@ -618,10 +643,8 @@ mod tests {
             parse_list_from_stream("[1024:] xxx"),
             Ok((
                 " xxx",
-                elements::PortList {
-                    accept: Some(vec![
-                        elements::Port::new_range(1024, u16::MAX).unwrap(),
-                    ]),
+                PortList {
+                    accept: Some(vec![Port::new_range(1024, u16::MAX).unwrap(),]),
                     except: None
                 }
             ))
@@ -631,11 +654,9 @@ mod tests {
             parse_list_from_stream(" !80 xxx"),
             Ok((
                 " xxx",
-                elements::PortList {
+                PortList {
                     accept: None,
-                    except: Some(vec![
-                        elements::Port::Single(80)
-                    ])
+                    except: Some(vec![Port::Single(80)])
                 }
             ))
         );
@@ -644,14 +665,9 @@ mod tests {
             parse_list_from_stream(" [80:100,![86,87]] xxx"),
             Ok((
                 " xxx",
-                elements::PortList {
-                    accept: Some(vec![
-                        elements::Port::new_range(80, 100).unwrap()
-                    ]),
-                    except: Some(vec![
-                        elements::Port::Single(86),
-                        elements::Port::Single(87)
-                    ])
+                PortList {
+                    accept: Some(vec![Port::new_range(80, 100).unwrap()]),
+                    except: Some(vec![Port::Single(86), Port::Single(87)])
                 }
             ))
         )
@@ -660,17 +676,11 @@ mod tests {
     #[test]
     fn test_direction() {
         // Ok
-        assert_eq!(
-            parse_direction_from_stream("->"),
-            Ok(("", elements::Direction::Uni))
-        );
-        assert_eq!(
-            parse_direction_from_stream("<>"),
-            Ok(("", elements::Direction::Bi))
-        );
+        assert_eq!(parse_direction_from_stream("->"), Ok(("", Direction::Uni)));
+        assert_eq!(parse_direction_from_stream("<>"), Ok(("", Direction::Bi)));
         assert_eq!(
             parse_direction_from_stream(" <>a\n"),
-            Ok(("a\n", elements::Direction::Bi))
+            Ok(("a\n", Direction::Bi))
         );
         // Err
         assert_eq!(
@@ -686,17 +696,14 @@ mod tests {
     #[test]
     fn test_count_or_name() {
         // Ok
-        assert_eq!(
-            parse_count_or_name("123"),
-            Ok(elements::CountOrName::Value(123))
-        );
+        assert_eq!(parse_count_or_name("123"), Ok(CountOrName::Value(123)));
         assert_eq!(
             parse_count_or_name("foo"),
-            Ok(elements::CountOrName::Var("foo".into()))
+            Ok(CountOrName::Var("foo".into()))
         );
         assert_eq!(
             parse_count_or_name(" 1aa\r\n"),
-            Ok(elements::CountOrName::Var("1aa".into()))
+            Ok(CountOrName::Var("1aa".into()))
         );
         // Err
         assert_eq!(
@@ -710,7 +717,7 @@ mod tests {
         // Ok
         assert_eq!(
             parse_byte_jump("4,12"),
-            Ok(elements::ByteJump {
+            Ok(ByteJump {
                 count: 4,
                 offset: 12,
                 ..Default::default()
@@ -718,7 +725,7 @@ mod tests {
         );
         assert_eq!(
             parse_byte_jump("4,12,,"),
-            Ok(elements::ByteJump {
+            Ok(ByteJump {
                 count: 4,
                 offset: 12,
                 ..Default::default()
@@ -740,8 +747,8 @@ mod tests {
     fn test_parse_flowbits() {
         assert_eq!(
             parse_flowbits("set,foo.bar"),
-            Ok(elements::Flowbits {
-                command: elements::FlowbitCommand::Set,
+            Ok(Flowbits {
+                command: FlowbitCommand::Set,
                 names: vec!["foo.bar".into()]
             })
         );

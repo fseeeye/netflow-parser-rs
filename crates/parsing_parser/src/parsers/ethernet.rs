@@ -1,11 +1,11 @@
 use nom::number::complete::be_u16;
 
 use crate::errors::ParseError;
-use crate::layer::LinkLayer;
-use crate::protocol::LinkProtocol;
-use crate::packet::{QuinPacket, QuinPacketOptions, L1Packet, L2Packet};
-use crate::ProtocolType;
 use crate::field_type::*;
+use crate::layer::LinkLayer;
+use crate::packet::{L1Packet, L2Packet, QuinPacket, QuinPacketOptions};
+use crate::protocol::LinkProtocol;
+use crate::ProtocolType;
 
 use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer};
 

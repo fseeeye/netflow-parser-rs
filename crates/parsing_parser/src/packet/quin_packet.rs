@@ -46,7 +46,7 @@ pub enum QuinPacket<'a> {
 /// 支持default：
 /// ```
 /// use parsing_parser::{parse_quin_packet, QuinPacketOptions};
-/// 
+///
 /// let input = &[1,2,3,4,5,6];
 /// parse_quin_packet(input, &QuinPacketOptions::default());
 /// ```
@@ -66,4 +66,3 @@ impl Default for QuinPacketOptions {
 pub fn parse_quin_packet<'a>(input: &'a [u8], options: &QuinPacketOptions) -> QuinPacket<'a> {
     parse_ethernet_layer(input, options)
 }
-

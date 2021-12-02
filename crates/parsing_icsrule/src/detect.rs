@@ -1,8 +1,7 @@
-use parsing_parser::{QuinPacket, L5Packet};
+use parsing_parser::{L5Packet, QuinPacket};
 use parsing_rule::*;
 
-use super::icsrule::{HmIcsRules, Action};
-
+use super::icsrule::{Action, HmIcsRules};
 
 pub trait IcsRuleDetector {
     fn detect(&self, l5: &L5Packet) -> bool;
@@ -14,12 +13,12 @@ impl Into<RuleAction> for Action {
             Action::Alert => RuleAction::Alert,
             Action::Allow => RuleAction::Pass,
             Action::Drop => RuleAction::Drop,
-            Action::Reject => RuleAction::Reject
+            Action::Reject => RuleAction::Reject,
         }
     }
 }
 
-impl Rule for HmIcsRules {
+impl Rules for HmIcsRules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult {
         // ics规则要求packet为L5，否则返回false
         if let &QuinPacket::L5(l5) = &packet {
@@ -28,7 +27,8 @@ impl Rule for HmIcsRules {
             for (_, rule) in &self.rules_inner {
                 if rule.basic.detect(l5) {
                     if rule.args.detect(l5) {
-                        return DetectResult::Hit(rule.basic.action.to_owned().into()) // Warning: extra clone?
+                        return DetectResult::Hit(rule.basic.action.to_owned().into());
+                        // Warning: extra clone?
                     }
                 }
             }

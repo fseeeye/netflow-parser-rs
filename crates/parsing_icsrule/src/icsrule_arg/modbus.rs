@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
-use parsing_parser::{ApplicationLayer, L5Packet};
+use super::{modbus_rsp::ModbusRspArg, ModbusReqArg};
 use crate::detect::IcsRuleDetector;
-use super::{ModbusReqArg, modbus_rsp::ModbusRspArg};
+use parsing_parser::{ApplicationLayer, L5Packet};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "args_type")]
@@ -18,22 +18,16 @@ impl IcsRuleDetector for ModbusArg {
                 match &l5.application_layer {
                     ApplicationLayer::ModbusReq(modbus_req) => {
                         return modbus_req_arg.check_arg(modbus_req)
-                    },
-                    _ => {
-                        return false
                     }
-                }
-            },
-            Self::ModbusRsp(modbus_rsp_arg) => {
-                match &l5.application_layer {
-                    ApplicationLayer::ModbusRsp(modbus_rsp) => {
-                        return modbus_rsp_arg.check_arg(modbus_rsp)
-                    },
-                    _ => {
-                        return false
-                    }
+                    _ => return false,
                 }
             }
+            Self::ModbusRsp(modbus_rsp_arg) => match &l5.application_layer {
+                ApplicationLayer::ModbusRsp(modbus_rsp) => {
+                    return modbus_rsp_arg.check_arg(modbus_rsp)
+                }
+                _ => return false,
+            },
         }
     }
 }

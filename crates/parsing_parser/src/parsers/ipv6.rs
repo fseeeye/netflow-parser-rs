@@ -6,11 +6,11 @@ use nom::sequence::tuple;
 
 use super::{parse_l3_eof_layer, parse_tcp_layer, parse_udp_layer};
 use crate::errors::ParseError;
-use crate::layer::{LinkLayer, NetworkLayer};
-use crate::protocol::NetworkProtocol;
-use crate::packet::{QuinPacket, QuinPacketOptions, L2Packet, L3Packet};
-use crate::ProtocolType;
 use crate::field_type::*;
+use crate::layer::{LinkLayer, NetworkLayer};
+use crate::packet::{L2Packet, L3Packet, QuinPacket, QuinPacketOptions};
+use crate::protocol::NetworkProtocol;
+use crate::ProtocolType;
 
 // refs: https://en.wikipedia.org/wiki/IPv6_packet
 #[derive(Debug, PartialEq, Clone, Copy)]

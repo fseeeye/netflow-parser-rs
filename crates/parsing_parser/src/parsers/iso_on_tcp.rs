@@ -4,10 +4,9 @@ use nom::IResult;
 
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
-use crate::packet::{QuinPacket, QuinPacketOptions, L4Packet, L5Packet};
+use crate::packet::{L4Packet, L5Packet, QuinPacket, QuinPacketOptions};
 
 use super::{parse_l5_eof_layer, parse_mms_layer, parse_s7comm_layer};
-
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct IsoOnTcpHeader {
@@ -18,28 +17,26 @@ pub struct IsoOnTcpHeader {
 pub fn parse_iso_header(input: &[u8]) -> IResult<&[u8], IsoOnTcpHeader> {
     let (input, tpkt) = parse_tpkt(input)?;
     let (input, cotp) = parse_cotp(input)?;
-    Ok((
-        input,
-        IsoOnTcpHeader {
-            tpkt,
-            cotp
-        }
-    ))
+    Ok((input, IsoOnTcpHeader { tpkt, cotp }))
 }
 
-pub fn parse_iso_on_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
+pub fn parse_iso_on_tcp_layer<'a>(
+    input: &'a [u8],
+    link_layer: LinkLayer,
+    network_layer: NetworkLayer<'a>,
+    transport_layer: TransportLayer<'a>,
+    options: &QuinPacketOptions,
+) -> QuinPacket<'a> {
     let (input, iso_header) = match parse_iso_header(input) {
         Ok(o) => o,
         Err(_e) => {
-            return QuinPacket::L4(
-                L4Packet {
-                    link_layer,
-                    network_layer,
-                    transport_layer,
-                    error: Some(ParseError::ParsingHeader),
-                    remain: input,
-                }
-            )
+            return QuinPacket::L4(L4Packet {
+                link_layer,
+                network_layer,
+                transport_layer,
+                error: Some(ParseError::ParsingHeader),
+                remain: input,
+            })
         }
     };
 
@@ -49,43 +46,44 @@ pub fn parse_iso_on_tcp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, networ
                 Ok(o) => o,
                 Err(nom::Err::Error((_, _))) => {
                     let application_layer = ApplicationLayer::IsoOnTcp(iso_header);
-                    return QuinPacket::L5(
-                        L5Packet {
-                            link_layer,
-                            network_layer,
-                            transport_layer,
-                            application_layer,
-                            error: Some(ParseError::ParsingPayload),
-                            remain: input,
-                        }
-                    )
+                    return QuinPacket::L5(L5Packet {
+                        link_layer,
+                        network_layer,
+                        transport_layer,
+                        application_layer,
+                        error: Some(ParseError::ParsingPayload),
+                        remain: input,
+                    });
                 }
                 _ => {
                     let application_layer = ApplicationLayer::IsoOnTcp(iso_header);
-                    return QuinPacket::L5(
-                        L5Packet {
-                            link_layer,
-                            network_layer,
-                            transport_layer,
-                            application_layer,
-                            error: Some(ParseError::ParsingPayload),
-                            remain: input,
-                        }
-                    )
+                    return QuinPacket::L5(L5Packet {
+                        link_layer,
+                        network_layer,
+                        transport_layer,
+                        application_layer,
+                        error: Some(ParseError::ParsingPayload),
+                        remain: input,
+                    });
                 }
             };
             match next_iso_pdu_type {
                 0x32 => {
                     parse_s7comm_layer(input, link_layer, network_layer, transport_layer, options)
                 }
-                _ => {
-                    parse_mms_layer(input, link_layer, network_layer, transport_layer, options)
-                }
+                _ => parse_mms_layer(input, link_layer, network_layer, transport_layer, options),
             }
-        },
+        }
         _ => {
             let application_layer = ApplicationLayer::IsoOnTcp(iso_header);
-            parse_l5_eof_layer(input, link_layer, network_layer, transport_layer, application_layer, options)
+            parse_l5_eof_layer(
+                input,
+                link_layer,
+                network_layer,
+                transport_layer,
+                application_layer,
+                options,
+            )
         }
     }
 }
@@ -126,7 +124,7 @@ pub enum CotpPdu {
     },
     Data {
         bit_mask: u8,
-    }
+    },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -145,8 +143,8 @@ pub fn parse_tpkt(input: &[u8]) -> IResult<&[u8], Tpkt> {
         Tpkt {
             version,
             reserved,
-            length
-        }
+            length,
+        },
     ))
 }
 
@@ -171,8 +169,8 @@ fn parse_connect_request(input: &[u8]) -> IResult<&[u8], CotpPdu> {
             source_tsap,
             parameter_dst_tsap,
             parameter_dst_length,
-            destination_tsap
-        }
+            destination_tsap,
+        },
     ))
 }
 
@@ -203,19 +201,14 @@ fn parse_connect_confirm(input: &[u8]) -> IResult<&[u8], CotpPdu> {
             destination_tsap,
             parameter_tpdu_size,
             parameter_tpdu_length,
-            tpdu_size
-        }
+            tpdu_size,
+        },
     ))
 }
 
 fn parse_cotp_pdu_data(input: &[u8]) -> IResult<&[u8], CotpPdu> {
     let (input, bit_mask) = u8(input)?;
-    Ok((
-        input,
-        CotpPdu::Data {
-            bit_mask
-        }
-    ))
+    Ok((input, CotpPdu::Data { bit_mask }))
 }
 
 pub fn parse_cotp_pdu(input: &[u8], pdu_type: u8) -> IResult<&[u8], CotpPdu> {
@@ -223,7 +216,10 @@ pub fn parse_cotp_pdu(input: &[u8], pdu_type: u8) -> IResult<&[u8], CotpPdu> {
         0xe0 => parse_connect_request(input),
         0xd0 => parse_connect_confirm(input),
         0xf0 => parse_cotp_pdu_data(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, cotp_pdu))
 }
@@ -237,7 +233,7 @@ pub fn parse_cotp(input: &[u8]) -> IResult<&[u8], Cotp> {
         Cotp {
             length,
             pdu_type,
-            cotp_pdu
-        }
+            cotp_pdu,
+        },
     ))
 }

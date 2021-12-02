@@ -2,11 +2,14 @@ use nom::number::complete::be_u16;
 
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
+use crate::packet::{L3Packet, L4Packet, QuinPacket, QuinPacketOptions};
 use crate::protocol::TransportProtocol;
-use crate::packet::{QuinPacket, QuinPacketOptions, L3Packet, L4Packet};
 use crate::ProtocolType;
 
-use super::{parse_bacnet_layer, parse_fins_udp_req_layer, parse_fins_udp_rsp_layer, parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer};
+use super::{
+    parse_bacnet_layer, parse_fins_udp_req_layer, parse_fins_udp_rsp_layer, parse_l4_eof_layer,
+    parse_modbus_req_layer, parse_modbus_rsp_layer,
+};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct UdpHeader {

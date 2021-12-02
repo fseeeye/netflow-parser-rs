@@ -2,7 +2,6 @@ use std::net::IpAddr;
 
 use crate::field_type::*;
 
-
 /// LinkLevel服务于包含link层的packet
 /// 实现获取link层常用字段值的方法。
 pub trait LinkLevel {

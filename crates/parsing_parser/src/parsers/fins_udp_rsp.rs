@@ -7,7 +7,7 @@ use nom::bytes::complete::{tag, take};
 #[allow(unused)]
 use nom::combinator::{eof, map, peek};
 #[allow(unused)]
-use nom::error::{ErrorKind, Error};
+use nom::error::{Error, ErrorKind};
 #[allow(unused)]
 use nom::multi::count;
 #[allow(unused)]
@@ -20,15 +20,16 @@ use nom::IResult;
 #[allow(unused)]
 use crate::errors::ParseError;
 #[allow(unused)]
+use crate::field_type::*;
+#[allow(unused)]
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+#[allow(unused)]
+use crate::packet::{
+    L1Packet, L2Packet, L3Packet, L4Packet, L5Packet, QuinPacket, QuinPacketOptions,
+};
 use crate::protocol::ApplicationProtocol;
 #[allow(unused)]
-use crate::packet::{QuinPacket, QuinPacketOptions, L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
-#[allow(unused)]
 use crate::ProtocolType;
-#[allow(unused)]
-use crate::field_type::*;
-
 
 use super::parse_l5_eof_layer;
 
@@ -72,58 +73,61 @@ pub fn parse_fins_udp_rsp_header(input: &[u8]) -> IResult<&[u8], FinsUdpRspHeade
             sa1,
             sa2,
             sid,
-            cmd_type
-        }
+            cmd_type,
+        },
     ))
 }
 
-pub fn parse_fins_udp_rsp_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, transport_layer: TransportLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
+pub fn parse_fins_udp_rsp_layer<'a>(
+    input: &'a [u8],
+    link_layer: LinkLayer,
+    network_layer: NetworkLayer<'a>,
+    transport_layer: TransportLayer<'a>,
+    options: &QuinPacketOptions,
+) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::FinsUdpRsp);
 
     let (input, fins_udp_rsp_header) = match parse_fins_udp_rsp_header(input) {
         Ok(o) => o,
         Err(_e) => {
-            return QuinPacket::L4(
-                L4Packet {
-                    link_layer,
-                    network_layer,
-                    transport_layer,
-                    error: Some(ParseError::ParsingHeader),
-                    remain: input,
-                }
-            )
+            return QuinPacket::L4(L4Packet {
+                link_layer,
+                network_layer,
+                transport_layer,
+                error: Some(ParseError::ParsingHeader),
+                remain: input,
+            })
         }
     };
 
     if Some(current_prototype) == options.stop {
         let application_layer = ApplicationLayer::FinsUdpRsp(fins_udp_rsp_header);
-        return QuinPacket::L5(
-            L5Packet {
-                link_layer,
-                network_layer,
-                transport_layer,
-                application_layer,
-                error: None,
-                remain: input,
-            }
-        )
+        return QuinPacket::L5(L5Packet {
+            link_layer,
+            network_layer,
+            transport_layer,
+            application_layer,
+            error: None,
+            remain: input,
+        });
     };
 
     let application_layer = ApplicationLayer::FinsUdpRsp(fins_udp_rsp_header);
-    return parse_l5_eof_layer(input, link_layer, network_layer, transport_layer, application_layer, options);
+    return parse_l5_eof_layer(
+        input,
+        link_layer,
+        network_layer,
+        transport_layer,
+        application_layer,
+        options,
+    );
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum MultipleMemoryAreaReadItemChoice<'a> {
-    MultipleMemoryAreaReadItem1 {
-         item: &'a [u8],
-    },
-    MultipleMemoryAreaReadItem2 {
-         item: &'a [u8],
-    },
-    MultipleMemoryAreaReadItem4 {
-         item: &'a [u8],
-    }
+    MultipleMemoryAreaReadItem1 { item: &'a [u8] },
+    MultipleMemoryAreaReadItem2 { item: &'a [u8] },
+    MultipleMemoryAreaReadItem4 { item: &'a [u8] },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -184,27 +188,27 @@ pub struct FileMemoryIndexReadDataItem {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum CycleTimeReadChoice {
     CycleTimeRead2 {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     CycleTimeRead14 {
-         rsp_code: u16,
-         averge_cycle_time: u32,
-         max_cycle_time: u32,
-         min_cycle_time: u32,
-    }
+        rsp_code: u16,
+        averge_cycle_time: u32,
+        max_cycle_time: u32,
+        min_cycle_time: u32,
+    },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum AccessRightAcquireChoice {
     AccessRightAcquire2 {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     AccessRightAcquire5 {
-         rsp_code: u16,
-         unit_address: u8,
-         node_number: u8,
-         network_address: u8,
-    }
+        rsp_code: u16,
+        unit_address: u8,
+        node_number: u8,
+        network_address: u8,
+    },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -215,335 +219,335 @@ pub struct MessageInfo<'a> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum MessageReadOrClearOrFALSReadChoice<'a> {
     MessageReadOrClearOrFALSRead20 {
-         rsp_code: u16,
-         fals: u16,
-         error_message: &'a [u8],
+        rsp_code: u16,
+        fals: u16,
+        error_message: &'a [u8],
     },
     MessageReadOrClearOrFALSRead2 {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     MessageReadOrClearOrFALSReadLong {
-         rsp_code: u16,
-         message_info: u16,
-         message: Vec<MessageInfo<'a>>,
-    }
+        rsp_code: u16,
+        message_info: u16,
+        message: Vec<MessageInfo<'a>>,
+    },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ControllerDataReadDataChoice<'a> {
     ControllerDataReadDataItem161 {
-         rsp_code: u16,
-         controller_model: &'a [u8],
-         controller_version: &'a [u8],
-         for_system_use: &'a [u8],
-         program_area_size: u16,
-         ios_size: u8,
-         number_of_dw_words: u16,
-         time_counter_size: u8,
-         expansion_dm_size: u8,
-         number_step_transitions: u16,
-         kind_memory_card: u8,
-         memory_card_size: u16,
-         cpu_bus_unit_0: u16,
-         cpu_bus_unit_1: u16,
-         cpu_bus_unit_2: u16,
-         cpu_bus_unit_3: u16,
-         cpu_bus_unit_4: u16,
-         cpu_bus_unit_5: u16,
-         cpu_bus_unit_6: u16,
-         cpu_bus_unit_7: u16,
-         cpu_bus_unit_8: u16,
-         cpu_bus_unit_9: u16,
-         cpu_bus_unit_10: u16,
-         cpu_bus_unit_11: u16,
-         cpu_bus_unit_12: u16,
-         cpu_bus_unit_13: u16,
-         cpu_bus_unit_14: u16,
-         cpu_bus_unit_15: u16,
-         cpu_bus_rsserved: &'a [u8],
-         remote_io_data_1: u8,
-         remote_io_data_2: u8,
-         pc_status: u8,
+        rsp_code: u16,
+        controller_model: &'a [u8],
+        controller_version: &'a [u8],
+        for_system_use: &'a [u8],
+        program_area_size: u16,
+        ios_size: u8,
+        number_of_dw_words: u16,
+        time_counter_size: u8,
+        expansion_dm_size: u8,
+        number_step_transitions: u16,
+        kind_memory_card: u8,
+        memory_card_size: u16,
+        cpu_bus_unit_0: u16,
+        cpu_bus_unit_1: u16,
+        cpu_bus_unit_2: u16,
+        cpu_bus_unit_3: u16,
+        cpu_bus_unit_4: u16,
+        cpu_bus_unit_5: u16,
+        cpu_bus_unit_6: u16,
+        cpu_bus_unit_7: u16,
+        cpu_bus_unit_8: u16,
+        cpu_bus_unit_9: u16,
+        cpu_bus_unit_10: u16,
+        cpu_bus_unit_11: u16,
+        cpu_bus_unit_12: u16,
+        cpu_bus_unit_13: u16,
+        cpu_bus_unit_14: u16,
+        cpu_bus_unit_15: u16,
+        cpu_bus_rsserved: &'a [u8],
+        remote_io_data_1: u8,
+        remote_io_data_2: u8,
+        pc_status: u8,
     },
     ControllerDataReadDataItem94 {
-         rsp_code: u16,
-         controller_model: &'a [u8],
-         controller_version: &'a [u8],
-         for_system_use: &'a [u8],
-         program_area_size: u16,
-         ios_size: u8,
-         number_of_dw_words: u16,
-         time_counter_size: u8,
-         expansion_dm_size: u8,
-         number_step_transitions: u16,
-         kind_memory_card: u8,
-         memory_card_size: u16,
+        rsp_code: u16,
+        controller_model: &'a [u8],
+        controller_version: &'a [u8],
+        for_system_use: &'a [u8],
+        program_area_size: u16,
+        ios_size: u8,
+        number_of_dw_words: u16,
+        time_counter_size: u8,
+        expansion_dm_size: u8,
+        number_step_transitions: u16,
+        kind_memory_card: u8,
+        memory_card_size: u16,
     },
     ControllerDataReadDataItem69 {
-         rsp_code: u16,
-         cpu_bus_unit_0: u16,
-         cpu_bus_unit_1: u16,
-         cpu_bus_unit_2: u16,
-         cpu_bus_unit_3: u16,
-         cpu_bus_unit_4: u16,
-         cpu_bus_unit_5: u16,
-         cpu_bus_unit_6: u16,
-         cpu_bus_unit_7: u16,
-         cpu_bus_unit_8: u16,
-         cpu_bus_unit_9: u16,
-         cpu_bus_unit_10: u16,
-         cpu_bus_unit_11: u16,
-         cpu_bus_unit_12: u16,
-         cpu_bus_unit_13: u16,
-         cpu_bus_unit_14: u16,
-         cpu_bus_unit_15: u16,
-         cpu_bus_rsserved: &'a [u8],
-         remote_io_data_1: u8,
-         remote_io_data_2: u8,
-         pc_status: u8,
-    }
+        rsp_code: u16,
+        cpu_bus_unit_0: u16,
+        cpu_bus_unit_1: u16,
+        cpu_bus_unit_2: u16,
+        cpu_bus_unit_3: u16,
+        cpu_bus_unit_4: u16,
+        cpu_bus_unit_5: u16,
+        cpu_bus_unit_6: u16,
+        cpu_bus_unit_7: u16,
+        cpu_bus_unit_8: u16,
+        cpu_bus_unit_9: u16,
+        cpu_bus_unit_10: u16,
+        cpu_bus_unit_11: u16,
+        cpu_bus_unit_12: u16,
+        cpu_bus_unit_13: u16,
+        cpu_bus_unit_14: u16,
+        cpu_bus_unit_15: u16,
+        cpu_bus_rsserved: &'a [u8],
+        remote_io_data_1: u8,
+        remote_io_data_2: u8,
+        pc_status: u8,
+    },
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Order<'a> {
     MemoryAreaRead {
-         rsp_code: u16,
-         last_data: &'a [u8],
+        rsp_code: u16,
+        last_data: &'a [u8],
     },
     MemoryAreaWrite {
-         memory_area_code: u8,
-         beginning_address: u16,
-         beginning_address_bits: u8,
-         number_of_items: u16,
-         command_data: u16,
+        memory_area_code: u8,
+        beginning_address: u16,
+        beginning_address_bits: u8,
+        number_of_items: u16,
+        command_data: u16,
     },
     MemoryAreaFill {
-         memory_area_code: u8,
-         beginning_address: u16,
-         beginning_address_bits: u8,
-         number_of_items: u16,
-         command_data: u16,
+        memory_area_code: u8,
+        beginning_address: u16,
+        beginning_address_bits: u8,
+        number_of_items: u16,
+        command_data: u16,
     },
     MultipleMemoryAreaRead {
-         rsp_code: u16,
-         data: Vec<MultipleMemoryAreaReadItem<'a>>,
+        rsp_code: u16,
+        data: Vec<MultipleMemoryAreaReadItem<'a>>,
     },
     MemoryAreaTransfer {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ParameterAreaRead {
-         rsp_code: u16,
-         parameter_area_code: u16,
-         beginning_word: u16,
-         number_words_or_bytes: u16,
-         rsp_data: &'a [u8],
+        rsp_code: u16,
+        parameter_area_code: u16,
+        beginning_word: u16,
+        number_words_or_bytes: u16,
+        rsp_data: &'a [u8],
     },
     ParameterAreaWrite {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ParameterAreaClear {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     DataLinkTableRead {
-         rsp_code: u16,
-         number_of_link_nodes: u8,
-         data: Vec<DLTBLockDataItem>,
+        rsp_code: u16,
+        number_of_link_nodes: u8,
+        data: Vec<DLTBLockDataItem>,
     },
     DataLinkTableRWrite {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ParameterAreaProtect {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ParameterAreaProtectClear {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ProgramAreaRead {
-         rsp_code: u16,
-         program_number: u16,
-         beginning_word: u32,
-         words_of_bytes: u16,
-         rsp_data: &'a [u8],
+        rsp_code: u16,
+        program_number: u16,
+        beginning_word: u32,
+        words_of_bytes: u16,
+        rsp_data: &'a [u8],
     },
     ProgramAreaWrite {
-         rsp_code: u16,
-         program_number: u16,
-         beginning_word: u32,
-         words_of_bytes: u16,
+        rsp_code: u16,
+        program_number: u16,
+        beginning_word: u32,
+        words_of_bytes: u16,
     },
     ProgramAreaClear {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     Run {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     Stop {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ControllerDataRead {
-         controller_data_read_data_choice: ControllerDataReadDataChoice<'a>,
+        controller_data_read_data_choice: ControllerDataReadDataChoice<'a>,
     },
     ConnectionDataRead {
-         rsp_code: u16,
-         number_of_units: u8,
-         data: Vec<ConnectionDataReadDataItem<'a>>,
+        rsp_code: u16,
+        number_of_units: u8,
+        data: Vec<ConnectionDataReadDataItem<'a>>,
     },
     ControllerStatusRead {
-         rsp_code: u16,
-         status_stop: u8,
-         mode_code: u8,
-         fatal_error_data: u16,
-         non_fatal_error_data: u16,
-         message: u16,
-         fals: u16,
-         error_message: &'a [u8],
+        rsp_code: u16,
+        status_stop: u8,
+        mode_code: u8,
+        fatal_error_data: u16,
+        non_fatal_error_data: u16,
+        message: u16,
+        fals: u16,
+        error_message: &'a [u8],
     },
     NetworkStatusRead {
-         rsp_code: u16,
-         network_nodes_status: &'a [u8],
-         communications_cycle_time: u16,
-         current_polling_unit_node_number: u8,
-         cyclic_operation: u8,
-         cyclic_transmission_status: u8,
-         network_nodes_non_fatal_error_status: &'a [u8],
-         network_nodes_cyclic_error_counters: &'a [u8],
+        rsp_code: u16,
+        network_nodes_status: &'a [u8],
+        communications_cycle_time: u16,
+        current_polling_unit_node_number: u8,
+        cyclic_operation: u8,
+        cyclic_transmission_status: u8,
+        network_nodes_non_fatal_error_status: &'a [u8],
+        network_nodes_cyclic_error_counters: &'a [u8],
     },
     DataLinkStatusRead {
-         rsp_code: u16,
-         status_flags: u8,
-         master_node_number: u8,
-         data: &'a [u8],
+        rsp_code: u16,
+        status_flags: u8,
+        master_node_number: u8,
+        data: &'a [u8],
     },
     CycleTimeRead {
-         cycle_time_read_choice: CycleTimeReadChoice,
+        cycle_time_read_choice: CycleTimeReadChoice,
     },
     ClcokRead {
-         rsp_code: u16,
-         year: u8,
-         month: u8,
-         date: u8,
-         hour: u8,
-         minute: u8,
-         second: u8,
-         day: u8,
+        rsp_code: u16,
+        year: u8,
+        month: u8,
+        date: u8,
+        hour: u8,
+        minute: u8,
+        second: u8,
+        day: u8,
     },
     ClcokWrite {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     LoopBackTest {
-         rsp_code: u16,
-         data: &'a [u8],
+        rsp_code: u16,
+        data: &'a [u8],
     },
     BroadcastTestResultsRead {
-         rsp_code: u16,
-         number_of_receptions: u16,
+        rsp_code: u16,
+        number_of_receptions: u16,
     },
     BroadcastTestDataSend {},
     MessageReadClearFALSRead {
-         message_read_or_clear_or_fals_read_choice: MessageReadOrClearOrFALSReadChoice<'a>,
+        message_read_or_clear_or_fals_read_choice: MessageReadOrClearOrFALSReadChoice<'a>,
     },
     AccessRightAcquire {
-         access_right_acquire_choice: AccessRightAcquireChoice,
+        access_right_acquire_choice: AccessRightAcquireChoice,
     },
     AccessRightForcedAcquire {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     AccessRightRelease {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ErrorClear {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ErrorLogRead {
-         rsp_code: u16,
-         max_number_of_stored_records: u16,
-         number_of_stored_records: u16,
-         number_of_records: u16,
-         error_log_data: Vec<ErrorLogReadDataItem>,
+        rsp_code: u16,
+        max_number_of_stored_records: u16,
+        number_of_stored_records: u16,
+        number_of_records: u16,
+        error_log_data: Vec<ErrorLogReadDataItem>,
     },
     ErrorLogClear {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     FileNameRead {
-         rsp_code: u16,
-         disk_data: FileNameReadDiskDataItem<'a>,
-         number_of_files: u16,
-         error_log_data: Vec<FileNameReadFileDataItem<'a>>,
+        rsp_code: u16,
+        disk_data: FileNameReadDiskDataItem<'a>,
+        number_of_files: u16,
+        error_log_data: Vec<FileNameReadFileDataItem<'a>>,
     },
     SingleFileRead {
-         rsp_code: u16,
-         file_capacity: u16,
-         file_position: u32,
-         data_length: u16,
-         file_data: &'a [u8],
+        rsp_code: u16,
+        file_capacity: u16,
+        file_position: u32,
+        data_length: u16,
+        file_data: &'a [u8],
     },
     SingleFileWrite {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     MemoryCardFormat {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     FileDelete {
-         rsp_code: u16,
-         number_of_files: u16,
+        rsp_code: u16,
+        number_of_files: u16,
     },
     VolumeLabelCreateOrDelete {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     FileCopy {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     FileNameChange {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     FileDataCheck {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     MemoryAreaFileTransfer {
-         rsp_code: u16,
-         number_of_items: u16,
+        rsp_code: u16,
+        number_of_items: u16,
     },
     ParameterAreaFileTransfer {
-         rsp_code: u16,
-         number_of_word_or_bytes: u16,
+        rsp_code: u16,
+        number_of_word_or_bytes: u16,
     },
     ProgramAreaFileTransfer {},
     FileMemoryIndexRead {
-         rsp_code: u16,
-         number_of_blocks_remaining: u16,
-         total_number_of_blocks: u16,
-         omron_type: u8,
-         data: Vec<FileMemoryIndexReadDataItem>,
+        rsp_code: u16,
+        number_of_blocks_remaining: u16,
+        total_number_of_blocks: u16,
+        omron_type: u8,
+        data: Vec<FileMemoryIndexReadDataItem>,
     },
     FileMemoryRead {
-         rsp_code: u16,
-         data_type: u8,
-         control_data: u8,
-         data: &'a [u8],
+        rsp_code: u16,
+        data_type: u8,
+        control_data: u8,
+        data: &'a [u8],
     },
     FileMemoryWrite {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ForcedSetOrReset {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     ForcedSetOrResetCancel {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     MultipleForcedStatusRead {
-         rsp_code: u16,
-         memory_area_code: u16,
-         beginning_address: u32,
-         number_of_units: u16,
-         data: &'a [u8],
+        rsp_code: u16,
+        memory_area_code: u16,
+        beginning_address: u32,
+        number_of_units: u16,
+        data: &'a [u8],
     },
     NameSet {
-         rsp_code: u16,
+        rsp_code: u16,
     },
     NameDelete {
-         rsp_code: u16,
+        rsp_code: u16,
     },
-    NameRead {}
+    NameRead {},
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -552,55 +556,72 @@ pub struct CmdType<'a> {
     pub order: Order<'a>,
 }
 
-fn parse_multiple_memory_area_read_item1(input: &[u8]) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
+fn parse_multiple_memory_area_read_item1(
+    input: &[u8],
+) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
     let (input, item) = take(1 as usize)(input)?;
     Ok((
         input,
-        MultipleMemoryAreaReadItemChoice::MultipleMemoryAreaReadItem1 {
-            item
-        }
+        MultipleMemoryAreaReadItemChoice::MultipleMemoryAreaReadItem1 { item },
     ))
 }
 
-fn parse_multiple_memory_area_read_item2(input: &[u8]) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
+fn parse_multiple_memory_area_read_item2(
+    input: &[u8],
+) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
     let (input, item) = take(2 as usize)(input)?;
     Ok((
         input,
-        MultipleMemoryAreaReadItemChoice::MultipleMemoryAreaReadItem2 {
-            item
-        }
+        MultipleMemoryAreaReadItemChoice::MultipleMemoryAreaReadItem2 { item },
     ))
 }
 
-fn parse_multiple_memory_area_read_item4(input: &[u8]) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
+fn parse_multiple_memory_area_read_item4(
+    input: &[u8],
+) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
     let (input, item) = take(4 as usize)(input)?;
     Ok((
         input,
-        MultipleMemoryAreaReadItemChoice::MultipleMemoryAreaReadItem4 {
-            item
-        }
+        MultipleMemoryAreaReadItemChoice::MultipleMemoryAreaReadItem4 { item },
     ))
 }
 
-pub fn parse_multiple_memory_area_read_item_choice(input: &[u8], memory_area_code: u8) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
+pub fn parse_multiple_memory_area_read_item_choice(
+    input: &[u8],
+    memory_area_code: u8,
+) -> IResult<&[u8], MultipleMemoryAreaReadItemChoice> {
     let (input, multiple_memory_area_read_item_choice) = match memory_area_code {
-        0x00 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x09 | 0x1B | 0x20 | 0x21| 0x22 | 0x23 | 0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x29 | 0x2A | 0x2B | 0x2C | 0x30	| 0x31 | 0x32 | 0x33 | 0x40 | 0x41 | 0x43 | 0x44 | 0x46 | 0x49 | 0x70 | 0x71 | 0x72 => parse_multiple_memory_area_read_item1(input),
-        0x80 | 0x81 | 0x82 | 0x84 | 0x85 | 0x89 | 0x90 | 0x91 | 0x92 | 0x93 | 0x94 | 0x95	| 0x96 | 0x97 | 0x98 | 0x9C | 0xA0 | 0xA1 | 0xA2 | 0xA3 | 0xA4 | 0xA5 | 0xA6 | 0xA7	| 0xA8 | 0xA9 | 0xAA | 0xAB | 0xAC | 0xB0 | 0xB1 | 0xB2 | 0xB3 | 0xBC => parse_multiple_memory_area_read_item2(input),
+        0x00 | 0x01 | 0x02 | 0x03 | 0x04 | 0x05 | 0x06 | 0x07 | 0x09 | 0x1B | 0x20 | 0x21
+        | 0x22 | 0x23 | 0x24 | 0x25 | 0x26 | 0x27 | 0x28 | 0x29 | 0x2A | 0x2B | 0x2C | 0x30
+        | 0x31 | 0x32 | 0x33 | 0x40 | 0x41 | 0x43 | 0x44 | 0x46 | 0x49 | 0x70 | 0x71 | 0x72 => {
+            parse_multiple_memory_area_read_item1(input)
+        }
+        0x80 | 0x81 | 0x82 | 0x84 | 0x85 | 0x89 | 0x90 | 0x91 | 0x92 | 0x93 | 0x94 | 0x95
+        | 0x96 | 0x97 | 0x98 | 0x9C | 0xA0 | 0xA1 | 0xA2 | 0xA3 | 0xA4 | 0xA5 | 0xA6 | 0xA7
+        | 0xA8 | 0xA9 | 0xAA | 0xAB | 0xAC | 0xB0 | 0xB1 | 0xB2 | 0xB3 | 0xBC => {
+            parse_multiple_memory_area_read_item2(input)
+        }
         0xC0 | 0xDC | 0xDD | 0xF0 | 0xF1 | 0xF2 => parse_multiple_memory_area_read_item4(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, multiple_memory_area_read_item_choice))
 }
 
-pub fn parse_multiple_memory_area_read_item(input: &[u8]) -> IResult<&[u8], MultipleMemoryAreaReadItem> {
+pub fn parse_multiple_memory_area_read_item(
+    input: &[u8],
+) -> IResult<&[u8], MultipleMemoryAreaReadItem> {
     let (input, memory_area_code) = u8(input)?;
-    let (input, multiple_memory_area_read_item_choice) = parse_multiple_memory_area_read_item_choice(input, memory_area_code)?;
+    let (input, multiple_memory_area_read_item_choice) =
+        parse_multiple_memory_area_read_item_choice(input, memory_area_code)?;
     Ok((
         input,
         MultipleMemoryAreaReadItem {
             memory_area_code,
-            multiple_memory_area_read_item_choice
-        }
+            multiple_memory_area_read_item_choice,
+        },
     ))
 }
 
@@ -617,20 +638,22 @@ pub fn parse_dltb_lock_data_item(input: &[u8]) -> IResult<&[u8], DLTBLockDataIte
             cio_area_first_word,
             kind_od_dm,
             dm_area_first_word,
-            number_of_total_words
-        }
+            number_of_total_words,
+        },
     ))
 }
 
-pub fn parse_connection_data_read_data_item(input: &[u8]) -> IResult<&[u8], ConnectionDataReadDataItem> {
+pub fn parse_connection_data_read_data_item(
+    input: &[u8],
+) -> IResult<&[u8], ConnectionDataReadDataItem> {
     let (input, unit_address) = u8(input)?;
     let (input, model_number) = take(20 as usize)(input)?;
     Ok((
         input,
         ConnectionDataReadDataItem {
             unit_address,
-            model_number
-        }
+            model_number,
+        },
     ))
 }
 
@@ -653,12 +676,14 @@ pub fn parse_error_log_read_data_item(input: &[u8]) -> IResult<&[u8], ErrorLogRe
             day,
             hour,
             year,
-            month
-        }
+            month,
+        },
     ))
 }
 
-pub fn parse_file_name_read_disk_data_item(input: &[u8]) -> IResult<&[u8], FileNameReadDiskDataItem> {
+pub fn parse_file_name_read_disk_data_item(
+    input: &[u8],
+) -> IResult<&[u8], FileNameReadDiskDataItem> {
     let (input, volume_label) = take(12 as usize)(input)?;
     let (input, date) = be_u32(input)?;
     let (input, total_capacity) = be_u32(input)?;
@@ -671,12 +696,14 @@ pub fn parse_file_name_read_disk_data_item(input: &[u8]) -> IResult<&[u8], FileN
             date,
             total_capacity,
             unused_capacity,
-            total_number_of_files
-        }
+            total_number_of_files,
+        },
     ))
 }
 
-pub fn parse_file_name_read_file_data_item(input: &[u8]) -> IResult<&[u8], FileNameReadFileDataItem> {
+pub fn parse_file_name_read_file_data_item(
+    input: &[u8],
+) -> IResult<&[u8], FileNameReadFileDataItem> {
     let (input, file_name) = take(12 as usize)(input)?;
     let (input, date) = be_u32(input)?;
     let (input, file_capacity) = be_u32(input)?;
@@ -685,31 +712,28 @@ pub fn parse_file_name_read_file_data_item(input: &[u8]) -> IResult<&[u8], FileN
         FileNameReadFileDataItem {
             file_name,
             date,
-            file_capacity
-        }
+            file_capacity,
+        },
     ))
 }
 
-pub fn parse_file_memory_index_read_data_item(input: &[u8]) -> IResult<&[u8], FileMemoryIndexReadDataItem> {
+pub fn parse_file_memory_index_read_data_item(
+    input: &[u8],
+) -> IResult<&[u8], FileMemoryIndexReadDataItem> {
     let (input, data_type) = u8(input)?;
     let (input, control_data) = u8(input)?;
     Ok((
         input,
         FileMemoryIndexReadDataItem {
             data_type,
-            control_data
-        }
+            control_data,
+        },
     ))
 }
 
 fn parse_cycle_time_read2(input: &[u8]) -> IResult<&[u8], CycleTimeReadChoice> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        CycleTimeReadChoice::CycleTimeRead2 {
-            rsp_code
-        }
-    ))
+    Ok((input, CycleTimeReadChoice::CycleTimeRead2 { rsp_code }))
 }
 
 fn parse_cycle_time_read14(input: &[u8]) -> IResult<&[u8], CycleTimeReadChoice> {
@@ -723,8 +747,8 @@ fn parse_cycle_time_read14(input: &[u8]) -> IResult<&[u8], CycleTimeReadChoice> 
             rsp_code,
             averge_cycle_time,
             max_cycle_time,
-            min_cycle_time
-        }
+            min_cycle_time,
+        },
     ))
 }
 
@@ -732,7 +756,10 @@ pub fn parse_cycle_time_read_choice(input: &[u8]) -> IResult<&[u8], CycleTimeRea
     let (input, cycle_time_read_choice) = match input.len() {
         0x02 => parse_cycle_time_read2(input),
         0x0e => parse_cycle_time_read14(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, cycle_time_read_choice))
 }
@@ -741,9 +768,7 @@ fn parse_access_right_acquire2(input: &[u8]) -> IResult<&[u8], AccessRightAcquir
     let (input, rsp_code) = be_u16(input)?;
     Ok((
         input,
-        AccessRightAcquireChoice::AccessRightAcquire2 {
-            rsp_code
-        }
+        AccessRightAcquireChoice::AccessRightAcquire2 { rsp_code },
     ))
 }
 
@@ -758,8 +783,8 @@ fn parse_access_right_acquire5(input: &[u8]) -> IResult<&[u8], AccessRightAcquir
             rsp_code,
             unit_address,
             node_number,
-            network_address
-        }
+            network_address,
+        },
     ))
 }
 
@@ -767,22 +792,22 @@ pub fn parse_access_right_acquire_choice(input: &[u8]) -> IResult<&[u8], AccessR
     let (input, access_right_acquire_choice) = match input.len() {
         0x02 => parse_access_right_acquire2(input),
         0x05 => parse_access_right_acquire5(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, access_right_acquire_choice))
 }
 
 pub fn parse_message_info(input: &[u8]) -> IResult<&[u8], MessageInfo> {
     let (input, item) = take(32 as usize)(input)?;
-    Ok((
-        input,
-        MessageInfo {
-            item
-        }
-    ))
+    Ok((input, MessageInfo { item }))
 }
 
-fn parse_message_read_or_clear_or_fals_read20(input: &[u8]) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
+fn parse_message_read_or_clear_or_fals_read20(
+    input: &[u8],
+) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, fals) = be_u16(input)?;
     let (input, error_message) = take(16 as usize)(input)?;
@@ -791,36 +816,43 @@ fn parse_message_read_or_clear_or_fals_read20(input: &[u8]) -> IResult<&[u8], Me
         MessageReadOrClearOrFALSReadChoice::MessageReadOrClearOrFALSRead20 {
             rsp_code,
             fals,
-            error_message
-        }
+            error_message,
+        },
     ))
 }
 
-fn parse_message_read_or_clear_or_fals_read2(input: &[u8]) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
+fn parse_message_read_or_clear_or_fals_read2(
+    input: &[u8],
+) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
     let (input, rsp_code) = be_u16(input)?;
     Ok((
         input,
-        MessageReadOrClearOrFALSReadChoice::MessageReadOrClearOrFALSRead2 {
-            rsp_code
-        }
+        MessageReadOrClearOrFALSReadChoice::MessageReadOrClearOrFALSRead2 { rsp_code },
     ))
 }
 
-fn parse_message_read_or_clear_or_fals_read_long(input: &[u8]) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
+fn parse_message_read_or_clear_or_fals_read_long(
+    input: &[u8],
+) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, message_info) = be_u16(input)?;
-    let (input, message) = count(parse_message_info, (input.len() as usize / 32 as usize) as usize)(input)?;
+    let (input, message) = count(
+        parse_message_info,
+        (input.len() as usize / 32 as usize) as usize,
+    )(input)?;
     Ok((
         input,
         MessageReadOrClearOrFALSReadChoice::MessageReadOrClearOrFALSReadLong {
             rsp_code,
             message_info,
-            message
-        }
+            message,
+        },
     ))
 }
 
-pub fn parse_message_read_or_clear_or_fals_read_choice(input: &[u8]) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
+pub fn parse_message_read_or_clear_or_fals_read_choice(
+    input: &[u8],
+) -> IResult<&[u8], MessageReadOrClearOrFALSReadChoice> {
     let (input, message_read_or_clear_or_fals_read_choice) = match input.len() {
         0x14 => parse_message_read_or_clear_or_fals_read20(input),
         0x02 => parse_message_read_or_clear_or_fals_read2(input),
@@ -829,7 +861,9 @@ pub fn parse_message_read_or_clear_or_fals_read_choice(input: &[u8]) -> IResult<
     Ok((input, message_read_or_clear_or_fals_read_choice))
 }
 
-fn parse_controller_data_read_data_item161(input: &[u8]) -> IResult<&[u8], ControllerDataReadDataChoice> {
+fn parse_controller_data_read_data_item161(
+    input: &[u8],
+) -> IResult<&[u8], ControllerDataReadDataChoice> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, controller_model) = take(20 as usize)(input)?;
     let (input, controller_version) = take(20 as usize)(input)?;
@@ -896,12 +930,14 @@ fn parse_controller_data_read_data_item161(input: &[u8]) -> IResult<&[u8], Contr
             cpu_bus_rsserved,
             remote_io_data_1,
             remote_io_data_2,
-            pc_status
-        }
+            pc_status,
+        },
     ))
 }
 
-fn parse_controller_data_read_data_item94(input: &[u8]) -> IResult<&[u8], ControllerDataReadDataChoice> {
+fn parse_controller_data_read_data_item94(
+    input: &[u8],
+) -> IResult<&[u8], ControllerDataReadDataChoice> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, controller_model) = take(20 as usize)(input)?;
     let (input, controller_version) = take(20 as usize)(input)?;
@@ -928,12 +964,14 @@ fn parse_controller_data_read_data_item94(input: &[u8]) -> IResult<&[u8], Contro
             expansion_dm_size,
             number_step_transitions,
             kind_memory_card,
-            memory_card_size
-        }
+            memory_card_size,
+        },
     ))
 }
 
-fn parse_controller_data_read_data_item69(input: &[u8]) -> IResult<&[u8], ControllerDataReadDataChoice> {
+fn parse_controller_data_read_data_item69(
+    input: &[u8],
+) -> IResult<&[u8], ControllerDataReadDataChoice> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, cpu_bus_unit_0) = be_u16(input)?;
     let (input, cpu_bus_unit_1) = be_u16(input)?;
@@ -978,17 +1016,22 @@ fn parse_controller_data_read_data_item69(input: &[u8]) -> IResult<&[u8], Contro
             cpu_bus_rsserved,
             remote_io_data_1,
             remote_io_data_2,
-            pc_status
-        }
+            pc_status,
+        },
     ))
 }
 
-pub fn parse_controller_data_read_data_choice(input: &[u8]) -> IResult<&[u8], ControllerDataReadDataChoice> {
+pub fn parse_controller_data_read_data_choice(
+    input: &[u8],
+) -> IResult<&[u8], ControllerDataReadDataChoice> {
     let (input, controller_data_read_data_choice) = match input.len() {
         0xa1 => parse_controller_data_read_data_item161(input),
         0x5e => parse_controller_data_read_data_item94(input),
         0x45 => parse_controller_data_read_data_item69(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, controller_data_read_data_choice))
 }
@@ -1000,8 +1043,8 @@ fn parse_memory_area_read(input: &[u8]) -> IResult<&[u8], Order> {
         input,
         Order::MemoryAreaRead {
             rsp_code,
-            last_data
-        }
+            last_data,
+        },
     ))
 }
 
@@ -1018,8 +1061,8 @@ fn parse_memory_area_write(input: &[u8]) -> IResult<&[u8], Order> {
             beginning_address,
             beginning_address_bits,
             number_of_items,
-            command_data
-        }
+            command_data,
+        },
     ))
 }
 
@@ -1036,24 +1079,20 @@ fn parse_memory_area_fill(input: &[u8]) -> IResult<&[u8], Order> {
             beginning_address,
             beginning_address_bits,
             number_of_items,
-            command_data
-        }
+            command_data,
+        },
     ))
 }
 
 fn parse_multiple_memory_area_read(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, data) = get_data_with_multiple_memory_area_read_item(input)?;
-    Ok((
-        input,
-        Order::MultipleMemoryAreaRead {
-            rsp_code,
-            data
-        }
-    ))
+    Ok((input, Order::MultipleMemoryAreaRead { rsp_code, data }))
 }
 
-fn get_data_with_multiple_memory_area_read_item(input: &[u8]) -> IResult<&[u8], Vec<MultipleMemoryAreaReadItem>> {
+fn get_data_with_multiple_memory_area_read_item(
+    input: &[u8],
+) -> IResult<&[u8], Vec<MultipleMemoryAreaReadItem>> {
     let mut data = Vec::new();
     let mut _data: MultipleMemoryAreaReadItem;
     let mut input = input;
@@ -1063,20 +1102,12 @@ fn get_data_with_multiple_memory_area_read_item(input: &[u8]) -> IResult<&[u8], 
         data.push(_data);
     }
 
-    Ok((
-        input,
-        data
-    ))
+    Ok((input, data))
 }
 
 fn parse_memory_area_transfer(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::MemoryAreaTransfer {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::MemoryAreaTransfer { rsp_code }))
 }
 
 fn parse_parameter_area_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1092,29 +1123,19 @@ fn parse_parameter_area_read(input: &[u8]) -> IResult<&[u8], Order> {
             parameter_area_code,
             beginning_word,
             number_words_or_bytes,
-            rsp_data
-        }
+            rsp_data,
+        },
     ))
 }
 
 fn parse_parameter_area_write(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ParameterAreaWrite {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ParameterAreaWrite { rsp_code }))
 }
 
 fn parse_parameter_area_clear(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ParameterAreaClear {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ParameterAreaClear { rsp_code }))
 }
 
 fn parse_data_link_table_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1126,8 +1147,8 @@ fn parse_data_link_table_read(input: &[u8]) -> IResult<&[u8], Order> {
         Order::DataLinkTableRead {
             rsp_code,
             number_of_link_nodes,
-            data
-        }
+            data,
+        },
     ))
 }
 
@@ -1141,40 +1162,22 @@ fn get_data_with_dltb_lock_data_item(input: &[u8]) -> IResult<&[u8], Vec<DLTBLoc
         data.push(_data);
     }
 
-    Ok((
-        input,
-        data
-    ))
+    Ok((input, data))
 }
 
 fn parse_data_link_table_r_write(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::DataLinkTableRWrite {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::DataLinkTableRWrite { rsp_code }))
 }
 
 fn parse_parameter_area_protect(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ParameterAreaProtect {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ParameterAreaProtect { rsp_code }))
 }
 
 fn parse_parameter_area_protect_clear(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ParameterAreaProtectClear {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ParameterAreaProtectClear { rsp_code }))
 }
 
 fn parse_program_area_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1190,8 +1193,8 @@ fn parse_program_area_read(input: &[u8]) -> IResult<&[u8], Order> {
             program_number,
             beginning_word,
             words_of_bytes,
-            rsp_data
-        }
+            rsp_data,
+        },
     ))
 }
 
@@ -1206,39 +1209,24 @@ fn parse_program_area_write(input: &[u8]) -> IResult<&[u8], Order> {
             rsp_code,
             program_number,
             beginning_word,
-            words_of_bytes
-        }
+            words_of_bytes,
+        },
     ))
 }
 
 fn parse_program_area_clear(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ProgramAreaClear {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ProgramAreaClear { rsp_code }))
 }
 
 fn parse_run(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::Run {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::Run { rsp_code }))
 }
 
 fn parse_stop(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::Stop {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::Stop { rsp_code }))
 }
 
 fn parse_controller_data_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1246,8 +1234,8 @@ fn parse_controller_data_read(input: &[u8]) -> IResult<&[u8], Order> {
     Ok((
         input,
         Order::ControllerDataRead {
-            controller_data_read_data_choice
-        }
+            controller_data_read_data_choice,
+        },
     ))
 }
 
@@ -1260,12 +1248,14 @@ fn parse_connection_data_read(input: &[u8]) -> IResult<&[u8], Order> {
         Order::ConnectionDataRead {
             rsp_code,
             number_of_units,
-            data
-        }
+            data,
+        },
     ))
 }
 
-fn get_data_with_connection_data_read_data_item(input: &[u8]) -> IResult<&[u8], Vec<ConnectionDataReadDataItem>> {
+fn get_data_with_connection_data_read_data_item(
+    input: &[u8],
+) -> IResult<&[u8], Vec<ConnectionDataReadDataItem>> {
     let mut data = Vec::new();
     let mut _data: ConnectionDataReadDataItem;
     let mut input = input;
@@ -1275,10 +1265,7 @@ fn get_data_with_connection_data_read_data_item(input: &[u8]) -> IResult<&[u8], 
         data.push(_data);
     }
 
-    Ok((
-        input,
-        data
-    ))
+    Ok((input, data))
 }
 
 fn parse_controller_status_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1300,8 +1287,8 @@ fn parse_controller_status_read(input: &[u8]) -> IResult<&[u8], Order> {
             non_fatal_error_data,
             message,
             fals,
-            error_message
-        }
+            error_message,
+        },
     ))
 }
 
@@ -1324,8 +1311,8 @@ fn parse_network_status_read(input: &[u8]) -> IResult<&[u8], Order> {
             cyclic_operation,
             cyclic_transmission_status,
             network_nodes_non_fatal_error_status,
-            network_nodes_cyclic_error_counters
-        }
+            network_nodes_cyclic_error_counters,
+        },
     ))
 }
 
@@ -1340,8 +1327,8 @@ fn parse_data_link_status_read(input: &[u8]) -> IResult<&[u8], Order> {
             rsp_code,
             status_flags,
             master_node_number,
-            data
-        }
+            data,
+        },
     ))
 }
 
@@ -1350,8 +1337,8 @@ fn parse_cycle_time_read(input: &[u8]) -> IResult<&[u8], Order> {
     Ok((
         input,
         Order::CycleTimeRead {
-            cycle_time_read_choice
-        }
+            cycle_time_read_choice,
+        },
     ))
 }
 
@@ -1374,31 +1361,20 @@ fn parse_clcok_read(input: &[u8]) -> IResult<&[u8], Order> {
             hour,
             minute,
             second,
-            day
-        }
+            day,
+        },
     ))
 }
 
 fn parse_clcok_write(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ClcokWrite {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ClcokWrite { rsp_code }))
 }
 
 fn parse_loop_back_test(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
     let (input, data) = take(input.len() as usize)(input)?;
-    Ok((
-        input,
-        Order::LoopBackTest {
-            rsp_code,
-            data
-        }
-    ))
+    Ok((input, Order::LoopBackTest { rsp_code, data }))
 }
 
 fn parse_broadcast_test_results_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1408,26 +1384,24 @@ fn parse_broadcast_test_results_read(input: &[u8]) -> IResult<&[u8], Order> {
         input,
         Order::BroadcastTestResultsRead {
             rsp_code,
-            number_of_receptions
-        }
+            number_of_receptions,
+        },
     ))
 }
 
 fn parse_broadcast_test_data_send(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Order::BroadcastTestDataSend {}
-    ))
+    Ok((input, Order::BroadcastTestDataSend {}))
 }
 
 fn parse_message_read_clear_fals_read(input: &[u8]) -> IResult<&[u8], Order> {
-    let (input, message_read_or_clear_or_fals_read_choice) = parse_message_read_or_clear_or_fals_read_choice(input)?;
+    let (input, message_read_or_clear_or_fals_read_choice) =
+        parse_message_read_or_clear_or_fals_read_choice(input)?;
     Ok((
         input,
         Order::MessageReadClearFALSRead {
-            message_read_or_clear_or_fals_read_choice
-        }
+            message_read_or_clear_or_fals_read_choice,
+        },
     ))
 }
 
@@ -1436,39 +1410,24 @@ fn parse_access_right_acquire(input: &[u8]) -> IResult<&[u8], Order> {
     Ok((
         input,
         Order::AccessRightAcquire {
-            access_right_acquire_choice
-        }
+            access_right_acquire_choice,
+        },
     ))
 }
 
 fn parse_access_right_forced_acquire(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::AccessRightForcedAcquire {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::AccessRightForcedAcquire { rsp_code }))
 }
 
 fn parse_access_right_release(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::AccessRightRelease {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::AccessRightRelease { rsp_code }))
 }
 
 fn parse_error_clear(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ErrorClear {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ErrorClear { rsp_code }))
 }
 
 fn parse_error_log_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1484,12 +1443,14 @@ fn parse_error_log_read(input: &[u8]) -> IResult<&[u8], Order> {
             max_number_of_stored_records,
             number_of_stored_records,
             number_of_records,
-            error_log_data
-        }
+            error_log_data,
+        },
     ))
 }
 
-fn get_error_log_data_with_error_log_read_data_item(input: &[u8]) -> IResult<&[u8], Vec<ErrorLogReadDataItem>> {
+fn get_error_log_data_with_error_log_read_data_item(
+    input: &[u8],
+) -> IResult<&[u8], Vec<ErrorLogReadDataItem>> {
     let mut error_log_data = Vec::new();
     let mut _error_log_data: ErrorLogReadDataItem;
     let mut input = input;
@@ -1499,20 +1460,12 @@ fn get_error_log_data_with_error_log_read_data_item(input: &[u8]) -> IResult<&[u
         error_log_data.push(_error_log_data);
     }
 
-    Ok((
-        input,
-        error_log_data
-    ))
+    Ok((input, error_log_data))
 }
 
 fn parse_error_log_clear(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ErrorLogClear {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ErrorLogClear { rsp_code }))
 }
 
 fn parse_file_name_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1526,12 +1479,14 @@ fn parse_file_name_read(input: &[u8]) -> IResult<&[u8], Order> {
             rsp_code,
             disk_data,
             number_of_files,
-            error_log_data
-        }
+            error_log_data,
+        },
     ))
 }
 
-fn get_error_log_data_with_file_name_read_file_data_item(input: &[u8]) -> IResult<&[u8], Vec<FileNameReadFileDataItem>> {
+fn get_error_log_data_with_file_name_read_file_data_item(
+    input: &[u8],
+) -> IResult<&[u8], Vec<FileNameReadFileDataItem>> {
     let mut error_log_data = Vec::new();
     let mut _error_log_data: FileNameReadFileDataItem;
     let mut input = input;
@@ -1541,10 +1496,7 @@ fn get_error_log_data_with_file_name_read_file_data_item(input: &[u8]) -> IResul
         error_log_data.push(_error_log_data);
     }
 
-    Ok((
-        input,
-        error_log_data
-    ))
+    Ok((input, error_log_data))
 }
 
 fn parse_single_file_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1560,29 +1512,19 @@ fn parse_single_file_read(input: &[u8]) -> IResult<&[u8], Order> {
             file_capacity,
             file_position,
             data_length,
-            file_data
-        }
+            file_data,
+        },
     ))
 }
 
 fn parse_single_file_write(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::SingleFileWrite {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::SingleFileWrite { rsp_code }))
 }
 
 fn parse_memory_card_format(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::MemoryCardFormat {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::MemoryCardFormat { rsp_code }))
 }
 
 fn parse_file_delete(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1592,49 +1534,29 @@ fn parse_file_delete(input: &[u8]) -> IResult<&[u8], Order> {
         input,
         Order::FileDelete {
             rsp_code,
-            number_of_files
-        }
+            number_of_files,
+        },
     ))
 }
 
 fn parse_volume_label_create_or_delete(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::VolumeLabelCreateOrDelete {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::VolumeLabelCreateOrDelete { rsp_code }))
 }
 
 fn parse_file_copy(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::FileCopy {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::FileCopy { rsp_code }))
 }
 
 fn parse_file_name_change(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::FileNameChange {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::FileNameChange { rsp_code }))
 }
 
 fn parse_file_data_check(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::FileDataCheck {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::FileDataCheck { rsp_code }))
 }
 
 fn parse_memory_area_file_transfer(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1644,8 +1566,8 @@ fn parse_memory_area_file_transfer(input: &[u8]) -> IResult<&[u8], Order> {
         input,
         Order::MemoryAreaFileTransfer {
             rsp_code,
-            number_of_items
-        }
+            number_of_items,
+        },
     ))
 }
 
@@ -1656,17 +1578,14 @@ fn parse_parameter_area_file_transfer(input: &[u8]) -> IResult<&[u8], Order> {
         input,
         Order::ParameterAreaFileTransfer {
             rsp_code,
-            number_of_word_or_bytes
-        }
+            number_of_word_or_bytes,
+        },
     ))
 }
 
 fn parse_program_area_file_transfer(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Order::ProgramAreaFileTransfer {}
-    ))
+    Ok((input, Order::ProgramAreaFileTransfer {}))
 }
 
 fn parse_file_memory_index_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1682,12 +1601,14 @@ fn parse_file_memory_index_read(input: &[u8]) -> IResult<&[u8], Order> {
             number_of_blocks_remaining,
             total_number_of_blocks,
             omron_type,
-            data
-        }
+            data,
+        },
     ))
 }
 
-fn get_data_with_file_memory_index_read_data_item(input: &[u8]) -> IResult<&[u8], Vec<FileMemoryIndexReadDataItem>> {
+fn get_data_with_file_memory_index_read_data_item(
+    input: &[u8],
+) -> IResult<&[u8], Vec<FileMemoryIndexReadDataItem>> {
     let mut data = Vec::new();
     let mut _data: FileMemoryIndexReadDataItem;
     let mut input = input;
@@ -1697,10 +1618,7 @@ fn get_data_with_file_memory_index_read_data_item(input: &[u8]) -> IResult<&[u8]
         data.push(_data);
     }
 
-    Ok((
-        input,
-        data
-    ))
+    Ok((input, data))
 }
 
 fn parse_file_memory_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1714,39 +1632,24 @@ fn parse_file_memory_read(input: &[u8]) -> IResult<&[u8], Order> {
             rsp_code,
             data_type,
             control_data,
-            data
-        }
+            data,
+        },
     ))
 }
 
 fn parse_file_memory_write(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::FileMemoryWrite {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::FileMemoryWrite { rsp_code }))
 }
 
 fn parse_forced_set_or_reset(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ForcedSetOrReset {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ForcedSetOrReset { rsp_code }))
 }
 
 fn parse_forced_set_or_reset_cancel(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::ForcedSetOrResetCancel {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::ForcedSetOrResetCancel { rsp_code }))
 }
 
 fn parse_multiple_forced_status_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1762,37 +1665,24 @@ fn parse_multiple_forced_status_read(input: &[u8]) -> IResult<&[u8], Order> {
             memory_area_code,
             beginning_address,
             number_of_units,
-            data
-        }
+            data,
+        },
     ))
 }
 
 fn parse_name_set(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::NameSet {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::NameSet { rsp_code }))
 }
 
 fn parse_name_delete(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, rsp_code) = be_u16(input)?;
-    Ok((
-        input,
-        Order::NameDelete {
-            rsp_code
-        }
-    ))
+    Ok((input, Order::NameDelete { rsp_code }))
 }
 
 fn parse_name_read(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Order::NameRead {}
-    ))
+    Ok((input, Order::NameRead {}))
 }
 
 pub fn parse_order(input: &[u8], cmd_code: u16) -> IResult<&[u8], Order> {
@@ -1853,7 +1743,10 @@ pub fn parse_order(input: &[u8], cmd_code: u16) -> IResult<&[u8], Order> {
         0x2601 => parse_name_set(input),
         0x2602 => parse_name_delete(input),
         0x2603 => parse_name_read(input),
-        _ =>  Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))),
+        _ => Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        ))),
     }?;
     Ok((input, order))
 }
@@ -1861,11 +1754,5 @@ pub fn parse_order(input: &[u8], cmd_code: u16) -> IResult<&[u8], Order> {
 pub fn parse_cmd_type(input: &[u8]) -> IResult<&[u8], CmdType> {
     let (input, cmd_code) = be_u16(input)?;
     let (input, order) = parse_order(input, cmd_code)?;
-    Ok((
-        input,
-        CmdType {
-            cmd_code,
-            order
-        }
-    ))
+    Ok((input, CmdType { cmd_code, order }))
 }

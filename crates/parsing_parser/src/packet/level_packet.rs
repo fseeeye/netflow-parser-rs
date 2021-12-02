@@ -1,9 +1,9 @@
+use super::level::{LinkLevel, NetLevel, TransLevel};
 use crate::{
     errors::ParseError,
-    layer::{LinkLayer, NetworkLayer, TransportLayer, ApplicationLayer},
-    field_type::*, 
+    field_type::*,
+    layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer},
 };
-use super::level::{ LinkLevel, NetLevel, TransLevel };
 
 /// L1Packet为一种仅包含错误信息的packet
 /// 仅针对解析link层错误的情况使用。
@@ -28,7 +28,7 @@ impl<'a> LinkLevel for L2Packet<'a> {
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None
+            _ => None,
         }
     }
 
@@ -36,7 +36,7 @@ impl<'a> LinkLevel for L2Packet<'a> {
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -57,7 +57,7 @@ impl<'a> LinkLevel for L3Packet<'a> {
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None
+            _ => None,
         }
     }
 
@@ -65,7 +65,7 @@ impl<'a> LinkLevel for L3Packet<'a> {
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -108,7 +108,7 @@ impl<'a> LinkLevel for L4Packet<'a> {
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None
+            _ => None,
         }
     }
 
@@ -116,7 +116,7 @@ impl<'a> LinkLevel for L4Packet<'a> {
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None
+            _ => None,
         }
     }
 }
@@ -181,7 +181,7 @@ impl<'a> LinkLevel for L5Packet<'a> {
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None
+            _ => None,
         }
     }
 
@@ -189,7 +189,7 @@ impl<'a> LinkLevel for L5Packet<'a> {
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None
+            _ => None,
         }
     }
 }

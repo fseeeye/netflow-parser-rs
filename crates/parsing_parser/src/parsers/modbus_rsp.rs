@@ -8,8 +8,8 @@ use nom::IResult;
 
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+use crate::packet::{L4Packet, L5Packet, QuinPacket, QuinPacketOptions};
 use crate::protocol::ApplicationProtocol;
-use crate::packet::{QuinPacket, QuinPacketOptions, L4Packet, L5Packet};
 use crate::ProtocolType;
 
 use super::parse_l5_eof_layer;
@@ -140,7 +140,7 @@ pub enum Data<'a> {
     },
     GetCommEventCounter {
         status: u16,
-        event_count: u16
+        event_count: u16,
     },
     GetCommEventLog {
         byte_count: u8,
@@ -200,16 +200,16 @@ pub enum Data<'a> {
         exception_code: u8,
     },
     ReadExceptionStatusExc {
-        exception_code: u8
+        exception_code: u8,
     },
     GetCommEventCounterExc {
-        exception_code: u8
+        exception_code: u8,
     },
     GetCommEventLogExc {
-        exception_code: u8
+        exception_code: u8,
     },
     ReportServerIDExc {
-        exception_code: u8
+        exception_code: u8,
     },
     ReadFileRecordExc {
         exception_code: u8,
@@ -330,12 +330,7 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_exception_status(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, output_data) = u8(input)?;
-    Ok((
-        input,
-        Data::ReadExceptionStatus {
-            output_data
-        }
-    ))
+    Ok((input, Data::ReadExceptionStatus { output_data }))
 }
 
 fn parse_get_comm_event_counter(input: &[u8]) -> IResult<&[u8], Data> {
@@ -346,7 +341,7 @@ fn parse_get_comm_event_counter(input: &[u8]) -> IResult<&[u8], Data> {
         Data::GetCommEventCounter {
             status,
             event_count,
-        }
+        },
     ))
 }
 
@@ -364,7 +359,7 @@ fn parse_get_comm_event_log(input: &[u8]) -> IResult<&[u8], Data> {
             event_count,
             message_count,
             events,
-        }
+        },
     ))
 }
 
@@ -376,7 +371,7 @@ fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
         Data::ReportServerID {
             byte_count,
             server_data,
-        }
+        },
     ))
 }
 

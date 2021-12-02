@@ -6,8 +6,8 @@ use nom::IResult;
 
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
+use crate::packet::{L4Packet, L5Packet, QuinPacket, QuinPacketOptions};
 use crate::protocol::ApplicationProtocol;
-use crate::packet::{QuinPacket, QuinPacketOptions, L4Packet, L5Packet};
 use crate::ProtocolType;
 
 use super::parse_l5_eof_layer;
@@ -229,34 +229,22 @@ fn parse_write_single_register(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_read_exception_status(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Data::ReadExceptionStatus {}
-    ))
+    Ok((input, Data::ReadExceptionStatus {}))
 }
 
 fn parse_get_comm_event_counter(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Data::GetCommEventCounter {}
-    ))
+    Ok((input, Data::GetCommEventCounter {}))
 }
 
 fn parse_get_comm_event_log(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Data::GetCommEventLog {}
-    ))
+    Ok((input, Data::GetCommEventLog {}))
 }
 
 fn parse_report_server_id(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, _) = eof(input)?;
-    Ok((
-        input,
-        Data::ReportServerID {}
-    ))
+    Ok((input, Data::ReportServerID {}))
 }
 
 fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Data> {
@@ -291,7 +279,6 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     ))
 }
 
-
 fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
     let (input, sub_requests) = count(
@@ -309,7 +296,8 @@ fn parse_read_file_record(input: &[u8]) -> IResult<&[u8], Data> {
 
 fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, byte_count) = u8(input)?;
-    let (input, sub_requests) = get_sub_requests_with_write_file_record_sub_request(input, byte_count)?;
+    let (input, sub_requests) =
+        get_sub_requests_with_write_file_record_sub_request(input, byte_count)?;
     Ok((
         input,
         Data::WriteFileRecord {
@@ -319,7 +307,10 @@ fn parse_write_file_record(input: &[u8]) -> IResult<&[u8], Data> {
     ))
 }
 
-fn get_sub_requests_with_write_file_record_sub_request(input: &[u8], byte_count: u8) -> IResult<&[u8], Vec<WriteFileRecordSubRequest>> {
+fn get_sub_requests_with_write_file_record_sub_request(
+    input: &[u8],
+    byte_count: u8,
+) -> IResult<&[u8], Vec<WriteFileRecordSubRequest>> {
     let mut sub_requests = Vec::new();
     let mut _sub_requests: WriteFileRecordSubRequest;
     let mut input = input;
@@ -330,10 +321,7 @@ fn get_sub_requests_with_write_file_record_sub_request(input: &[u8], byte_count:
         sub_requests.push(_sub_requests);
     }
 
-    Ok((
-        input,
-        sub_requests
-    ))
+    Ok((input, sub_requests))
 }
 
 fn parse_mask_write_register(input: &[u8]) -> IResult<&[u8], Data> {
@@ -460,7 +448,7 @@ pub fn parse_modbus_req_layer<'a>(
     };
 
     let application_layer = ApplicationLayer::ModbusReq(modbus_req);
-    
+
     if Some(current_prototype) == options.stop {
         return QuinPacket::L5(L5Packet {
             link_layer,

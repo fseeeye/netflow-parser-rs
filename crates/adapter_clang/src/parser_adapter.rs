@@ -1,6 +1,9 @@
 use core::slice;
 
-use parsing_parser::{ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions, TransLevel, parse_quin_packet};
+use parsing_parser::{
+    parse_quin_packet, ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions,
+    TransLevel,
+};
 
 #[no_mangle]
 pub extern "C" fn init_parse_option() -> *const QuinPacketOptions {
@@ -8,7 +11,11 @@ pub extern "C" fn init_parse_option() -> *const QuinPacketOptions {
 }
 
 #[no_mangle]
-pub extern "C" fn parse_packet<'a>(input_ptr: *const u8, input_len: u16, option_ptr: *const QuinPacketOptions) -> *const QuinPacket<'a> {
+pub extern "C" fn parse_packet<'a>(
+    input_ptr: *const u8,
+    input_len: u16,
+    option_ptr: *const QuinPacketOptions,
+) -> *const QuinPacket<'a> {
     let input = unsafe {
         assert!(!input_ptr.is_null());
         slice::from_raw_parts(input_ptr, input_len.into())
@@ -20,7 +27,7 @@ pub extern "C" fn parse_packet<'a>(input_ptr: *const u8, input_len: u16, option_
     };
 
     let packet = parse_quin_packet(input, option);
-    
+
     &packet
 }
 
@@ -56,12 +63,18 @@ pub extern "C" fn show_packet(packet_ptr: *const QuinPacket) {
             // println!("  application layer:\n{:?}", l5.application_layer);
             match &l5.application_layer {
                 ApplicationLayer::ModbusReq(req) => {
-                    println!("  application layer: ModbusReq({:?}).", req.pdu.function_code);
-                },
+                    println!(
+                        "  application layer: ModbusReq({:?}).",
+                        req.pdu.function_code
+                    );
+                }
                 ApplicationLayer::ModbusRsp(rsp) => {
-                    println!("  application layer: ModbusRsp({:?}).", rsp.pdu.function_code);
-                },
-                _ => println!("  application layer: Other.")
+                    println!(
+                        "  application layer: ModbusRsp({:?}).",
+                        rsp.pdu.function_code
+                    );
+                }
+                _ => println!("  application layer: Other."),
             }
             println!("  error: {:?}", l5.error);
         }

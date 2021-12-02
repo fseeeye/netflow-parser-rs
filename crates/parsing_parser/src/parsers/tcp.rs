@@ -6,11 +6,15 @@ use nom::sequence::tuple;
 
 use crate::errors::ParseError;
 use crate::layer::{LinkLayer, NetworkLayer, TransportLayer};
+use crate::packet::{L3Packet, L4Packet, QuinPacket, QuinPacketOptions};
 use crate::protocol::TransportProtocol;
-use crate::packet::{QuinPacket, QuinPacketOptions, L3Packet, L4Packet};
 use crate::ProtocolType;
 
-use super::{parse_bacnet_layer, parse_dnp3_layer, parse_fins_tcp_req_layer, parse_fins_tcp_rsp_layer, parse_iec104_layer, parse_iso_on_tcp_layer, parse_l4_eof_layer, parse_modbus_req_layer, parse_modbus_rsp_layer, parse_opcua_layer};
+use super::{
+    parse_bacnet_layer, parse_dnp3_layer, parse_fins_tcp_req_layer, parse_fins_tcp_rsp_layer,
+    parse_iec104_layer, parse_iso_on_tcp_layer, parse_l4_eof_layer, parse_modbus_req_layer,
+    parse_modbus_rsp_layer, parse_opcua_layer,
+};
 
 // TCP Header Format
 //
@@ -136,7 +140,7 @@ pub fn parse_tcp_layer<'a>(
         102 => {
             let transport_layer = TransportLayer::Tcp(tcp_header);
             parse_iso_on_tcp_layer(input, link_layer, network_layer, transport_layer, options)
-        },
+        }
         502 => {
             let transport_layer = TransportLayer::Tcp(tcp_header);
             parse_modbus_rsp_layer(input, link_layer, network_layer, transport_layer, options)
@@ -165,7 +169,7 @@ pub fn parse_tcp_layer<'a>(
             102 => {
                 let transport_layer = TransportLayer::Tcp(tcp_header);
                 parse_iso_on_tcp_layer(input, link_layer, network_layer, transport_layer, options)
-            },
+            }
             502 => {
                 let transport_layer = TransportLayer::Tcp(tcp_header);
                 parse_modbus_req_layer(input, link_layer, network_layer, transport_layer, options)

@@ -1,7 +1,9 @@
-use serde::{Deserialize, Serialize};
+mod parser;
+
+pub(crate) use parser::parse_option_element;
 
 use super::elements;
-
+use serde::{Deserialize, Serialize};
 
 #[cfg_attr(
     feature = "serde",

@@ -3,7 +3,7 @@
 //! ## Example
 //! ```
 //! use parsing_rs::prelude::*;
-//! 
+//!
 //! let input = &[1,2,3,4,5,6];
 //! match parse_quin_packet(input, &QuinPacketOptions::default()) {
 //!     QuinPacket::L1(l1) => {
@@ -38,17 +38,23 @@ pub mod icsrule {
 
 pub mod prelude {
     pub use crate::parser::{
+        // functions
         parse_quin_packet,
-        QuinPacketOptions,
+        LinkLevel,
+        NetLevel,
         QuinPacket,
-        LinkLevel, NetLevel, TransLevel
+        // structures
+        QuinPacketOptions,
+        TransLevel,
     };
 
     pub use crate::icsrule::HmIcsRules;
 
     pub use crate::rule::{
+        // structures
         DetectResult,
-        Rule,
-        RuleAction
+        RuleAction,
+        // traits
+        Rules,
     };
 }

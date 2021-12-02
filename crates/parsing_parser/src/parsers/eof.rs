@@ -1,6 +1,6 @@
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
-use crate::packet::{QuinPacket, QuinPacketOptions, L2Packet, L3Packet, L4Packet, L5Packet};
+use crate::packet::{L2Packet, L3Packet, L4Packet, L5Packet, QuinPacket, QuinPacketOptions};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct EofHeader;

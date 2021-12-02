@@ -6,7 +6,6 @@ use parsing_parser::{L5Packet, NetLevel, TransLevel};
 
 use crate::detect::IcsRuleDetector;
 
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IcsRuleBasis {
     pub rid: u32,
@@ -58,18 +57,30 @@ impl IcsRuleDetector for IcsRuleBasis {
                 if self.dst_port.is_some() && self.dst_port != packet_dst_port {
                     return false;
                 }
-            },
+            }
             Direction::Bi => {
-                if self.src_ip.is_some() && self.src_ip != packet_src_ip && self.src_ip != packet_dst_ip {
+                if self.src_ip.is_some()
+                    && self.src_ip != packet_src_ip
+                    && self.src_ip != packet_dst_ip
+                {
                     return false;
                 }
-                if self.dst_ip.is_some() && self.dst_ip != packet_dst_ip && self.dst_ip != packet_src_ip {
+                if self.dst_ip.is_some()
+                    && self.dst_ip != packet_dst_ip
+                    && self.dst_ip != packet_src_ip
+                {
                     return false;
                 }
-                if self.src_port.is_some() && self.src_port != packet_src_port && self.src_port != packet_dst_port {
+                if self.src_port.is_some()
+                    && self.src_port != packet_src_port
+                    && self.src_port != packet_dst_port
+                {
                     return false;
                 }
-                if self.dst_port.is_some() && self.dst_port != packet_dst_port && self.src_port != packet_dst_port {
+                if self.dst_port.is_some()
+                    && self.dst_port != packet_dst_port
+                    && self.src_port != packet_dst_port
+                {
                     return false;
                 }
             }

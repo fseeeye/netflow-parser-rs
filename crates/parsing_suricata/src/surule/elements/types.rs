@@ -1,6 +1,5 @@
-//! 包含 suricata rule (Surule) 用到的所有数据结构
+use anyhow::Result;
 use ipnet::Ipv4Net;
-use anyhow::{Result};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -10,11 +9,9 @@ use std::str::FromStr;
 
 use parsing_parser::{ProtocolType, TransportProtocol};
 
-use super::element_parsers::handle_value;
-use super::utils::is_default;
-use super::SuruleParseError;
-use super::elements;
-
+use super::parsers::handle_value;
+use crate::surule::utils::is_default;
+use crate::surule::SuruleParseError;
 
 pub trait SurList {
     type Element: FromStr<Err = nom::Err<SuruleParseError>>;
@@ -46,17 +43,17 @@ pub enum Action {
     #[cfg_attr(feature = "serde", serde(rename = "rejectdst"))]
     RejectDst,
     #[cfg_attr(feature = "serde", serde(rename = "rejectboth"))]
-    RejectBoth
+    RejectBoth,
 }
 
 /// Protocol type (Suricata Header Element)
-/// 
+///
 /// Warning: 目前暂时只支持：tcp / udp
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Protocol {
     Tcp,
-    Udp
+    Udp,
 }
 
 impl Into<ProtocolType> for Protocol {
@@ -69,7 +66,7 @@ impl Into<ProtocolType> for Protocol {
 }
 
 /// IP List type (Suricata Header Element: src_addr & dst_addr)
-/// 
+///
 /// 目前暂不支持：
 ///     * yaml settings
 /// 目前支持不完善：
@@ -80,7 +77,7 @@ impl Into<ProtocolType> for Protocol {
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct IpAddressList {
     pub accept: Option<Vec<IpAddress>>, // None represent Any
-    pub except: Option<Vec<IpAddress>>  // None represent No Exception
+    pub except: Option<Vec<IpAddress>>, // None represent No Exception
 }
 
 impl SurList for IpAddressList {
@@ -116,29 +113,29 @@ impl FromStr for IpAddress {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let make_err = |reason| SuruleParseError::InvalidIpAddr(reason).into();
 
-        let ip_addr_str = handle_value(s)
-            .map_err(|_| make_err("empty value.".to_string()))?;
+        let ip_addr_str = handle_value(s).map_err(|_| make_err("empty value.".to_string()))?;
 
         match ip_addr_str.parse::<Ipv4Addr>() {
-            Ok(single_addr) => Ok(elements::IpAddress::V4Addr(single_addr)),
-            Err(_) => { // maybe it's a range
+            Ok(single_addr) => Ok(IpAddress::V4Addr(single_addr)),
+            Err(_) => {
+                // maybe it's a range
                 let single_range = ip_addr_str
                     .parse::<Ipv4Net>()
                     .map_err(|_| make_err(ip_addr_str.to_string()))?;
-                Ok(elements::IpAddress::V4Range(single_range))
+                Ok(IpAddress::V4Range(single_range))
             }
         }
     }
 }
 
 /// Port List type (Suricata Header Element)
-/// 
+///
 ///  ref: https://suricata.readthedocs.io/en/latest/rules/intro.html#ports-source-and-destination
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct PortList {
     pub accept: Option<Vec<Port>>,
-    pub except: Option<Vec<Port>>
+    pub except: Option<Vec<Port>>,
 }
 
 impl SurList for PortList {
@@ -164,22 +161,24 @@ impl SurList for PortList {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Port {
-    Range {max: u16, min: u16},
-    Single(u16)
+    Range { max: u16, min: u16 },
+    Single(u16),
 }
 
 impl Port {
     pub fn new_range(min: u16, max: u16) -> Result<Self, SuruleParseError> {
         if max < min {
-            return Err(SuruleParseError::InvalidPort("max port is smaller than min port!".to_string()));
-        } 
+            return Err(SuruleParseError::InvalidPort(
+                "max port is smaller than min port!".to_string(),
+            ));
+        }
         Ok(Port::Range { min, max })
     }
 
     pub fn contains(&self, port: u16) -> bool {
         match self {
             Self::Single(p) => return *p == port,
-            Self::Range{ max, min} => return *min <= port && port <= *max
+            Self::Range { max, min } => return *min <= port && port <= *max,
         }
     }
 }
@@ -190,22 +189,23 @@ impl FromStr for Port {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let make_err = || SuruleParseError::InvalidPort(s.to_string()).into();
 
-        if let Some((min_str, max_str)) = s.split_once(':') { // range
-            let min = min_str
-                .parse()
-                .map_err(|_| make_err())?;
-            let max = max_str.trim()
+        if let Some((min_str, max_str)) = s.split_once(':') {
+            // range
+            let min = min_str.parse().map_err(|_| make_err())?;
+            let max = max_str
+                .trim()
                 .parse()
                 .or_else(|e| {
                     if max_str.trim().is_empty() {
-                        return Ok(u16::MAX)
+                        return Ok(u16::MAX);
                     } else {
-                        return Err(e)
+                        return Err(e);
                     }
                 })
                 .map_err(|_| make_err())?;
             Ok(Self::new_range(min, max).map_err(|e| e.into())?)
-        } else { // single
+        } else {
+            // single
             Ok(Self::Single(s.parse().map_err(|_| make_err())?))
         }
     }
@@ -220,7 +220,6 @@ pub enum Direction {
     #[cfg_attr(feature = "serde", serde(rename = "bi"))]
     Bi,
 }
-
 
 /*
  *  Suricata Body (Option) Element types

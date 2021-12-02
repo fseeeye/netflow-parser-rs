@@ -5,7 +5,7 @@ pub enum RuleAction {
     Alert,
     Drop,
     Reject,
-    Pass
+    Pass,
 }
 
 #[derive(Debug)]
@@ -14,6 +14,6 @@ pub enum DetectResult {
     Miss,
 }
 
-pub trait Rule {
+pub trait Rules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult;
 }

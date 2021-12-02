@@ -2,13 +2,14 @@ use std::str::FromStr;
 
 use super::{
     // mods
-    elements, element_parsers,
-    // structs
-    Surule, SuruleParseError, elements::Action,
+    elements,
+    elements::Action,
     // funcs
-    option_parser::parse_option_element
+    option::parse_option_element,
+    // structs
+    Surule,
+    SuruleParseError,
 };
-
 
 impl FromStr for Surule {
     type Err = nom::Err<SuruleParseError>;
@@ -17,16 +18,25 @@ impl FromStr for Surule {
         // parse header elements
         let (input, (action, protocol, src_addr, src_port, direction, dst_addr, dst_port)): (
             &str,
-            (Action, elements::Protocol, elements::IpAddressList, elements::PortList, elements::Direction, elements::IpAddressList, elements::PortList),
+            (
+                Action,
+                elements::Protocol,
+                elements::IpAddressList,
+                elements::PortList,
+                elements::Direction,
+                elements::IpAddressList,
+                elements::PortList,
+            ),
         ) = nom::sequence::tuple((
-            element_parsers::parse_action_from_stream,
-            element_parsers::parse_protocol_from_stream,
-            element_parsers::parse_list_from_stream,
-            element_parsers::parse_list_from_stream,
-            element_parsers::parse_direction_from_stream,
-            element_parsers::parse_list_from_stream,
-            element_parsers::parse_list_from_stream,
-        ))(input).map_err(|e| SuruleParseError::HeaderError(format!("{}", e)).into())?;
+            elements::parse_action_from_stream,
+            elements::parse_protocol_from_stream,
+            elements::parse_list_from_stream,
+            elements::parse_list_from_stream,
+            elements::parse_direction_from_stream,
+            elements::parse_list_from_stream,
+            elements::parse_list_from_stream,
+        ))(input)
+        .map_err(|e| SuruleParseError::HeaderError(format!("{}", e)).into())?;
 
         // parse option elements
         let (input, _start_backet) =
@@ -48,23 +58,20 @@ impl FromStr for Surule {
         }
 
         if input.len() != 0 {
-            return Err(SuruleParseError::UnterminatedRule(input.to_string()).into())
+            return Err(SuruleParseError::UnterminatedRule(input.to_string()).into());
         }
 
-        Ok(
-            Surule::new(
-                action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options,
-            )
-        )
+        Ok(Surule::new(
+            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options,
+        ))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
     use std::net::Ipv4Addr;
-    use std::vec;
     use std::str::FromStr;
+    use std::vec;
 
     use ipnet::Ipv4Net;
 
@@ -98,12 +105,12 @@ mod tests {
                 Action::Alert,
                 elements::Protocol::Tcp,
                 elements::IpAddressList {
-                    accept: Some(vec![
-                        elements::IpAddress::V4Range(Ipv4Net::from_str("192.168.0.0/16").unwrap()),
-                    ]),
-                    except: Some(vec![
-                        elements::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
-                    ])
+                    accept: Some(vec![elements::IpAddress::V4Range(
+                        Ipv4Net::from_str("192.168.0.0/16").unwrap()
+                    ),]),
+                    except: Some(vec![elements::IpAddress::V4Addr(
+                        Ipv4Addr::from_str("192.168.0.3").unwrap()
+                    )])
                 },
                 elements::PortList {
                     accept: None,
@@ -111,9 +118,9 @@ mod tests {
                 },
                 elements::Direction::Uni,
                 elements::IpAddressList {
-                    accept: Some(vec![
-                        elements::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.110").unwrap())
-                    ]),
+                    accept: Some(vec![elements::IpAddress::V4Addr(
+                        Ipv4Addr::from_str("192.168.0.110").unwrap()
+                    )]),
                     except: None
                 },
                 elements::PortList {
@@ -218,7 +225,7 @@ mod tests {
     // pub fn test_parse_suricata_rule_file() {
     //     let surule = parse_surule_from_file("../../examples/suricata3.rule").unwrap();
     //     assert_eq!(
-    //         surule, 
+    //         surule,
     //         Surule::new(
     //             Action::Alert,
     //             elements::Protocol::Tcp,

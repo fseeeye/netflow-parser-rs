@@ -1,8 +1,10 @@
-use std::{collections::{BTreeSet, HashMap}, fs};
 use parsing_parser::ApplicationNaiveProtocol;
+use std::{
+    collections::{BTreeSet, HashMap},
+    fs,
+};
 
-use super::{ IcsRule, IcsRuleArgs };
-
+use super::{IcsRule, IcsRuleArgs};
 
 /// HmIcsRules是存储规则集合的数据结构，它采用 HashMap 来存取所有规则。
 /// > Tips: 目前数据结构处于待完善阶段。
@@ -26,7 +28,7 @@ impl HmIcsRules {
         // read file from sys
         let file_contents = match fs::read_to_string(rule_file_path) {
             Ok(o) => o,
-            Err(_e) => return false, 
+            Err(_e) => return false,
         };
 
         // convert json str to vec<Rule>
@@ -34,7 +36,7 @@ impl HmIcsRules {
             Ok(o) => o,
             Err(_e) => {
                 println!("{:?}", _e);
-                return false
+                return false;
             }
         };
 
@@ -44,10 +46,14 @@ impl HmIcsRules {
             let protocol_type = match rule.args {
                 IcsRuleArgs::Modbus(..) => ApplicationNaiveProtocol::Modbus,
             };
-            (*self.rules_map.entry(protocol_type).or_insert(BTreeSet::<u32>::new())).insert(rid);
+            (*self
+                .rules_map
+                .entry(protocol_type)
+                .or_insert(BTreeSet::<u32>::new()))
+            .insert(rid);
             self.rules_inner.insert(rid, rule);
         }
 
-        return true
+        return true;
     }
 }
