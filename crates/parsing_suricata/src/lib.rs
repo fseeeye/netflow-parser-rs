@@ -6,15 +6,14 @@
 //!
 //! 参考项目：
 //!  - suricata 规则字符串解析参考自：[rust-suricata-rule-parser](https://github.com/jasonish/rust-suricata-rule-parser/blob/main/src/lib.rs)
+#![feature(generic_associated_types)]
+
 mod detect;
 mod surule;
 
 pub use surule::{
     // structs
     Surule,
-    SuruleElement,
+    SuruleOption,
     SuruleParseError,
-    // functions
-    parse_surule,
-    parse_surule_from_file,
 };

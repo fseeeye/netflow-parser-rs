@@ -50,7 +50,7 @@ pub enum QuinPacket<'a> {
 /// let input = &[1,2,3,4,5,6];
 /// parse_quin_packet(input, &QuinPacketOptions::default());
 /// ```
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct QuinPacketOptions {
     pub stop: Option<ProtocolType>,
 }

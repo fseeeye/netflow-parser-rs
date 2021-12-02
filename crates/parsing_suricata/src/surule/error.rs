@@ -5,7 +5,7 @@ use thiserror::Error;
 ///
 /// 实现参考自 [nom - examplecustom_error.rs](https://github.com/Geal/nom/blob/main/examples/custom_error.rs)
 #[derive(Error, Debug, PartialEq)]
-pub enum SuruleParseError<I> {
+pub enum SuruleParseError {
     #[error("get an empty str.")]
     EmptyStr,
     #[error("not a list.")]
@@ -14,12 +14,16 @@ pub enum SuruleParseError<I> {
     ListDeepthOverflow,
     #[error("unterminated list.")]
     UnterminatedList,
-    #[error("invalid list: '{0}'")]
-    InvalidList(String),
     #[error("unterminated value of rule option.")]
     UnterminatedRuleOptionValue,
     #[error("unterminated name of rule option.")]
     UnterminatedRuleOptionName,
+    #[error("encountered error while parsing header tuple: '{0}'")]
+    HeaderError(String),
+    #[error("invalid list: '{0}'")]
+    InvalidList(String),
+    #[error("unterminated suricata rule, remain str: '{0}'")]
+    UnterminatedRule(String),
     #[error("encountered error while taking action str: '{0}'")]
     NoAction(String),
     #[error("invalid action str: '{0}'")]
@@ -44,9 +48,9 @@ pub enum SuruleParseError<I> {
     IntegerParseError(String),
     #[error("flowbit error: '{0}'")]
     Flowbit(String),
-    // Nom 错误类型
-    #[error("nom error: {1:?}({0:?})")]
-    Nom(I, ErrorKind),
+    // 未处理的 Nom 错误类型，不含其 input 信息
+    #[error("nom error")]
+    UnhandledNomError(ErrorKind),
     // 尝试把私有的 rule element 转换成公有的 rule option 的错误
     // #[error("attempt convert an internal rule element to a public rule option.")]
     // PrivateElement(String),
@@ -57,9 +61,9 @@ pub enum SuruleParseError<I> {
 
 // 实现 nom::error::ParseError trait，这样就能够作为 IResult nom::Err:Error 中的错误类型
 // refs: https://github.com/Geal/nom/blob/main/doc/error_management.md
-impl<I> ParseError<I> for SuruleParseError<I> {
-    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-        SuruleParseError::Nom(input, kind)
+impl<I> ParseError<I> for SuruleParseError {
+    fn from_error_kind(_input: I, kind: ErrorKind) -> Self {
+        SuruleParseError::UnhandledNomError(kind)
     }
 
     fn append(_input: I, _kind: ErrorKind, other: Self) -> Self {
@@ -67,8 +71,8 @@ impl<I> ParseError<I> for SuruleParseError<I> {
     }
 }
 
-impl<I> Into<nom::Err<SuruleParseError<I>>> for SuruleParseError<I> {
-    fn into(self) -> nom::Err<SuruleParseError<I>> {
+impl Into<nom::Err<SuruleParseError>> for SuruleParseError {
+    fn into(self) -> nom::Err<SuruleParseError> {
         nom::Err::Error(self)
     }
 }

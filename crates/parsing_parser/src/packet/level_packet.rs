@@ -24,6 +24,7 @@ pub struct L2Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L2Packet<'a> {
+    #[inline(always)]
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
@@ -31,6 +32,7 @@ impl<'a> LinkLevel for L2Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
@@ -51,6 +53,7 @@ pub struct L3Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L3Packet<'a> {
+    #[inline(always)]
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
@@ -58,6 +61,7 @@ impl<'a> LinkLevel for L3Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
@@ -68,6 +72,7 @@ impl<'a> LinkLevel for L3Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> NetLevel for L3Packet<'a> {
+    #[inline(always)]
     fn get_dst_ip(&self) -> Option<IpAddr> {
         match &self.network_layer {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
@@ -76,6 +81,7 @@ impl<'a> NetLevel for L3Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_ip(&self) -> Option<IpAddr> {
         match &self.network_layer {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
@@ -98,6 +104,7 @@ pub struct L4Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L4Packet<'a> {
+    #[inline(always)]
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
@@ -105,6 +112,7 @@ impl<'a> LinkLevel for L4Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
@@ -115,6 +123,7 @@ impl<'a> LinkLevel for L4Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> NetLevel for L4Packet<'a> {
+    #[inline(always)]
     fn get_dst_ip(&self) -> Option<IpAddr> {
         match &self.network_layer {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
@@ -123,6 +132,7 @@ impl<'a> NetLevel for L4Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_ip(&self) -> Option<IpAddr> {
         match &self.network_layer {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
@@ -134,6 +144,7 @@ impl<'a> NetLevel for L4Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> TransLevel for L4Packet<'a> {
+    #[inline(always)]
     fn get_dst_port(&self) -> Option<u16> {
         match &self.transport_layer {
             TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
@@ -142,6 +153,7 @@ impl<'a> TransLevel for L4Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_port(&self) -> Option<u16> {
         match &self.transport_layer {
             TransportLayer::Tcp(tcp) => Some(tcp.src_port),
@@ -165,6 +177,7 @@ pub struct L5Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L5Packet<'a> {
+    #[inline(always)]
     fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
@@ -172,6 +185,7 @@ impl<'a> LinkLevel for L5Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_mac(&self) -> Option<MacAddress> {
         match &self.link_layer {
             LinkLayer::Ethernet(eth) => Some(eth.src_mac),
@@ -182,6 +196,7 @@ impl<'a> LinkLevel for L5Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> NetLevel for L5Packet<'a> {
+    #[inline(always)]
     fn get_dst_ip(&self) -> Option<IpAddr> {
         match &self.network_layer {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
@@ -190,6 +205,7 @@ impl<'a> NetLevel for L5Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_ip(&self) -> Option<IpAddr> {
         match &self.network_layer {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
@@ -201,6 +217,7 @@ impl<'a> NetLevel for L5Packet<'a> {
 
 #[allow(unreachable_patterns)]
 impl<'a> TransLevel for L5Packet<'a> {
+    #[inline(always)]
     fn get_dst_port(&self) -> Option<u16> {
         match &self.transport_layer {
             TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
@@ -209,6 +226,7 @@ impl<'a> TransLevel for L5Packet<'a> {
         }
     }
 
+    #[inline(always)]
     fn get_src_port(&self) -> Option<u16> {
         match &self.transport_layer {
             TransportLayer::Tcp(tcp) => Some(tcp.src_port),

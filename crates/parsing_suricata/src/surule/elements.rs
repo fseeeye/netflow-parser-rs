@@ -8,16 +8,16 @@ use std::fmt::{Display, Formatter};
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 
-use parsing_parser::ProtocolType;
+use parsing_parser::{ProtocolType, TransportProtocol};
 
-use super::element_parser::handle_value;
+use super::element_parsers::handle_value;
 use super::utils::is_default;
 use super::SuruleParseError;
-use super::types;
+use super::elements;
 
 
 pub trait SurList {
-    type Element: FromStr<Err = nom::Err<SuruleParseError<&'static str>>>;
+    type Element: FromStr<Err = nom::Err<SuruleParseError>>;
 
     fn get_accept(&self) -> &Option<Vec<Self::Element>>;
     fn get_expect(&self) -> &Option<Vec<Self::Element>>;
@@ -51,8 +51,22 @@ pub enum Action {
 
 /// Protocol type (Suricata Header Element)
 /// 
-/// use parsing_parser::protocol::ProtocolType
-pub type Protocol = ProtocolType;
+/// Warning: 目前暂时只支持：tcp / udp
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+pub enum Protocol {
+    Tcp,
+    Udp
+}
+
+impl Into<ProtocolType> for Protocol {
+    fn into(self) -> ProtocolType {
+        match self {
+            Self::Tcp => ProtocolType::Transport(TransportProtocol::Tcp),
+            Self::Udp => ProtocolType::Transport(TransportProtocol::Udp),
+        }
+    }
+}
 
 /// IP List type (Suricata Header Element: src_addr & dst_addr)
 /// 
@@ -97,7 +111,7 @@ pub enum IpAddress {
 }
 
 impl FromStr for IpAddress {
-    type Err = nom::Err<SuruleParseError<&'static str>>;
+    type Err = nom::Err<SuruleParseError>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let make_err = |reason| SuruleParseError::InvalidIpAddr(reason).into();
@@ -106,12 +120,12 @@ impl FromStr for IpAddress {
             .map_err(|_| make_err("empty value.".to_string()))?;
 
         match ip_addr_str.parse::<Ipv4Addr>() {
-            Ok(single_addr) => Ok(types::IpAddress::V4Addr(single_addr)),
+            Ok(single_addr) => Ok(elements::IpAddress::V4Addr(single_addr)),
             Err(_) => { // maybe it's a range
                 let single_range = ip_addr_str
                     .parse::<Ipv4Net>()
                     .map_err(|_| make_err(ip_addr_str.to_string()))?;
-                Ok(types::IpAddress::V4Range(single_range))
+                Ok(elements::IpAddress::V4Range(single_range))
             }
         }
     }
@@ -155,7 +169,7 @@ pub enum Port {
 }
 
 impl Port {
-    pub fn new_range(min: u16, max: u16) -> Result<Self, SuruleParseError<&'static str>> {
+    pub fn new_range(min: u16, max: u16) -> Result<Self, SuruleParseError> {
         if max < min {
             return Err(SuruleParseError::InvalidPort("max port is smaller than min port!".to_string()));
         } 
@@ -171,7 +185,7 @@ impl Port {
 }
 
 impl FromStr for Port {
-    type Err = nom::Err<SuruleParseError<&'static str>>;
+    type Err = nom::Err<SuruleParseError>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let make_err = || SuruleParseError::InvalidPort(s.to_string()).into();
@@ -356,7 +370,7 @@ impl Display for FlowbitCommand {
 
 impl FromStr for FlowbitCommand {
     // Use nom::Err to satisfy ? in parser.
-    type Err = nom::Err<SuruleParseError<&'static str>>;
+    type Err = nom::Err<SuruleParseError>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {

@@ -5,13 +5,55 @@ use serde::{Serialize, Deserialize};
 /// * 协助判断解析出来的packet中各层是什么协议
 /// * 也用于options的stop字段说明该在哪一层停止
 #[derive(Serialize, Deserialize)]
-#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Hash)]
 pub enum ProtocolType {
     Link(LinkProtocol),
     Network(NetworkProtocol),
     Transport(TransportProtocol),
     Application(ApplicationProtocol),
     Error(ParseError),
+}
+
+impl PartialEq for ProtocolType {
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            Self::Link(p) => {
+                match other {
+                    Self::Link(op) => {
+                        return *p == *op
+                    },
+                    _ => return false
+                }
+            },
+            Self::Network(p) => {
+                match other {
+                    Self::Network(op) => {
+                        return *p == *op
+                    },
+                    _ => return false
+                }
+            },
+            Self::Transport(p) => {
+                match other {
+                    Self::Transport(op) => {
+                        return *p == *op
+                    },
+                    _ => return false
+                }
+            },
+            Self::Application(p) => {
+                match other {
+                    Self::Application(op) => {
+                        let p: ApplicationNaiveProtocol = p.into();
+                        let op = op.into();
+                        return p == op
+                    },
+                    _ => return false
+                }
+            },
+            Self::Error(_) => return false
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -68,6 +110,26 @@ pub enum ApplicationNaiveProtocol {
 
 impl From<ApplicationProtocol> for ApplicationNaiveProtocol {
     fn from(p: ApplicationProtocol) -> Self {
+        match p {
+            ApplicationProtocol::Bacnet     => ApplicationNaiveProtocol::Bacnet,
+            ApplicationProtocol::Dnp3       => ApplicationNaiveProtocol::Dnp3,
+            ApplicationProtocol::FinsTcpReq => ApplicationNaiveProtocol::Fins,
+            ApplicationProtocol::FinsTcpRsp => ApplicationNaiveProtocol::Fins,
+            ApplicationProtocol::FinsUdpReq => ApplicationNaiveProtocol::Fins,
+            ApplicationProtocol::FinsUdpRsp => ApplicationNaiveProtocol::Fins,
+            ApplicationProtocol::Iec104     => ApplicationNaiveProtocol::Iec104,
+            ApplicationProtocol::IsoOnTcp   => ApplicationNaiveProtocol::IsoOnTcp,
+            ApplicationProtocol::Mms        => ApplicationNaiveProtocol::Mms,
+            ApplicationProtocol::ModbusReq  => ApplicationNaiveProtocol::Modbus,
+            ApplicationProtocol::ModbusRsp  => ApplicationNaiveProtocol::Modbus,
+            ApplicationProtocol::Opcua      => ApplicationNaiveProtocol::Opcua,
+            ApplicationProtocol::S7comm     => ApplicationNaiveProtocol::S7comm,
+        }
+    }
+}
+
+impl From<&ApplicationProtocol> for ApplicationNaiveProtocol {
+    fn from(p: &ApplicationProtocol) -> Self {
         match p {
             ApplicationProtocol::Bacnet     => ApplicationNaiveProtocol::Bacnet,
             ApplicationProtocol::Dnp3       => ApplicationNaiveProtocol::Dnp3,

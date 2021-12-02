@@ -3,9 +3,7 @@ use std::str::FromStr;
 use nom::IResult;
 use anyhow::Result;
 
-use parsing_parser::{TransportProtocol, NetworkProtocol};
-
-use super::types::{self, SurList, Action};
+use super::elements::{self, SurList, Action};
 use super::SuruleParseError;
 use super::utils::{strip_quotes, strip_brackets};
 
@@ -16,7 +14,7 @@ use super::utils::{strip_quotes, strip_brackets};
 
 /// 处理已被从字符流中提取出来的输入
 #[inline(always)]
-pub(super) fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseError<&'static str>>> {
+pub(super) fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseError>> {
     let input = input.trim();
     if input.is_empty() {
         Err(SuruleParseError::EmptyStr.into())
@@ -27,7 +25,7 @@ pub(super) fn handle_value(input: &str) -> Result<&str, nom::Err<SuruleParseErro
 
 /// 处理字符流输入
 #[inline(always)]
-pub(super) fn handle_stream(input: &str) -> Result<&str, nom::Err<SuruleParseError<&'static str>>> {
+pub(super) fn handle_stream(input: &str) -> Result<&str, nom::Err<SuruleParseError>> {
     let input = input.trim_start();
     if input.is_empty() {
         Err(SuruleParseError::EmptyStr.into())
@@ -38,7 +36,7 @@ pub(super) fn handle_stream(input: &str) -> Result<&str, nom::Err<SuruleParseErr
 
 /// 获得所有字符，直到碰到空白字符
 #[inline(always)]
-pub(super) fn take_until_whitespace(input: &str) -> IResult<&str, &str, SuruleParseError<&str>> {
+pub(super) fn take_until_whitespace(input: &str) -> IResult<&str, &str, SuruleParseError> {
     nom::bytes::complete::is_not(" \t\r\n")(input)
 }
 
@@ -47,7 +45,7 @@ pub(super) fn take_until_whitespace(input: &str) -> IResult<&str, &str, SurulePa
 pub(super) fn parse_u64<'a>(
     input: &'a str,
     context: &str,
-) -> Result<u64, nom::Err<SuruleParseError<&'a str>>> {
+) -> Result<u64, nom::Err<SuruleParseError>> {
     let u64_str = handle_value(input)?;
 
     u64_str.parse::<u64>().map_err(|_| {
@@ -61,7 +59,7 @@ pub(super) fn parse_u64<'a>(
 /// 该列表可能被 [] 包裹，表示多值；也可能没被包裹，表示单一值
 pub(super) fn take_list_maybe_from_stream(
     input: &str,
-) -> IResult<&str, &str, SuruleParseError<&str>> {
+) -> IResult<&str, &str, SuruleParseError> {
     let mut depth = 0;
     let mut end = 0;
     let input = handle_stream(input)?;
@@ -98,7 +96,7 @@ pub(super) fn take_list_maybe_from_stream(
 /// 从列表字符串中提取出元素
 pub(super) fn take_list_members(
     input: &str
-) -> Result<Vec<&str>, nom::Err<SuruleParseError<&'static str>>> {
+) -> Result<Vec<&str>, nom::Err<SuruleParseError>> {
     let mut members = Vec::new();
     let mut depth: usize = 0;
     let mut start: usize;
@@ -152,6 +150,7 @@ pub(super) fn take_list_members(
     Ok(members)
 }
 
+
 /*
  *  Rule Header Element Parsers
  */
@@ -159,7 +158,7 @@ pub(super) fn take_list_members(
 /// 从字符流中解析 Action
 pub(super) fn parse_action_from_stream(
     input: &str
-) -> IResult<&str, Action, SuruleParseError<&str>> {
+) -> IResult<&str, Action, SuruleParseError> {
     let make_err = |reason| SuruleParseError::InvalidAction(reason).into();
 
     let input = handle_stream(input)
@@ -182,10 +181,11 @@ pub(super) fn parse_action_from_stream(
 
 /// 从字符流中解析 Protocol
 /// 
-/// 目前仅支持：tcp / udp / ip
+/// 目前仅支持：tcp / udp
+/// Warning: 由于 parsing_parser 尚未支持 HTTP 协议，所以目前还无法实现 http 规则
 pub(super) fn parse_protocol_from_stream(
     input: &str
-) -> IResult<&str, types::Protocol, SuruleParseError<&str>> {
+) -> IResult<&str, elements::Protocol, SuruleParseError> {
     let make_err = |reason| SuruleParseError::InvalidProtocol(reason).into();
 
     let input = handle_stream(input)
@@ -193,9 +193,8 @@ pub(super) fn parse_protocol_from_stream(
     let (input, protocol_str) = take_until_whitespace(input)
         .map_err(|_| make_err(input.to_string()))?;
     let protocol = match protocol_str {
-        "tcp" => types::Protocol::Transport(TransportProtocol::Tcp),
-        "udp" => types::Protocol::Transport(TransportProtocol::Udp),
-        "ip"  => types::Protocol::Network(NetworkProtocol::Ipv4),
+        "tcp" => elements::Protocol::Tcp,
+        "udp" => elements::Protocol::Udp,
         _ => return Err(SuruleParseError::InvalidProtocol(protocol_str.to_string()).into())
     };
 
@@ -207,9 +206,9 @@ pub(super) fn parse_protocol_from_stream(
 fn parse_inner_list<T>(
     input: &str,
     list_vec: &mut Option<Vec<T>>
-) -> Result<(), nom::Err<SuruleParseError<&'static str>>> 
+) -> Result<(), nom::Err<SuruleParseError>> 
 where
-    T: FromStr<Err = nom::Err<SuruleParseError<&'static str>>>
+    T: FromStr<Err = nom::Err<SuruleParseError>>
 {
     let list_split = strip_brackets(input).split(',');
     for s in list_split {
@@ -229,7 +228,7 @@ where
 /// 从字符流中解析 IpAddrress List
 pub(super) fn parse_list_from_stream<L>(
     input: &str
-) -> IResult<&str, L, SuruleParseError<&str>>
+) -> IResult<&str, L, SuruleParseError>
 where
     L: SurList + Default
 {
@@ -252,7 +251,7 @@ where
 
     // parse ip address list
     let mut rst_list = L::default();
-    if list_str == "any" || list_str == "all" {
+    if list_str == "any" || list_str == "all" || list_str == "$HTTP_PORTS" { // Warning: 目前尚不支持配置文件，所以替换了 $HTTP_PORTS
         return Ok((input, rst_list))
     } else if list_str.starts_with('!') { // exception: !...
         list_str = &list_str[1..];
@@ -297,7 +296,7 @@ where
 /// 从字符流中解析 Direction
 pub(super) fn parse_direction_from_stream(
     input: &str,
-) -> IResult<&str, types::Direction, SuruleParseError<&str>> {
+) -> IResult<&str, elements::Direction, SuruleParseError> {
     let make_err = |reason| SuruleParseError::InvalidDirection(reason).into();
 
     let input = handle_stream(input)
@@ -308,8 +307,8 @@ pub(super) fn parse_direction_from_stream(
     ))(input)
     {
         match direction {
-            "->" => Ok((input, types::Direction::Uni)),
-            "<>" => Ok((input, types::Direction::Bi)),
+            "->" => Ok((input, elements::Direction::Uni)),
+            "<>" => Ok((input, elements::Direction::Bi)),
             _ => Err(make_err(direction.to_string())),
         }
     } else {
@@ -325,20 +324,20 @@ pub(super) fn parse_direction_from_stream(
 /// 解析 CountOrName
 pub(super) fn parse_count_or_name(
     input: &str,
-) -> Result<types::CountOrName, nom::Err<SuruleParseError<&str>>> {
+) -> Result<elements::CountOrName, nom::Err<SuruleParseError>> {
     let input = handle_value(input)?;
     // 如果 input 没能解析成功为 CountOrName::Value(i64)，那么就作为 CountOrName::Var(String)
     if let Ok(distance) = input.parse::<i64>() {
-        Ok(types::CountOrName::Value(distance))
+        Ok(elements::CountOrName::Value(distance))
     } else {
-        Ok(types::CountOrName::Var(input.to_string()))
+        Ok(elements::CountOrName::Var(input.to_string()))
     }
 }
 
 /// 解析 ByteJump
 pub(super) fn parse_byte_jump(
     input: &str,
-) -> Result<types::ByteJump, nom::Err<SuruleParseError<&str>>> {
+) -> Result<elements::ByteJump, nom::Err<SuruleParseError>> {
     // 内部工具函数：创建解析错误
     let make_err = |reason| SuruleParseError::InvalidByteJump(reason).into();
 
@@ -357,7 +356,7 @@ pub(super) fn parse_byte_jump(
     }
 
     // step2: 从 Vec 中依次解析 ByteJump 各字段
-    let mut byte_jump = types::ByteJump {
+    let mut byte_jump = elements::ByteJump {
         count: values[0]
             .trim()
             .parse()
@@ -377,10 +376,10 @@ pub(super) fn parse_byte_jump(
         match name {
             "relative" => byte_jump.relative = true,
             "little" => {
-                byte_jump.endian = types::Endian::Little;
+                byte_jump.endian = elements::Endian::Little;
             }
             "big" => {
-                byte_jump.endian = types::Endian::Big;
+                byte_jump.endian = elements::Endian::Big;
             }
             "align" => {
                 byte_jump.align = true;
@@ -441,7 +440,7 @@ pub(super) fn parse_byte_jump(
 /// 解析 Flowbits
 pub(super) fn parse_flowbits(
     input: &str,
-) -> Result<types::Flowbits, nom::Err<SuruleParseError<&str>>> {
+) -> Result<elements::Flowbits, nom::Err<SuruleParseError>> {
     // 内部工具函数：创建解析错误
     let make_err = |reason| SuruleParseError::Flowbit(reason).into();
 
@@ -458,26 +457,26 @@ pub(super) fn parse_flowbits(
 
     let (_, (command, names)) =
         nom::sequence::tuple((command_parser, nom::combinator::opt(name_parser)))(input)?;
-    let command = types::FlowbitCommand::from_str(command)?;
+    let command = elements::FlowbitCommand::from_str(command)?;
 
     match command {
-        types::FlowbitCommand::IsNotSet
-        | types::FlowbitCommand::Unset
-        | types::FlowbitCommand::Toggle
-        | types::FlowbitCommand::IsSet
-        | types::FlowbitCommand::Set => {
+        elements::FlowbitCommand::IsNotSet
+        | elements::FlowbitCommand::Unset
+        | elements::FlowbitCommand::Toggle
+        | elements::FlowbitCommand::IsSet
+        | elements::FlowbitCommand::Set => {
             let names = names
                 .ok_or_else(|| make_err(format!("{} requires argument", command)))?
                 .split('|')
                 .map(|s| s.trim().to_string())
                 .collect();
-            Ok(types::Flowbits { command, names })
+            Ok(elements::Flowbits { command, names })
         }
-        types::FlowbitCommand::NoAlert => {
+        elements::FlowbitCommand::NoAlert => {
             if names.is_some() {
                 Err(make_err("noalert don't need any arguments".to_string()))
             } else {
-                Ok(types::Flowbits {
+                Ok(elements::Flowbits {
                     command,
                     names: vec![],
                 })
@@ -532,15 +531,11 @@ mod tests {
     fn test_protocol() {
         assert_eq!(
             parse_protocol_from_stream(" tcp xxx"),
-            Ok((" xxx", types::Protocol::Transport(TransportProtocol::Tcp)))
+            Ok((" xxx", elements::Protocol::Tcp))
         );
         assert_eq!(
             parse_protocol_from_stream(" udp xxx"),
-            Ok((" xxx", types::Protocol::Transport(TransportProtocol::Udp)))
-        );
-        assert_eq!(
-            parse_protocol_from_stream(" ip xxx"),
-            Ok((" xxx", types::Protocol::Network(NetworkProtocol::Ipv4)))
+            Ok((" xxx", elements::Protocol::Udp))
         );
     }
 
@@ -548,7 +543,7 @@ mod tests {
     fn test_ip_list() {
         assert_eq!(
             parse_list_from_stream(r#"any xxx"#),
-            Ok((" xxx", types::IpAddressList {
+            Ok((" xxx", elements::IpAddressList {
                 accept: None,
                 except: None
             }))
@@ -556,28 +551,28 @@ mod tests {
 
         assert_eq!(
             parse_list_from_stream(r#" !["10.0.0.0/8", "192.168.0.1"] xxx"#),
-            Ok((" xxx", types::IpAddressList {
+            Ok((" xxx", elements::IpAddressList {
                 accept: None,
                 except: Some(vec![
-                    types::IpAddress::V4Range(Ipv4Net::from_str("10.0.0.0/8").unwrap()),
-                    types::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.1").unwrap())
+                    elements::IpAddress::V4Range(Ipv4Net::from_str("10.0.0.0/8").unwrap()),
+                    elements::IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.1").unwrap())
                 ])
             }))
         );
         
         // 使用示例
-        let (_, rst) = parse_list_from_stream::<types::IpAddressList>(r#" ["10.0.0.0/8", !["10.0.0.1", "10.0.0.2"]] xxx"#).unwrap();
+        let (_, rst) = parse_list_from_stream::<elements::IpAddressList>(r#" ["10.0.0.0/8", !["10.0.0.1", "10.0.0.2"]] xxx"#).unwrap();
         let test_ip = Ipv4Addr::from_str("10.0.0.2").unwrap();
         if let Some(a) = rst.except {
             for ia in a {
                 match ia {
-                    types::IpAddress::V4Addr(addr) => {
+                    elements::IpAddress::V4Addr(addr) => {
                         if addr == test_ip {
                             // do sth.
                             return
                         }
                     },
-                    types::IpAddress::V4Range(range) => {
+                    elements::IpAddress::V4Range(range) => {
                         if range.contains(&test_ip) {
                             // do sth.
                             return
@@ -595,11 +590,11 @@ mod tests {
             parse_list_from_stream("[80, 81, 82] xxx"),
             Ok((
                 " xxx",
-                types::PortList {
+                elements::PortList {
                     accept: Some(vec![
-                        types::Port::Single(80),
-                        types::Port::Single(81),
-                        types::Port::Single(82),
+                        elements::Port::Single(80),
+                        elements::Port::Single(81),
+                        elements::Port::Single(82),
                     ]),
                     except: None
                 }
@@ -610,9 +605,9 @@ mod tests {
             parse_list_from_stream(" [80: 82] xxx"),
             Ok((
                 " xxx",
-                types::PortList {
+                elements::PortList {
                     accept: Some(vec![
-                        types::Port::new_range(80, 82).unwrap(),
+                        elements::Port::new_range(80, 82).unwrap(),
                     ]),
                     except: None
                 }
@@ -623,9 +618,9 @@ mod tests {
             parse_list_from_stream("[1024:] xxx"),
             Ok((
                 " xxx",
-                types::PortList {
+                elements::PortList {
                     accept: Some(vec![
-                        types::Port::new_range(1024, u16::MAX).unwrap(),
+                        elements::Port::new_range(1024, u16::MAX).unwrap(),
                     ]),
                     except: None
                 }
@@ -636,10 +631,10 @@ mod tests {
             parse_list_from_stream(" !80 xxx"),
             Ok((
                 " xxx",
-                types::PortList {
+                elements::PortList {
                     accept: None,
                     except: Some(vec![
-                        types::Port::Single(80)
+                        elements::Port::Single(80)
                     ])
                 }
             ))
@@ -649,13 +644,13 @@ mod tests {
             parse_list_from_stream(" [80:100,![86,87]] xxx"),
             Ok((
                 " xxx",
-                types::PortList {
+                elements::PortList {
                     accept: Some(vec![
-                        types::Port::new_range(80, 100).unwrap()
+                        elements::Port::new_range(80, 100).unwrap()
                     ]),
                     except: Some(vec![
-                        types::Port::Single(86),
-                        types::Port::Single(87)
+                        elements::Port::Single(86),
+                        elements::Port::Single(87)
                     ])
                 }
             ))
@@ -667,15 +662,15 @@ mod tests {
         // Ok
         assert_eq!(
             parse_direction_from_stream("->"),
-            Ok(("", types::Direction::Uni))
+            Ok(("", elements::Direction::Uni))
         );
         assert_eq!(
             parse_direction_from_stream("<>"),
-            Ok(("", types::Direction::Bi))
+            Ok(("", elements::Direction::Bi))
         );
         assert_eq!(
             parse_direction_from_stream(" <>a\n"),
-            Ok(("a\n", types::Direction::Bi))
+            Ok(("a\n", elements::Direction::Bi))
         );
         // Err
         assert_eq!(
@@ -693,15 +688,15 @@ mod tests {
         // Ok
         assert_eq!(
             parse_count_or_name("123"),
-            Ok(types::CountOrName::Value(123))
+            Ok(elements::CountOrName::Value(123))
         );
         assert_eq!(
             parse_count_or_name("foo"),
-            Ok(types::CountOrName::Var("foo".into()))
+            Ok(elements::CountOrName::Var("foo".into()))
         );
         assert_eq!(
             parse_count_or_name(" 1aa\r\n"),
-            Ok(types::CountOrName::Var("1aa".into()))
+            Ok(elements::CountOrName::Var("1aa".into()))
         );
         // Err
         assert_eq!(
@@ -715,7 +710,7 @@ mod tests {
         // Ok
         assert_eq!(
             parse_byte_jump("4,12"),
-            Ok(types::ByteJump {
+            Ok(elements::ByteJump {
                 count: 4,
                 offset: 12,
                 ..Default::default()
@@ -723,7 +718,7 @@ mod tests {
         );
         assert_eq!(
             parse_byte_jump("4,12,,"),
-            Ok(types::ByteJump {
+            Ok(elements::ByteJump {
                 count: 4,
                 offset: 12,
                 ..Default::default()
@@ -745,8 +740,8 @@ mod tests {
     fn test_parse_flowbits() {
         assert_eq!(
             parse_flowbits("set,foo.bar"),
-            Ok(types::Flowbits {
-                command: types::FlowbitCommand::Set,
+            Ok(elements::Flowbits {
+                command: elements::FlowbitCommand::Set,
                 names: vec!["foo.bar".into()]
             })
         );
