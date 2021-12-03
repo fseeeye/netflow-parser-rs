@@ -1,4 +1,6 @@
 use parsing_parser::ApplicationNaiveProtocol;
+use tracing::error;
+
 use std::{
     collections::{BTreeSet, HashMap},
     fs,
@@ -34,8 +36,8 @@ impl HmIcsRules {
         // convert json str to vec<Rule>
         let rules_vec: Vec<IcsRule> = match serde_json::from_str(file_contents.as_str()) {
             Ok(o) => o,
-            Err(_e) => {
-                println!("{:?}", _e);
+            Err(e) => {
+                error!(target: "ICSRULE(HmIcsRules::init)", error = ?e);
                 return false;
             }
         };

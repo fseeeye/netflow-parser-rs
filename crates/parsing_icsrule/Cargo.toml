@@ -12,3 +12,4 @@ parsing_rule = { path = "../parsing_rule" }
 # other
 serde = {version = "1.0", features = ["derive"]} # https://serde.rs/
 serde_json = "1.0"
+tracing = "0.1"
