@@ -1,7 +1,10 @@
-use crate::parsers::*;
-use crate::protocol::{ApplicationProtocol, LinkProtocol, NetworkProtocol, TransportProtocol};
-/// Layer是包含协议解析结果的数据结构
-use crate::ProtocolType;
+//! Layer是包含协议解析结果的数据结构
+use std::net::IpAddr;
+
+use crate::{
+    parsers::*, 
+    field_type::MacAddress
+};
 
 /// LinkLayer是表示link层内容的类型。
 #[derive(Debug, PartialEq, Clone)]
@@ -9,11 +12,18 @@ pub enum LinkLayer {
     Ethernet(EthernetHeader),
 }
 
-// 层 -> 协议类型
-impl Into<ProtocolType> for LinkLayer {
-    fn into(self) -> ProtocolType {
-        match self {
-            LinkLayer::Ethernet(_) => ProtocolType::Link(LinkProtocol::Ethernet),
+impl LinkLayer {
+    #[inline]
+    pub fn get_dst_mac(&self) -> &MacAddress {
+        match &self {
+            LinkLayer::Ethernet(eth) => &eth.dst_mac,
+        }
+    }
+
+    #[inline]
+    pub fn get_src_mac(&self) -> &MacAddress {
+        match &self {
+            LinkLayer::Ethernet(eth) => &eth.src_mac,
         }
     }
 }
@@ -25,11 +35,20 @@ pub enum NetworkLayer<'a> {
     Ipv6(Ipv6Header<'a>),
 }
 
-impl<'a> Into<ProtocolType> for NetworkLayer<'a> {
-    fn into(self) -> ProtocolType {
+impl<'a> NetworkLayer<'a> {
+    #[inline]
+    pub fn get_dst_ip(&self) -> IpAddr {
         match self {
-            NetworkLayer::Ipv4(_) => ProtocolType::Network(NetworkProtocol::Ipv4),
-            NetworkLayer::Ipv6(_) => ProtocolType::Network(NetworkProtocol::Ipv6),
+            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.dst_ip),
+            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.dst_ip),
+        }
+    }
+
+    #[inline]
+    pub fn get_src_ip(&self) -> IpAddr {
+        match self {
+            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.src_ip),
+            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.src_ip),
         }
     }
 }
@@ -41,11 +60,20 @@ pub enum TransportLayer<'a> {
     Udp(UdpHeader),
 }
 
-impl<'a> Into<ProtocolType> for TransportLayer<'a> {
-    fn into(self) -> ProtocolType {
+impl<'a> TransportLayer<'a> {
+    #[inline]
+    pub fn get_dst_port(&self) -> u16 {
         match self {
-            TransportLayer::Tcp(_) => ProtocolType::Transport(TransportProtocol::Tcp),
-            TransportLayer::Udp(_) => ProtocolType::Transport(TransportProtocol::Udp),
+            TransportLayer::Tcp(tcp) => tcp.dst_port,
+            TransportLayer::Udp(udp) => udp.dst_port,
+        }
+    }
+
+    #[inline]
+    pub fn get_src_port(&self) -> u16 {
+        match self {
+            TransportLayer::Tcp(tcp) => tcp.src_port,
+            TransportLayer::Udp(udp) => udp.src_port,
         }
     }
 }
@@ -66,38 +94,4 @@ pub enum ApplicationLayer<'a> {
     Iec104(Iec104Header),
     Opcua(OpcuaHeader<'a>),
     IsoOnTcp(IsoOnTcpHeader),
-}
-
-impl<'a> Into<ProtocolType> for ApplicationLayer<'a> {
-    fn into(self) -> ProtocolType {
-        match self {
-            ApplicationLayer::ModbusReq(_) => {
-                ProtocolType::Application(ApplicationProtocol::ModbusReq)
-            }
-            ApplicationLayer::ModbusRsp(_) => {
-                ProtocolType::Application(ApplicationProtocol::ModbusRsp)
-            }
-            ApplicationLayer::FinsTcpReq(_) => {
-                ProtocolType::Application(ApplicationProtocol::FinsTcpReq)
-            }
-            ApplicationLayer::FinsTcpRsp(_) => {
-                ProtocolType::Application(ApplicationProtocol::FinsTcpRsp)
-            }
-            ApplicationLayer::FinsUdpReq(_) => {
-                ProtocolType::Application(ApplicationProtocol::FinsUdpReq)
-            }
-            ApplicationLayer::FinsUdpRsp(_) => {
-                ProtocolType::Application(ApplicationProtocol::FinsUdpRsp)
-            }
-            ApplicationLayer::Mms(_) => ProtocolType::Application(ApplicationProtocol::Mms),
-            ApplicationLayer::S7comm(_) => ProtocolType::Application(ApplicationProtocol::S7comm),
-            ApplicationLayer::Bacnet(_) => ProtocolType::Application(ApplicationProtocol::Bacnet),
-            ApplicationLayer::Dnp3(_) => ProtocolType::Application(ApplicationProtocol::Dnp3),
-            ApplicationLayer::Iec104(_) => ProtocolType::Application(ApplicationProtocol::Iec104),
-            ApplicationLayer::Opcua(_) => ProtocolType::Application(ApplicationProtocol::Opcua),
-            ApplicationLayer::IsoOnTcp(_) => {
-                ProtocolType::Application(ApplicationProtocol::IsoOnTcp)
-            }
-        }
-    }
 }

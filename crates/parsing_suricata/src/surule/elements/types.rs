@@ -393,7 +393,7 @@ impl FromStr for FlowbitCommand {
 pub struct Within(pub CountOrName);
 
 /*
- *  Extra Types
+ *  Util Types
  */
 
 /// CountOrName type

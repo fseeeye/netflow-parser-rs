@@ -232,10 +232,10 @@ where
         .map(|(input, list_str)| (input, strip_quotes(list_str)))?;
     let mut list_str = list_string.as_str();
 
-    // parse ip address list
+    // parse list
     let mut rst_list = L::default();
     if list_str == "any" || list_str == "all" || list_str == "$HTTP_PORTS" {
-        // Warning: 目前尚不支持配置文件，所以替换了 $HTTP_PORTS
+        // Warning: 目前尚不支持配置文件，所以替换了 `$HTTP_PORTS`
         return Ok((input, rst_list));
     } else if list_str.starts_with('!') {
         // exception: !...

@@ -1,4 +1,7 @@
-use crate::ParseError;
+use crate::{
+    ParseError, 
+    LinkLayer, NetworkLayer, TransportLayer, ApplicationLayer
+};
 use serde::{Deserialize, Serialize};
 
 /// ProtocolType旨在用简单结构来表示协议类型
@@ -125,5 +128,84 @@ impl From<&ApplicationProtocol> for ApplicationNaiveProtocol {
             ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
             ApplicationProtocol::S7comm => ApplicationNaiveProtocol::S7comm,
         }
+    }
+}
+
+// 层 -> 协议类型
+impl From<LinkLayer> for LinkProtocol {
+    #[inline]
+    fn from(link_layer: LinkLayer) -> Self {
+        match link_layer {
+            LinkLayer::Ethernet(_) => LinkProtocol::Ethernet
+        }
+    }
+}
+
+impl From<LinkLayer> for ProtocolType {
+    #[inline(always)]
+    fn from(link_layer: LinkLayer) -> Self {
+        ProtocolType::Link(link_layer.into())
+    }
+}
+
+impl<'a> From<NetworkLayer<'a>> for NetworkProtocol {
+    #[inline]
+    fn from(net_layer: NetworkLayer<'a>) -> Self {
+        match net_layer {
+            NetworkLayer::Ipv4(_) => NetworkProtocol::Ipv4,
+            NetworkLayer::Ipv6(_) => NetworkProtocol::Ipv6,
+        }
+    }
+}
+
+impl<'a> From<NetworkLayer<'a>> for ProtocolType {
+    #[inline(always)]
+    fn from(net_layer: NetworkLayer<'a>) -> Self {
+        ProtocolType::Network(net_layer.into())
+    }
+}
+
+impl<'a> From<TransportLayer<'a>> for TransportProtocol {
+    #[inline]
+    fn from(trans_layer: TransportLayer<'a>) -> Self {
+        match trans_layer {
+            TransportLayer::Tcp(_) => TransportProtocol::Tcp,
+            TransportLayer::Udp(_) => TransportProtocol::Udp,
+        }
+    }
+}
+
+impl<'a> From<TransportLayer<'a>> for ProtocolType {
+    #[inline(always)]
+    fn from(trans_layer: TransportLayer<'a>) -> Self {
+        ProtocolType::Transport(trans_layer.into())
+    }
+}
+
+impl<'a> From<ApplicationLayer<'a>> for ApplicationProtocol {
+    #[inline]
+    fn from(app_layer: ApplicationLayer<'a>) -> Self {
+        match app_layer {
+            ApplicationLayer::ModbusReq(_) => ApplicationProtocol::ModbusReq,
+            ApplicationLayer::ModbusRsp(_) => ApplicationProtocol::ModbusRsp,
+            ApplicationLayer::FinsTcpReq(_) => ApplicationProtocol::FinsTcpReq,
+            ApplicationLayer::FinsTcpRsp(_) => ApplicationProtocol::FinsTcpRsp,
+            ApplicationLayer::FinsUdpReq(_) => ApplicationProtocol::FinsUdpReq,
+            ApplicationLayer::FinsUdpRsp(_) => ApplicationProtocol::FinsUdpRsp,
+            ApplicationLayer::Mms(_) => ApplicationProtocol::Mms,
+            ApplicationLayer::S7comm(_) => ApplicationProtocol::S7comm,
+            ApplicationLayer::Bacnet(_) => ApplicationProtocol::Bacnet,
+            ApplicationLayer::Dnp3(_) => ApplicationProtocol::Dnp3,
+            ApplicationLayer::Iec104(_) => ApplicationProtocol::Iec104,
+            ApplicationLayer::Opcua(_) => ApplicationProtocol::Opcua,
+            ApplicationLayer::IsoOnTcp(_) => ApplicationProtocol::IsoOnTcp
+        }
+    }
+}
+
+impl<'a> From<ApplicationLayer<'a>> for ProtocolType {
+    #[inline(always)]
+    fn from(app_layer: ApplicationLayer<'a>) -> Self {
+        ProtocolType::Application(app_layer.into())
     }
 }

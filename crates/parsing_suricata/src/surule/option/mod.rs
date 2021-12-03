@@ -1,3 +1,4 @@
+//! Suricata 规则的可选字段数据结构
 mod parser;
 
 pub(crate) use parser::parse_option_element;

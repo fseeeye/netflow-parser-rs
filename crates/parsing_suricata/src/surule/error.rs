@@ -6,6 +6,12 @@ use thiserror::Error;
 /// 实现参考自 [nom - examplecustom_error.rs](https://github.com/Geal/nom/blob/main/examples/custom_error.rs)
 #[derive(Error, Debug, PartialEq)]
 pub enum SuruleParseError {
+    #[error("encountered error while reading the file: '{0}'")]
+    FilepathError(String),
+    #[error("unterminated value of rule option. Please confirm your suricata rule write in one line.")]
+    UnterminatedRuleOptionValue,
+    #[error("unterminated name of rule option. Please confirm your suricata rule write in one line.")]
+    UnterminatedRuleOptionName,
     #[error("get an empty str.")]
     EmptyStr,
     #[error("not a list.")]
@@ -14,10 +20,6 @@ pub enum SuruleParseError {
     ListDeepthOverflow,
     #[error("unterminated list.")]
     UnterminatedList,
-    #[error("unterminated value of rule option.")]
-    UnterminatedRuleOptionValue,
-    #[error("unterminated name of rule option.")]
-    UnterminatedRuleOptionName,
     #[error("encountered error while parsing header tuple: '{0}'")]
     HeaderError(String),
     #[error("invalid list: '{0}'")]
@@ -74,5 +76,15 @@ impl<I> ParseError<I> for SuruleParseError {
 impl Into<nom::Err<SuruleParseError>> for SuruleParseError {
     fn into(self) -> nom::Err<SuruleParseError> {
         nom::Err::Error(self)
+    }
+}
+
+impl From<nom::Err<SuruleParseError>> for SuruleParseError {
+    fn from(nom_err: nom::Err<SuruleParseError>) -> Self {
+        match nom_err {
+            nom::Err::Error(e) => return e,
+            nom::Err::Failure(e) => return e,
+            nom::Err::Incomplete(_) => return SuruleParseError::UnhandledNomError(nom::error::ErrorKind::Fail),
+        }
     }
 }

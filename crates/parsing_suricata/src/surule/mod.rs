@@ -58,6 +58,18 @@ impl Surule {
     }
 }
 
+pub trait InnerSurule {
+    fn new(
+        action: Action,
+        src_addr: elements::IpAddressList,
+        src_port: elements::PortList,
+        direction: elements::Direction,
+        dst_addr: elements::IpAddressList,
+        dst_port: elements::PortList,
+        options: Vec<SuruleOption>,
+    ) -> Self;
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct TcpSurule {
@@ -80,4 +92,32 @@ pub struct UdpSurule {
     pub dst_addr: elements::IpAddressList,
     pub dst_port: elements::PortList,
     pub options: Vec<SuruleOption>,
+}
+
+impl InnerSurule for TcpSurule {
+    fn new(action: Action, src_addr: elements::IpAddressList, src_port: elements::PortList, direction: elements::Direction, dst_addr: elements::IpAddressList, dst_port: elements::PortList, options: Vec<SuruleOption>) -> Self {
+        Self {
+            action,
+            src_addr,
+            src_port,
+            direction,
+            dst_addr,
+            dst_port,
+            options
+        }
+    }
+}
+
+impl InnerSurule for UdpSurule {
+    fn new(action: Action, src_addr: elements::IpAddressList, src_port: elements::PortList, direction: elements::Direction, dst_addr: elements::IpAddressList, dst_port: elements::PortList, options: Vec<SuruleOption>) -> Self {
+        Self {
+            action,
+            src_addr,
+            src_port,
+            direction,
+            dst_addr,
+            dst_port,
+            options
+        }
+    }
 }

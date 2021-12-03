@@ -1,4 +1,4 @@
-use super::level::{LinkLevel, NetLevel, TransLevel};
+use super::level::{LinkLevel, NetLevel, TransLevel, AppLevel};
 use crate::{
     errors::ParseError,
     field_type::*,
@@ -22,22 +22,20 @@ pub struct L2Packet<'a> {
     pub remain: &'a [u8],
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L2Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None,
-        }
+    fn get_dst_mac(&self) -> &MacAddress {
+        self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None,
-        }
+    fn get_src_mac(&self) -> &MacAddress {
+        self.link_layer.get_src_mac()
+    }
+
+    #[inline(always)]
+    fn get_link_type(&self) -> crate::LinkProtocol {
+        self.link_layer.to_owned().into()
     }
 }
 
@@ -51,43 +49,37 @@ pub struct L3Packet<'a> {
     pub remain: &'a [u8],
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L3Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None,
-        }
+    fn get_dst_mac(&self) -> &MacAddress {
+        self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None,
-        }
+    fn get_src_mac(&self) -> &MacAddress {
+        self.link_layer.get_src_mac()
+    }
+
+    #[inline(always)]
+    fn get_link_type(&self) -> crate::LinkProtocol {
+        self.link_layer.to_owned().into()
     }
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> NetLevel for L3Packet<'a> {
     #[inline(always)]
-    fn get_dst_ip(&self) -> Option<IpAddr> {
-        match &self.network_layer {
-            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
-            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
-            _ => None,
-        }
+    fn get_dst_ip(&self) -> IpAddr {
+        self.network_layer.get_dst_ip()
     }
 
     #[inline(always)]
-    fn get_src_ip(&self) -> Option<IpAddr> {
-        match &self.network_layer {
-            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
-            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
-            _ => None,
-        }
+    fn get_src_ip(&self) -> IpAddr {
+        self.network_layer.get_src_ip()
+    }
+
+    #[inline(always)]
+    fn get_net_type(&self) -> crate::NetworkProtocol {
+        self.network_layer.to_owned().into()
     }
 }
 
@@ -102,64 +94,54 @@ pub struct L4Packet<'a> {
     pub remain: &'a [u8],
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L4Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None,
-        }
+    fn get_dst_mac(&self) -> &MacAddress {
+        self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None,
-        }
+    fn get_src_mac(&self) -> &MacAddress {
+        self.link_layer.get_src_mac()
+    }
+
+    #[inline(always)]
+    fn get_link_type(&self) -> crate::LinkProtocol {
+        self.link_layer.to_owned().into()
     }
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> NetLevel for L4Packet<'a> {
     #[inline(always)]
-    fn get_dst_ip(&self) -> Option<IpAddr> {
-        match &self.network_layer {
-            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
-            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
-            _ => None,
-        }
+    fn get_dst_ip(&self) -> IpAddr {
+        self.network_layer.get_dst_ip()
     }
 
     #[inline(always)]
-    fn get_src_ip(&self) -> Option<IpAddr> {
-        match &self.network_layer {
-            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
-            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
-            _ => None,
-        }
+    fn get_src_ip(&self) -> IpAddr {
+        self.network_layer.get_src_ip()
+    }
+
+    #[inline(always)]
+    fn get_net_type(&self) -> crate::NetworkProtocol {
+        self.network_layer.to_owned().into()
     }
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> TransLevel for L4Packet<'a> {
     #[inline(always)]
-    fn get_dst_port(&self) -> Option<u16> {
-        match &self.transport_layer {
-            TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
-            TransportLayer::Udp(udp) => Some(udp.dst_port),
-            _ => None,
-        }
+    fn get_dst_port(&self) -> u16 {
+        self.transport_layer.get_dst_port()
     }
 
     #[inline(always)]
-    fn get_src_port(&self) -> Option<u16> {
-        match &self.transport_layer {
-            TransportLayer::Tcp(tcp) => Some(tcp.src_port),
-            TransportLayer::Udp(udp) => Some(udp.src_port),
-            _ => None,
-        }
+    fn get_src_port(&self) -> u16 {
+        self.transport_layer.get_src_port()
+    }
+
+    #[inline(always)]
+    fn get_tran_type(&self) -> crate::TransportProtocol {
+        self.transport_layer.to_owned().into()
     }
 }
 
@@ -175,63 +157,60 @@ pub struct L5Packet<'a> {
     pub remain: &'a [u8],
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> LinkLevel for L5Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
-            _ => None,
-        }
+    fn get_dst_mac(&self) -> &MacAddress {
+        self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> Option<MacAddress> {
-        match &self.link_layer {
-            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
-            _ => None,
-        }
+    fn get_src_mac(&self) -> &MacAddress {
+        self.link_layer.get_src_mac()
+    }
+
+    #[inline(always)]
+    fn get_link_type(&self) -> crate::LinkProtocol {
+        self.link_layer.to_owned().into()
     }
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> NetLevel for L5Packet<'a> {
     #[inline(always)]
-    fn get_dst_ip(&self) -> Option<IpAddr> {
-        match &self.network_layer {
-            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
-            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
-            _ => None,
-        }
+    fn get_dst_ip(&self) -> IpAddr {
+        self.network_layer.get_dst_ip()
     }
 
     #[inline(always)]
-    fn get_src_ip(&self) -> Option<IpAddr> {
-        match &self.network_layer {
-            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
-            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
-            _ => None,
-        }
+    fn get_src_ip(&self) -> IpAddr {
+        self.network_layer.get_src_ip()
+    }
+
+    #[inline(always)]
+    fn get_net_type(&self) -> crate::NetworkProtocol {
+        self.network_layer.to_owned().into()
     }
 }
 
-#[allow(unreachable_patterns)]
 impl<'a> TransLevel for L5Packet<'a> {
     #[inline(always)]
-    fn get_dst_port(&self) -> Option<u16> {
-        match &self.transport_layer {
-            TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
-            TransportLayer::Udp(udp) => Some(udp.dst_port),
-            _ => None,
-        }
+    fn get_dst_port(&self) -> u16 {
+        self.transport_layer.get_dst_port()
     }
 
     #[inline(always)]
-    fn get_src_port(&self) -> Option<u16> {
-        match &self.transport_layer {
-            TransportLayer::Tcp(tcp) => Some(tcp.src_port),
-            TransportLayer::Udp(udp) => Some(udp.src_port),
-            _ => None,
-        }
+    fn get_src_port(&self) -> u16 {
+        self.transport_layer.get_src_port()
+    }
+
+    #[inline(always)]
+    fn get_tran_type(&self) -> crate::TransportProtocol {
+        self.transport_layer.to_owned().into()
+    }
+}
+
+impl<'a> AppLevel for L5Packet<'a> {
+    #[inline(always)]
+    fn get_app_type(&self) -> crate::ApplicationProtocol {
+        self.application_layer.to_owned().into()
     }
 }
