@@ -1,4 +1,4 @@
-//! Suricata 规则的可选字段数据结构
+//! Option 表示 Suricata Rule 的可选字段，本模块包含其数据结构以及 parser 的定义。
 mod parser;
 
 pub(crate) use parser::parse_option_element;
@@ -6,6 +6,7 @@ pub(crate) use parser::parse_option_element;
 use super::elements;
 use serde::{Deserialize, Serialize};
 
+/// SuruleOption 是包含 Suricata Body (Optional) Elements 的枚举结构体，用于存储 Suricata 可选字段类型的数据。
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),

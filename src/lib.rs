@@ -32,8 +32,12 @@ pub mod parser {
     pub use parsing_parser::*;
 }
 
-pub mod icsrule {
+pub mod ics_rule {
     pub use parsing_icsrule::*;
+}
+
+pub mod suricata_rule {
+    pub use parsing_suricata::*;
 }
 
 pub mod prelude {
@@ -48,7 +52,7 @@ pub mod prelude {
         TransLevel,
     };
 
-    pub use crate::icsrule::HmIcsRules;
+    pub use crate::ics_rule::HmIcsRules;
 
     pub use crate::rule::{
         // structures

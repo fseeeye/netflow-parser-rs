@@ -11,7 +11,7 @@ pub mod elements;
 
 pub use error::SuruleParseError;
 pub use option::SuruleOption;
-pub use surules::VecSurules;
+pub use surules::{VecSurules, Surules};
 
 use self::elements::Action;
 #[cfg(feature = "serde")]

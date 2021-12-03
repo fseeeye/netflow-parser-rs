@@ -80,27 +80,23 @@ pub(crate) fn parse_option_element(input: &str) -> IResult<&str, SuruleOption, S
         // name_str 是含值的 option 字段
         let (input, value_str) = take_option_value(input)?;
         let surule_element = match name_str {
-            "byte_jump" => SuruleOption::ByteJump(elements::parse_byte_jump(value_str)?),
+            "byte_jump" => SuruleOption::ByteJump(value_str.parse()?),
             "classtype" => SuruleOption::Classtype(value_str.to_owned()),
             "content" => SuruleOption::Content(elements::Content::new(value_str.to_owned())),
-            "depth" => SuruleOption::Depth(elements::parse_u64(value_str, "depth")?),
-            "distance" => SuruleOption::Distance(elements::Distance(
-                elements::parse_count_or_name(value_str)?,
-            )),
-            "within" => {
-                SuruleOption::Within(elements::Within(elements::parse_count_or_name(value_str)?))
-            }
+            "depth" => SuruleOption::Depth(elements::parse_u64(value_str)?),
+            "distance" => SuruleOption::Distance(elements::Distance(value_str.parse()?)),
+            "within" => SuruleOption::Within(elements::Within(value_str.parse()?)),
             "dsize" => SuruleOption::Dsize(value_str.to_owned()),
             "flow" => SuruleOption::Flow(value_str.to_owned()),
-            "flowbits" => SuruleOption::Flowbits(elements::parse_flowbits(value_str)?),
+            "flowbits" => SuruleOption::Flowbits(value_str.parse()?),
             "isdataat" => SuruleOption::IsDataAt(value_str.to_owned()),
             "metadata" => SuruleOption::Metadata(value_str.to_owned()),
             "msg" => SuruleOption::Message(utils::strip_quotes(value_str)),
-            "offset" => SuruleOption::Offset(elements::parse_u64(value_str, "offset")?),
+            "offset" => SuruleOption::Offset(elements::parse_u64(value_str)?),
             "pcre" => SuruleOption::Pcre(value_str.to_owned()),
             "reference" => SuruleOption::Reference(value_str.to_owned()),
-            "rev" => SuruleOption::Rev(elements::parse_u64(value_str, "rev")?),
-            "sid" => SuruleOption::Sid(elements::parse_u64(value_str, "sid")?),
+            "rev" => SuruleOption::Rev(elements::parse_u64(value_str)?),
+            "sid" => SuruleOption::Sid(elements::parse_u64(value_str)?),
             _ => SuruleOption::GenericOption(elements::GenericOption {
                 name: name_str.to_string(),
                 val: Some(value_str.to_string()),

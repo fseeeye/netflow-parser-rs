@@ -1,4 +1,4 @@
-use parsing_rs::icsrule::HmIcsRules;
+use parsing_rs::ics_rule::HmIcsRules;
 
 fn main() {
     let file_str = "./examples/ics_rules.json";

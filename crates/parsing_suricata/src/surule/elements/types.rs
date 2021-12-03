@@ -9,7 +9,6 @@ use std::str::FromStr;
 
 use parsing_parser::{ProtocolType, TransportProtocol};
 
-use super::parsers::handle_value;
 use crate::surule::utils::is_default;
 use crate::surule::SuruleParseError;
 
@@ -107,27 +106,6 @@ pub enum IpAddress {
     V4Range(Ipv4Net), // 简易 ip range 方案
 }
 
-impl FromStr for IpAddress {
-    type Err = nom::Err<SuruleParseError>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let make_err = |reason| SuruleParseError::InvalidIpAddr(reason).into();
-
-        let ip_addr_str = handle_value(s).map_err(|_| make_err("empty value.".to_string()))?;
-
-        match ip_addr_str.parse::<Ipv4Addr>() {
-            Ok(single_addr) => Ok(IpAddress::V4Addr(single_addr)),
-            Err(_) => {
-                // maybe it's a range
-                let single_range = ip_addr_str
-                    .parse::<Ipv4Net>()
-                    .map_err(|_| make_err(ip_addr_str.to_string()))?;
-                Ok(IpAddress::V4Range(single_range))
-            }
-        }
-    }
-}
-
 /// Port List type (Suricata Header Element)
 ///
 ///  ref: https://suricata.readthedocs.io/en/latest/rules/intro.html#ports-source-and-destination
@@ -179,34 +157,6 @@ impl Port {
         match self {
             Self::Single(p) => return *p == port,
             Self::Range { max, min } => return *min <= port && port <= *max,
-        }
-    }
-}
-
-impl FromStr for Port {
-    type Err = nom::Err<SuruleParseError>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let make_err = || SuruleParseError::InvalidPort(s.to_string()).into();
-
-        if let Some((min_str, max_str)) = s.split_once(':') {
-            // range
-            let min = min_str.parse().map_err(|_| make_err())?;
-            let max = max_str
-                .trim()
-                .parse()
-                .or_else(|e| {
-                    if max_str.trim().is_empty() {
-                        return Ok(u16::MAX);
-                    } else {
-                        return Err(e);
-                    }
-                })
-                .map_err(|_| make_err())?;
-            Ok(Self::new_range(min, max).map_err(|e| e.into())?)
-        } else {
-            // single
-            Ok(Self::Single(s.parse().map_err(|_| make_err())?))
         }
     }
 }
@@ -364,26 +314,6 @@ impl Display for FlowbitCommand {
             Self::Set => "set",
         };
         write!(f, "{}", label)
-    }
-}
-
-impl FromStr for FlowbitCommand {
-    // Use nom::Err to satisfy ? in parser.
-    type Err = nom::Err<SuruleParseError>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "noalert" => Ok(Self::NoAlert),
-            "set" => Ok(Self::Set),
-            "isset" => Ok(Self::IsSet),
-            "toggle" => Ok(Self::Toggle),
-            "unset" => Ok(Self::Unset),
-            "isnotset" => Ok(Self::IsNotSet),
-            _ => Err(nom::Err::Error(SuruleParseError::Flowbit(format!(
-                "unknown command: {}",
-                s
-            )))),
-        }
     }
 }
 

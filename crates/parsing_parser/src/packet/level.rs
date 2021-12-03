@@ -2,7 +2,7 @@ use std::net::IpAddr;
 
 use crate::{
     field_type::*, 
-    LinkProtocol, NetworkProtocol, TransportProtocol, ApplicationProtocol
+    LinkProtocol, NetworkProtocol, TransportProtocol, ApplicationProtocol, ApplicationNaiveProtocol
 };
 
 
@@ -38,4 +38,8 @@ pub trait TransLevel {
 /// 实现"获取application层协议类型"等常用方法。
 pub trait AppLevel {
     fn get_app_type(&self) -> ApplicationProtocol;
+    #[inline(always)]
+    fn get_app_naive_type(&self) -> ApplicationNaiveProtocol {
+        self.get_app_type().into()
+    }
 }

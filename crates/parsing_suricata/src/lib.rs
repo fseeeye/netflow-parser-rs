@@ -14,4 +14,7 @@ pub use surule::{
     Surule,
     SuruleOption,
     SuruleParseError,
+    VecSurules,
+    // traits
+    Surules
 };

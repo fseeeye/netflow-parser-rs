@@ -19,12 +19,15 @@ members = [
 parsing_parser = { path = "crates/parsing_parser", version = "0.5.0" }
 parsing_rule = { path = "crates/parsing_rule", version = "0.1.0" }
 parsing_icsrule = { path = "crates/parsing_icsrule", version = "0.5.1" }
+parsing_suricata = { path = "crates/parsing_suricata", version = "0.1.0" }
 
 [dev-dependencies]
 # required by examples and benchmark
 pcap-parser = "0.11.1"
 colored = "2"
 walkdir = "2.3.2"
+tracing = "0.1"
+tracing-subscriber = "0.2"
 
 [[example]]
 name = "parsing_pcap"
