@@ -34,5 +34,9 @@ name = "parsing_pcap"
 path = "examples/parsing_pcap.rs"
 
 [[example]]
-name = "parsing_rules"
-path = "examples/parsing_rules.rs"
+name = "parsing_icsrules"
+path = "examples/parsing_icsrules.rs"
+
+[[example]]
+name = "parsing_suricata_rules"
+path = "examples/parsing_surules.rs"
