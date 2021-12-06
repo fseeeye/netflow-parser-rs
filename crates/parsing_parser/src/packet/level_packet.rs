@@ -1,4 +1,4 @@
-use super::level::{LinkLevel, NetLevel, TransLevel, AppLevel};
+use super::level::{LinkLevel, NetLevel, TransLevel, AppLevel, PhyLevel};
 use crate::{
     errors::ParseError,
     field_type::*,
@@ -13,6 +13,13 @@ pub struct L1Packet<'a> {
     pub remain: &'a [u8],
 }
 
+impl<'a> PhyLevel for L1Packet<'a> {
+    #[inline(always)]
+    fn is_error(&self) -> bool {
+        self.error.is_none()
+    }
+}
+
 /// L2Packet为一种包含link层信息的packet
 /// 针对解析network层时出错或者仅包含link层的数据包。
 #[derive(Debug)]
@@ -20,6 +27,13 @@ pub struct L2Packet<'a> {
     pub link_layer: LinkLayer,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
+}
+
+impl<'a> PhyLevel for L2Packet<'a> {
+    #[inline(always)]
+    fn is_error(&self) -> bool {
+        self.error.is_none()
+    }
 }
 
 impl<'a> LinkLevel for L2Packet<'a> {
@@ -47,6 +61,13 @@ pub struct L3Packet<'a> {
     pub network_layer: NetworkLayer<'a>,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
+}
+
+impl<'a> PhyLevel for L3Packet<'a> {
+    #[inline(always)]
+    fn is_error(&self) -> bool {
+        self.error.is_none()
+    }
 }
 
 impl<'a> LinkLevel for L3Packet<'a> {
@@ -92,6 +113,13 @@ pub struct L4Packet<'a> {
     pub transport_layer: TransportLayer<'a>,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
+}
+
+impl<'a> PhyLevel for L4Packet<'a> {
+    #[inline(always)]
+    fn is_error(&self) -> bool {
+        self.error.is_none()
+    }
 }
 
 impl<'a> LinkLevel for L4Packet<'a> {
@@ -155,6 +183,13 @@ pub struct L5Packet<'a> {
     pub application_layer: ApplicationLayer<'a>,
     pub error: Option<ParseError>,
     pub remain: &'a [u8],
+}
+
+impl<'a> PhyLevel for L5Packet<'a> {
+    #[inline(always)]
+    fn is_error(&self) -> bool {
+        self.error.is_none()
+    }
 }
 
 impl<'a> LinkLevel for L5Packet<'a> {

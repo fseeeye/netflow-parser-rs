@@ -1,4 +1,4 @@
-use parsing_parser::{QuinPacket, TransLevel, TransportProtocol, AppLevel};
+use parsing_parser::{QuinPacket, TransLevel, TransportProtocol, AppLevel, NetLevel};
 use parsing_rule::*;
 
 use crate::surule::{elements::Action, VecSurules};
@@ -20,33 +20,57 @@ impl Rules for VecSurules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult {
         // Warning: 目前数据包规则匹配过程中，直接返回第一个匹配到的规则的 Action，无法设置单个规则优先级。
 
-        // 判断该数据包为第几层协议
+        // 判断该数据包为第几层协议，为其分配相应的
         match packet {
             QuinPacket::L4(l4) => {
+                let dst_ip = l4.get_dst_ip();
+                let dst_port = l4.get_dst_port();
+                let src_ip = l4.get_src_ip();
+                let src_port = l4.get_src_port();
                 match l4.get_tran_type() {
                     TransportProtocol::Tcp => {
                         // detect tcp suricata rules for this packet
                         // TODO
+                        let tcp_rules = &self.tcp_rules;
+                        for tcp_rule in tcp_rules {
+
+                        }
                         DetectResult::Hit(Action::Pass.into())
                     },
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
                         // TODO
+                        let udp_rules = &self.udp_rules;
+                        for udp_rule in udp_rules {
+
+                        }
                         DetectResult::Hit(Action::Pass.into())
                     }
                 }
             }
             QuinPacket::L5(l5) => {
-                // Warning: 传输层规则 tcp / udp 优先级高于
+                let dst_ip = l5.get_dst_ip();
+                let dst_port = l5.get_dst_port();
+                let src_ip = l5.get_src_ip();
+                let src_port = l5.get_src_port();
+                // Warning: 传输层规则优先级高于应用层规则
                 let result = match l5.get_tran_type() {
                     TransportProtocol::Tcp => {
                         // detect tcp suricata rules for this packet
                         // TODO
+                        let tcp_rules = &self.tcp_rules;
+                        for tcp_rule in tcp_rules {
+
+                        }
                         DetectResult::Hit(Action::Pass.into())
                     },
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
                         // TODO
+                        let udp_rules = &self.udp_rules;
+                        for udp_rule in udp_rules {
+
+                        }
                         DetectResult::Hit(Action::Pass.into())
                     }
                 };

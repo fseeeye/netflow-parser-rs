@@ -1,7 +1,7 @@
 use core::slice;
 
 use parsing_parser::{
-    parse_quin_packet, ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions,
+    ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions,
     TransLevel,
 };
 
@@ -26,7 +26,7 @@ pub extern "C" fn parse_packet<'a>(
         &*option_ptr
     };
 
-    let packet = parse_quin_packet(input, option);
+    let packet = QuinPacket::parse_from_stream(input, option);
 
     &packet
 }

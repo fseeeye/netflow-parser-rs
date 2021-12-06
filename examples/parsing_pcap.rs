@@ -1,8 +1,8 @@
 use colored::*;
-use parsing_rs::prelude::*;
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use walkdir::{DirEntry, WalkDir};
+use tracing::info;
 
 use std::ffi::OsStr;
 use std::fs::metadata;
@@ -11,14 +11,19 @@ use std::path::Path;
 use std::process;
 use std::time::Instant;
 
+use parsing_rs::prelude::*;
+use parsing_suricata::{VecSurules, Surules};
+
 fn main() {
+    // init tracing subscriber
+    tracing_subscriber::fmt::init();
     // change paths by yourself.
     let paths = [
         // OPC UA
         "../pcap/ICS/opcua/test/opcua_hello.pcap",
-        "../pcap/ICS/opcua/test/opcua_ack.pcap",
-        "../pcap/ICS/opcua/test/opcua_error.pcap",
-        "../pcap/ICS/opcua/test/opcua_msg.pcap",
+        // "../pcap/ICS/opcua/test/opcua_ack.pcap",
+        // "../pcap/ICS/opcua/test/opcua_error.pcap",
+        // "../pcap/ICS/opcua/test/opcua_msg.pcap",
         // IEC104
         // "../pcap/ICS/iec104/test/iec104_i.pcap",
         // Dnp3
@@ -88,9 +93,13 @@ fn parse_pcap(path: &str) {
     let mut num_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
 
-    let rule_path = "./examples/ics_rules.json";
-    let mut rules = HmIcsRules::new();
-    assert_eq!(rules.init(rule_path), true);
+    // 初始化 ICS 规则
+    let icsrule_path = "./examples/ics_rules.json";
+    let mut icsrules = HmIcsRules::new();
+    assert_eq!(icsrules.init(icsrule_path), true);
+    // 初始化 Suricata 规则
+    let surule_path = "./examples/suricata.rules";
+    let surules = VecSurules::parse_from_file(surule_path).unwrap();
 
     loop {
         match reader.next() {
@@ -104,12 +113,19 @@ fn parse_pcap(path: &str) {
                     }
                     PcapBlockOwned::Legacy(_b) => {
                         // use linktype to parse b.data()
-                        // println!("{:?}", _b);
-                        // println!("{:?}", _b.data);
-                        // let packet = parse_packet(&_b.data);
-                        let packet = parse_ethernet_quin_packet(&_b.data);
-                        let res = rules.detect(&packet);
-                        println!("rule check: {:?}", res);
+                        //debug!("{:?}", _b);
+                        //debug!("{:?}", _b.data);
+                        let runtimer = Instant::now(); // 程序运行计时变量
+                        // 解析数据包
+                        let packet = QuinPacket::parse_from_stream(&_b.data, &QuinPacketOptions::default());
+                        // 匹配 ICS 规则
+                        let ics_rst = icsrules.detect(&packet);
+                        // 匹配 Suricata 规则
+                        let suricata_rst = surules.detect(&packet);
+                        // 完成计时
+                        let time = runtimer.elapsed().as_secs_f64();
+                        // 打印结果
+                        print_parsing_rst(&packet, &ics_rst, &suricata_rst, time);
                     }
                     PcapBlockOwned::NG(_) => unreachable!(),
                 }
@@ -122,35 +138,25 @@ fn parse_pcap(path: &str) {
             Err(e) => panic!("error while reading: {:?}", e),
         }
     }
-    println!("[-] number of blocks: {:?}\n", num_blocks);
+    println!("[-] total blocks: {:?}\n", num_blocks);
 }
 
-fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
-    // println!("{:?}", &input);
-    let runtimer = Instant::now(); // 程序运行计时变量
-    let packet = parse_quin_packet(input, &QuinPacketOptions::default());
-    match &packet {
+fn print_parsing_rst(packet: &QuinPacket, ics_rst: &DetectResult, suricata_rst: &DetectResult, time: f64) {
+    match packet {
         QuinPacket::L1(l1) => {
-            let time = runtimer.elapsed().as_secs_f64();
             println!("l1 packet: {:?}", l1);
-            println!("  in time: {:?}", time);
         }
         QuinPacket::L2(l2) => {
-            let time = runtimer.elapsed().as_secs_f64();
             println!("l2 packet: {:?}", l2);
             println!("l2 dst mac: {:?}", l2.get_dst_mac());
             println!("l2 src mac: {:?}", l2.get_src_mac());
-            println!("  in time: {:?}", time);
         }
         QuinPacket::L3(l3) => {
-            let time = runtimer.elapsed().as_secs_f64();
             println!("l3 packet: {:?}", l3);
             println!("l3 dst ip: {:?}", l3.get_dst_ip());
             println!("l3 src ip: {:?}", l3.get_src_ip());
-            println!("  in time: {:?}", time);
         }
         QuinPacket::L4(l4) => {
-            let time = runtimer.elapsed().as_secs_f64();
             println!("l4 packet: {:?}", l4);
             println!("l4 dst port: {:?}", l4.get_dst_port());
             println!("l4 src port: {:?}", l4.get_src_port());
@@ -159,10 +165,8 @@ fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
             } else {
                 println!("Error: {}", String::from(format!("{:?}", l4.error)).red());
             }
-            println!("  in time: {:?}", time);
         }
         QuinPacket::L5(l5) => {
-            let time = runtimer.elapsed().as_secs_f64();
             println!("l5 packet.");
             println!("l5 app_layer:\n{:#?}", l5.application_layer);
             if l5.error.is_none() {
@@ -170,9 +174,11 @@ fn parse_ethernet_quin_packet(input: &[u8]) -> QuinPacket {
             } else {
                 println!("Error: {}", String::from(format!("{:?}", l5.error)).red());
             }
-            println!("  in time: {:?}", time);
         }
     };
 
-    packet
+    println!("  in time: {:?}", time);
+
+    info!(target: "EXAMPLE(parsing_pcap)", "icsrule check result: {:?}", ics_rst);
+    info!(target: "EXAMPLE(parsing_pcap)", "suricata check result: {:?}", suricata_rst);
 }

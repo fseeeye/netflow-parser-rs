@@ -42,12 +42,11 @@ pub mod suricata_rule {
 
 pub mod prelude {
     pub use crate::parser::{
-        // functions
-        parse_quin_packet,
+        // trait
         LinkLevel,
         NetLevel,
-        QuinPacket,
         // structures
+        QuinPacket,
         QuinPacketOptions,
         TransLevel,
     };

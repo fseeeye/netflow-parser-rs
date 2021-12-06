@@ -34,9 +34,10 @@ name = "parsing_pcap"
 path = "examples/parsing_pcap.rs"
 
 [[example]]
-name = "parsing_icsrules"
+name = "parsing_ics_rules"
 path = "examples/parsing_icsrules.rs"
 
 [[example]]
+# RUST_LOG=DEBUG cargo run --example parsing_suricata_rules
 name = "parsing_suricata_rules"
 path = "examples/parsing_surules.rs"

@@ -1,5 +1,6 @@
 use std::default::Default;
 
+use super::level::PhyLevel;
 use super::level_packet::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 use crate::parsers::parse_ethernet_layer;
 use crate::ProtocolType;
@@ -42,6 +43,25 @@ pub enum QuinPacket<'a> {
     L5(L5Packet<'a>),
 }
 
+impl<'a> QuinPacket<'a> {
+    /// 解析u8字节流为QuinPacket的函数
+    /// 
+    /// Warning: 暂时硬编码默认第一层是link-Ethernet。
+    pub fn parse_from_stream<'b>(input: &'b [u8], options: &QuinPacketOptions) -> QuinPacket<'b> {
+        parse_ethernet_layer(input, options)
+    }
+
+    pub fn is_error(&self) -> bool {
+        match self {
+            QuinPacket::L1(l1) => l1.is_error(),
+            QuinPacket::L2(l2) => l2.is_error(),
+            QuinPacket::L3(l3) => l3.is_error(),
+            QuinPacket::L4(l4) => l4.is_error(),
+            QuinPacket::L5(l5) => l5.is_error(),
+        }
+    }
+}
+
 /// QuinPacketOptions为QuinPacket解析选项，提供多种解析特性。
 /// 支持default：
 /// ```
@@ -59,10 +79,4 @@ impl Default for QuinPacketOptions {
     fn default() -> Self {
         Self { stop: None }
     }
-}
-
-/// 解析u8流为QuinPacket的函数
-/// 暂时硬编码默认第一层是link-Ethernet。
-pub fn parse_quin_packet<'a>(input: &'a [u8], options: &QuinPacketOptions) -> QuinPacket<'a> {
-    parse_ethernet_layer(input, options)
 }

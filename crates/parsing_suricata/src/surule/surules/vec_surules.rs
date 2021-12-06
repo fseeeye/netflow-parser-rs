@@ -1,4 +1,4 @@
-use tracing::{debug, info, error};
+use tracing::{debug, error};
 
 use crate::{
     surule::{TcpSurule, UdpSurule},
@@ -32,10 +32,10 @@ impl Surules for VecSurules {
         // convert string to VecSurules
         let mut vec_surules = VecSurules::default();
         for (i, rule_line) in file_string.lines().enumerate() {
-            info!(target: "SURICATA(VecSurules::parse_from_file)", "get No.{} suricata rule: `{}`.", i, rule_line);
+            debug!(target: "SURICATA(VecSurules::parse_from_file)", "get No.{} suricata rule: `{}`.", i, rule_line);
             let surule = Surule::from_str(rule_line)
                 .map_err(|e| {
-                    error!(target: "SURICATA(VecSurules::parse_from_file)", error = %e, "Suricata rules pasing error occurs at line {}.", i);
+                    error!(target: "SURICATA(VecSurules::parse_from_file)", error = %e, "Suricata rules pasing error occurs at '{}' line{}.", filepath, i);
                     return e;
                 })?;
             match surule {
