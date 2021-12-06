@@ -85,7 +85,6 @@ pub(crate) fn parse_option_element(input: &str) -> IResult<&str, SuruleOption, S
             "content" => SuruleOption::Content(elements::Content::new(value_str.to_owned())),
             "depth" => SuruleOption::Depth(elements::parse_u64(value_str)?),
             "distance" => SuruleOption::Distance(elements::Distance(value_str.parse()?)),
-            "within" => SuruleOption::Within(elements::Within(value_str.parse()?)),
             "dsize" => SuruleOption::Dsize(value_str.to_owned()),
             "flow" => SuruleOption::Flow(value_str.to_owned()),
             "flowbits" => SuruleOption::Flowbits(value_str.parse()?),
@@ -97,6 +96,7 @@ pub(crate) fn parse_option_element(input: &str) -> IResult<&str, SuruleOption, S
             "reference" => SuruleOption::Reference(value_str.to_owned()),
             "rev" => SuruleOption::Rev(elements::parse_u64(value_str)?),
             "sid" => SuruleOption::Sid(elements::parse_u64(value_str)?),
+            "within" => SuruleOption::Within(elements::Within(value_str.parse()?)),
             _ => SuruleOption::GenericOption(elements::GenericOption {
                 name: name_str.to_string(),
                 val: Some(value_str.to_string()),

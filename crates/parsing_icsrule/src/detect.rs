@@ -18,7 +18,7 @@ impl Into<RuleAction> for Action {
     }
 }
 
-impl Rules for HmIcsRules {
+impl RulesDetector for HmIcsRules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult {
         // ics规则要求packet为L5，否则返回false
         if let &QuinPacket::L5(l5) = &packet {

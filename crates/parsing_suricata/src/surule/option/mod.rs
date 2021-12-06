@@ -15,34 +15,59 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq)]
 #[repr(u16)]
 pub enum SuruleOption {
-    // Body Option Generic Elements:
+    /* Body Option Generic Elements */
+    // Value, 
     ByteJump(elements::ByteJump),
+    // Value, Meta Keyword
     Classtype(String),
+    // Value, 
     Content(elements::Content),
+    // Value, 
     Depth(u64),
+    // Value, 
     Dsize(String),
+    // Value, 
     Distance(elements::Distance),
+    // Bool, 
     EndsWith(bool),
+    // Bool, 
     FastPattern(bool),
+    // Bool, 
     FileData(elements::FileData),
+    // Value, Flow Keywords
     Flow(String),
+    // Value, Flow Keywords
     Flowbits(elements::Flowbits),
+    // Bool, 
     FtpBounce(bool),
+    // Value, 
     IsDataAt(String),
+    // Value, Meta Keyword
     Message(String),
+    // Value, Meta Keyword
     Metadata(String),
+    // Bool, 
     NoAlert(bool),
+    // Bool, 
     NoCase(bool),
+    // Value, 
     Offset(u64),
+    // Value, 
     Pcre(String),
+    // Bool, 
     RawBytes(bool),
+    // Value, Meta Keyword
     Reference(String),
+    // Value, Meta Keyword
     Rev(u64),
+    // Value, Meta Keyword
     Sid(u64),
+    // Bool, 
     StartsWith(bool),
+    // Value, 
     Within(elements::Within),
 
-    // Unknow Option Element:
+    /* Unknow Option Element */
     GenericOption(elements::GenericOption),
 }
 

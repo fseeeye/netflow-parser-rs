@@ -1,7 +1,12 @@
+mod rule;
+mod elements;
+
+
 use parsing_parser::{QuinPacket, TransLevel, TransportProtocol, AppLevel, NetLevel};
 use parsing_rule::*;
-
 use crate::surule::{elements::Action, VecSurules};
+
+use self::rule::SuruleDetector;
 
 impl Into<RuleAction> for Action {
     fn into(self) -> RuleAction {
@@ -16,78 +21,84 @@ impl Into<RuleAction> for Action {
     }
 }
 
-impl Rules for VecSurules {
+impl RulesDetector for VecSurules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult {
         // Warning: 目前数据包规则匹配过程中，直接返回第一个匹配到的规则的 Action，无法设置单个规则优先级。
 
-        // 判断该数据包为第几层协议，为其分配相应的
+        // 判断该数据包为第几层协议，为其分配相应的规则
         match packet {
             QuinPacket::L4(l4) => {
                 let dst_ip = l4.get_dst_ip();
                 let dst_port = l4.get_dst_port();
                 let src_ip = l4.get_src_ip();
                 let src_port = l4.get_src_port();
+
                 match l4.get_tran_type() {
                     TransportProtocol::Tcp => {
                         // detect tcp suricata rules for this packet
                         // TODO
                         let tcp_rules = &self.tcp_rules;
                         for tcp_rule in tcp_rules {
-
+                            if tcp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
+                                return DetectResult::Hit(tcp_rule.action.clone().into())
+                            }
                         }
-                        DetectResult::Hit(Action::Pass.into())
                     },
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
                         // TODO
                         let udp_rules = &self.udp_rules;
                         for udp_rule in udp_rules {
-
+                            if udp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
+                                return DetectResult::Hit(udp_rule.action.clone().into())
+                            }
                         }
-                        DetectResult::Hit(Action::Pass.into())
                     }
                 }
-            }
+                DetectResult::Miss
+            },
+
             QuinPacket::L5(l5) => {
                 let dst_ip = l5.get_dst_ip();
                 let dst_port = l5.get_dst_port();
                 let src_ip = l5.get_src_ip();
                 let src_port = l5.get_src_port();
+
                 // Warning: 传输层规则优先级高于应用层规则
-                let result = match l5.get_tran_type() {
+                match l5.get_tran_type() {
                     TransportProtocol::Tcp => {
                         // detect tcp suricata rules for this packet
                         // TODO
                         let tcp_rules = &self.tcp_rules;
                         for tcp_rule in tcp_rules {
-
+                            if tcp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
+                                return DetectResult::Hit(tcp_rule.action.clone().into())
+                            }
                         }
-                        DetectResult::Hit(Action::Pass.into())
                     },
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
                         // TODO
                         let udp_rules = &self.udp_rules;
                         for udp_rule in udp_rules {
-
+                            if udp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
+                                return DetectResult::Hit(udp_rule.action.clone().into())
+                            }
                         }
-                        DetectResult::Hit(Action::Pass.into())
                     }
                 };
 
-                if let DetectResult::Miss = result {
-                    match l5.get_app_type() {
-                        // TODO: 等待后续支持 HTTP 协议
-                        _ => {
-                            DetectResult::Miss
-                        }
-                    }
-                } else {
-                    result
+                match l5.get_app_type() {
+                    // TODO: 等待后续支持 HTTP 协议
+                    _ => {}
                 }
-            }
+
+                DetectResult::Miss
+            },
+
             // Warning：目前暂不支持 L3 规则
             QuinPacket::L3(_l3) => return DetectResult::Miss,
+
             // L1、L2 数据包直接判断为未匹配到规则
             _ => return DetectResult::Miss,
         }

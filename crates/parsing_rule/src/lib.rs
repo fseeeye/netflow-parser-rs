@@ -14,6 +14,6 @@ pub enum DetectResult {
     Miss,
 }
 
-pub trait Rules {
+pub trait RulesDetector {
     fn detect(&self, packet: &QuinPacket) -> DetectResult;
 }

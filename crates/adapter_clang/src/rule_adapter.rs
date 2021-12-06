@@ -3,7 +3,7 @@ use std::ffi::CStr;
 
 use parsing_icsrule::HmIcsRules;
 use parsing_parser::QuinPacket;
-use parsing_rule::{DetectResult, Rules};
+use parsing_rule::{DetectResult, RulesDetector};
 
 #[no_mangle]
 pub extern "C" fn init_rules(file_ptr: *const c_char) -> *const HmIcsRules {

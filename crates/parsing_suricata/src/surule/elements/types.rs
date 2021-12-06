@@ -106,6 +106,15 @@ pub enum IpAddress {
     V4Range(Ipv4Net), // 简易 ip range 方案
 }
 
+impl IpAddress {
+    pub fn contains(&self, ip: &Ipv4Addr) -> bool {
+        match self {
+            Self::V4Addr(self_ip) => self_ip == ip,
+            &Self::V4Range(self_range) => self_range.contains(ip)
+        }
+    }
+}
+
 /// Port List type (Suricata Header Element)
 ///
 ///  ref: https://suricata.readthedocs.io/en/latest/rules/intro.html#ports-source-and-destination

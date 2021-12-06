@@ -5,7 +5,7 @@
 //! use parsing_rs::prelude::*;
 //!
 //! let input = &[1,2,3,4,5,6];
-//! match parse_quin_packet(input, &QuinPacketOptions::default()) {
+//! match QuinPacket::parse_from_stream(input, &QuinPacketOptions::default()) {
 //!     QuinPacket::L1(l1) => {
 //!         println!("l1 packet: {:?}", l1);
 //!     }
@@ -58,6 +58,6 @@ pub mod prelude {
         DetectResult,
         RuleAction,
         // traits
-        Rules,
+        RulesDetector,
     };
 }
