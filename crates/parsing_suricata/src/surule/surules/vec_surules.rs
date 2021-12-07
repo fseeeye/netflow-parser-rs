@@ -55,9 +55,10 @@ mod tests {
 
     use ipnet::Ipv4Net;
 
-    use crate::surule::InnerSurule;
     use crate::surule::elements::*;
-    use crate::surule::SuruleOption;
+    use crate::surule::option::SuruleFlowOption;
+    use crate::surule::option::SuruleMetaOption;
+    use crate::surule::option::SurulePayloadOption;
     use super::*;
 
     #[test]
@@ -67,9 +68,9 @@ mod tests {
             vec_surules,
             VecSurules {
                 tcp_rules: vec![
-                    TcpSurule::new(
-                        Action::Alert,
-                        IpAddressList {
+                    TcpSurule {
+                        action: Action::Alert,
+                        src_addr: IpAddressList {
                             accept: Some(vec![
                                 IpAddress::V4Range(Ipv4Net::from_str("192.168.0.0/16").unwrap()),
                             ]),
@@ -77,33 +78,45 @@ mod tests {
                                 IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
                             ])
                         },
-                        PortList {
+                        src_port: PortList {
                             accept: None,
                             except: None
                         },
-                        Direction::Uni,
-                        IpAddressList {
+                        direction: Direction::Uni,
+                        dst_addr: IpAddressList {
                             accept: Some(vec![
                                 IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.110").unwrap())
                             ]),
                             except: None
                         },
-                        PortList {
+                        dst_port: PortList {
                             accept: Some(vec![
                                 Port::Single(445),
                                 Port::Single(3389),
                             ]),
                             except: None
                         },
-                        vec![
-                            SuruleOption::Message(
+                        meta_options: vec![
+                            SuruleMetaOption::Message(
                                 "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()
                             ),
-                            SuruleOption::Flow(Flow(vec![
-                                FlowMatcher::Established,
-                                FlowMatcher::ToServer
-                            ])),
-                            SuruleOption::Content(Content {
+                            // SuruleOption::GenericOption(GenericOption {
+                            //     name: "byte_test".to_string(),
+                            //     val: Some("4,>,2,0,relative".to_string())
+                            // }),
+                            SuruleMetaOption::Reference("cve,2006-6723".to_string()),
+                            SuruleMetaOption::Reference(
+                                "url,doc.emergingthreats.net/bin/view/Main/2003236".to_string()
+                            ),
+                            SuruleMetaOption::Classtype("attempted-dos".to_string()),
+                            SuruleMetaOption::Sid(2003236),
+                            SuruleMetaOption::Rev(4),
+                            SuruleMetaOption::Metadata(
+                                "created_at 2010_07_30, updated_at 2010_07_30".to_string()
+                            )
+                        ],
+                        payload_options: vec![
+                            SurulePayloadOption::Content(Content {
                                 pattern: "\"|ff|SMB\"".to_string(),
                                 depth: 0,
                                 distance: Distance(CountOrName::Value(0)),
@@ -114,7 +127,7 @@ mod tests {
                                 startswith: false,
                                 within: Within(CountOrName::Value(0))
                             }),
-                            SuruleOption::Content(Content {
+                            SurulePayloadOption::Content(Content {
                                 pattern: "\"|10 00 00 00|\"".to_string(),
                                 depth: 0,
                                 distance: Distance(CountOrName::Value(0)),
@@ -125,8 +138,8 @@ mod tests {
                                 startswith: false,
                                 within: Within(CountOrName::Value(0))
                             }),
-                            SuruleOption::Distance(Distance(CountOrName::Value(0))),
-                            SuruleOption::Content(Content {
+                            SurulePayloadOption::Distance(Distance(CountOrName::Value(0))),
+                            SurulePayloadOption::Content(Content {
                                 pattern: "\"|02 00|\"".to_string(),
                                 depth: 0,
                                 distance: Distance(CountOrName::Value(0)),
@@ -137,9 +150,9 @@ mod tests {
                                 startswith: false,
                                 within: Within(CountOrName::Value(0))
                             }),
-                            SuruleOption::Distance(Distance(CountOrName::Value(14))),
-                            SuruleOption::Within(Within(CountOrName::Value(2))),
-                            SuruleOption::ByteJump(ByteJump {
+                            SurulePayloadOption::Distance(Distance(CountOrName::Value(14))),
+                            SurulePayloadOption::Within(Within(CountOrName::Value(2))),
+                            SurulePayloadOption::ByteJump(ByteJump {
                                 count: 4,
                                 offset: 12,
                                 relative: true,
@@ -156,7 +169,7 @@ mod tests {
                                 dce: false,
                                 bitmask: 0
                             }),
-                            SuruleOption::Content(Content {
+                            SurulePayloadOption::Content(Content {
                                 pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
                                 depth: 0,
                                 distance: Distance(CountOrName::Value(0)),
@@ -167,38 +180,31 @@ mod tests {
                                 startswith: false,
                                 within: Within(CountOrName::Value(0))
                             }),
-                            SuruleOption::Distance(Distance(CountOrName::Value(12))),
-                            SuruleOption::Within(Within(CountOrName::Value(8))),
-                            SuruleOption::GenericOption(GenericOption {
-                                name: "byte_test".to_string(),
-                                val: Some("4,>,2,0,relative".to_string())
-                            }),
-                            SuruleOption::Reference("cve,2006-6723".to_string()),
-                            SuruleOption::Reference(
-                                "url,doc.emergingthreats.net/bin/view/Main/2003236".to_string()
-                            ),
-                            SuruleOption::Classtype("attempted-dos".to_string()),
-                            SuruleOption::Sid(2003236),
-                            SuruleOption::Rev(4),
-                            SuruleOption::Metadata(
-                                "created_at 2010_07_30, updated_at 2010_07_30".to_string()
-                            )
-                        ]
-                    )
+                            SurulePayloadOption::Distance(Distance(CountOrName::Value(12))),
+                            SurulePayloadOption::Within(Within(CountOrName::Value(8))),
+                        ],
+                        flow_options: vec![
+                            SuruleFlowOption::Flow(Flow(vec![
+                                FlowMatcher::Established,
+                                FlowMatcher::ToServer
+                            ])),
+                        ],
+                        tcp_options: vec![]
+                    }
                 ],
                 udp_rules: vec![
-                    UdpSurule::new(
-                        Action::Alert,
-                        IpAddressList {
+                    UdpSurule {
+                        action: Action::Alert,
+                        src_addr: IpAddressList {
                             accept: None,
                             except: None
                         },
-                        PortList {
+                        src_port: PortList {
                             accept: None,
                             except: None
                         },
-                        Direction::Bi,
-                        IpAddressList {
+                        direction: Direction::Bi,
+                        dst_addr: IpAddressList {
                             accept: None,
                             except: Some(vec![
                                 IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.110").unwrap()),
@@ -206,12 +212,15 @@ mod tests {
                                 IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.112").unwrap())
                             ])
                         },
-                        PortList {
+                        dst_port: PortList {
                             accept: None,
                             except: None
                         },
-                        vec![SuruleOption::Message("foo".to_string())]
-                    )
+                        meta_options: vec![SuruleMetaOption::Message("foo".to_string())],
+                        payload_options: vec![],
+                        flow_options: vec![],
+                        udp_options: vec![]
+                    }
                 ]
             }
         )

@@ -40,8 +40,9 @@ impl SuruleDetector for TcpSurule {
         true
     }
 
+    // TODO
     fn detect_option(&self, _: Self::Proto) -> bool {
-        false
+        return true;
     }
 }
 
@@ -51,7 +52,6 @@ impl SuruleDetector for UdpSurule {
     fn detect_header(&self, dst_ip: &IpAddr, dst_port: &u16, src_ip: &IpAddr, src_port: &u16) -> bool {
         match self.direction {
             Direction::Uni => {
-                // Warning: 目前 Suricata 规则只支持 IPv4 协议，所以默认放过所有 IPv6 协议
                 if let IpAddr::V4(dst_ipv4) = dst_ip {
                     if !self.dst_addr.check(dst_ipv4) { return false }
                 };
@@ -75,7 +75,8 @@ impl SuruleDetector for UdpSurule {
         true
     }
 
+    // TODO
     fn detect_option(&self, _: Self::Proto) -> bool {
-        false
+        return true;
     }
 }
