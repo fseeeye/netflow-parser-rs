@@ -48,6 +48,8 @@ pub enum SuruleParseError {
     InvalidByteJump(String),
     #[error("integer parsing error: '{0}'")]
     IntegerParseError(String),
+    #[error("unknow flow option: '{0}'")]
+    UnknownFlowOption(String),
     #[error("flowbit error: '{0}'")]
     Flowbit(String),
     // 未处理的 Nom 错误类型，不含其 input 信息

@@ -6,7 +6,7 @@ use std::net::Ipv4Addr;
 use std::str::FromStr;
 
 use crate::surule::SuruleParseError;
-use super::{Flowbits, ByteJump, Endian, CountOrName};
+use super::{Flowbits, ByteJump, Endian, CountOrName, FlowMatcher, Flow};
 use super::types::{IpAddress, Port, FlowbitCommand};
 use super::util_parsers::{handle_value, take_until_whitespace};
 
@@ -94,6 +94,47 @@ impl FromStr for FlowbitCommand {
         }
     }
 }
+
+/// 由字符串解析 Flow
+impl FromStr for Flow {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let values = s.split(",");
+        let mut flow_commands = vec![];
+        for value in values {
+            flow_commands.push(FlowMatcher::from_str(value.trim())?);
+        }
+        Ok(Flow(flow_commands))
+    }
+}
+
+impl FromStr for FlowMatcher {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let v = match s {
+            "to_client" => Self::ToClient,
+            "to_server" => Self::ToServer,
+            "from_client" => Self::FromClient,
+            "from_server" => Self::FromServer,
+            "established" => Self::Established,
+            "not_established" => Self::NotEstablished,
+            "stateless" => Self::Stateless,
+            "only_stream" => Self::OnlyStream,
+            "no_stream" => Self::NoStream,
+            "only_frag" => Self::OnlyFrag,
+            "no_frag" => Self::NoFrag,
+            _ => {
+                return Err(nom::Err::Error(SuruleParseError::UnknownFlowOption(
+                    s.to_string(),
+                )));
+            }
+        };
+        Ok(v)
+    }
+}
+
 
 /// 由字符串解析 Flowbits
 impl FromStr for Flowbits {
@@ -274,6 +315,31 @@ mod tests {
     fn test_number_str() {
         assert_eq!(parse_u64(" 12\r\n").unwrap(), 12u64);
         assert_eq!(parse_u64(" string12 \r\n").unwrap_err(), nom::Err::Error(SuruleParseError::IntegerParseError(" string12 \r\n".to_string())))
+    }
+
+    #[test]
+    fn test_parse_flow() {
+        assert_eq!(
+            Flow::from_str("to_client,to_server, from_client , from_server, established, not_established, stateless, only_stream, no_stream, only_frag, no_frag").unwrap(),
+            Flow(vec![
+                FlowMatcher::ToClient,
+                FlowMatcher::ToServer,
+                FlowMatcher::FromClient,
+                FlowMatcher::FromServer,
+                FlowMatcher::Established,
+                FlowMatcher::NotEstablished,
+                FlowMatcher::Stateless,
+                FlowMatcher::OnlyStream,
+                FlowMatcher::NoStream,
+                FlowMatcher::OnlyFrag,
+                FlowMatcher::NoFrag
+            ])
+        );
+
+        assert_eq!(
+            Flow::from_str("foo, foo2"),
+            Err(SuruleParseError::UnknownFlowOption("foo".to_string()).into())
+        )
     }
 
     #[test]

@@ -99,7 +99,10 @@ mod tests {
                             SuruleOption::Message(
                                 "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()
                             ),
-                            SuruleOption::Flow("established,to_server".to_string()),
+                            SuruleOption::Flow(Flow(vec![
+                                FlowMatcher::Established,
+                                FlowMatcher::ToServer
+                            ])),
                             SuruleOption::Content(Content {
                                 pattern: "\"|ff|SMB\"".to_string(),
                                 depth: 0,

@@ -36,22 +36,22 @@ impl RulesDetector for VecSurules {
                 match l4.get_tran_type() {
                     TransportProtocol::Tcp => {
                         // detect tcp suricata rules for this packet
-                        // TODO
                         let tcp_rules = &self.tcp_rules;
                         for tcp_rule in tcp_rules {
                             if tcp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 return DetectResult::Hit(tcp_rule.action.clone().into())
                             }
+                            // TODO
                         }
                     },
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
-                        // TODO
                         let udp_rules = &self.udp_rules;
                         for udp_rule in udp_rules {
                             if udp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 return DetectResult::Hit(udp_rule.action.clone().into())
                             }
+                            // TODO
                         }
                     }
                 }
@@ -68,22 +68,22 @@ impl RulesDetector for VecSurules {
                 match l5.get_tran_type() {
                     TransportProtocol::Tcp => {
                         // detect tcp suricata rules for this packet
-                        // TODO
                         let tcp_rules = &self.tcp_rules;
                         for tcp_rule in tcp_rules {
                             if tcp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 return DetectResult::Hit(tcp_rule.action.clone().into())
                             }
+                            // TODO
                         }
                     },
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
-                        // TODO
                         let udp_rules = &self.udp_rules;
                         for udp_rule in udp_rules {
                             if udp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 return DetectResult::Hit(udp_rule.action.clone().into())
                             }
+                            // TODO
                         }
                     }
                 };

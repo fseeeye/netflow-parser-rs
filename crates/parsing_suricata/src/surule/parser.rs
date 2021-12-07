@@ -75,8 +75,9 @@ mod tests {
 
     use ipnet::Ipv4Net;
 
-    use super::*;
     use crate::SuruleOption;
+    use crate::surule::elements::*;
+    use super::*;
 
     #[test]
     pub fn test_parse_suricata_rule() {
@@ -103,30 +104,30 @@ mod tests {
             suricata_rule,
             Surule::new(
                 Action::Alert,
-                elements::Protocol::Tcp,
-                elements::IpAddressList {
-                    accept: Some(vec![elements::IpAddress::V4Range(
+                Protocol::Tcp,
+                IpAddressList {
+                    accept: Some(vec![IpAddress::V4Range(
                         Ipv4Net::from_str("192.168.0.0/16").unwrap()
                     ),]),
-                    except: Some(vec![elements::IpAddress::V4Addr(
+                    except: Some(vec![IpAddress::V4Addr(
                         Ipv4Addr::from_str("192.168.0.3").unwrap()
                     )])
                 },
-                elements::PortList {
+                PortList {
                     accept: None,
                     except: None
                 },
-                elements::Direction::Uni,
-                elements::IpAddressList {
-                    accept: Some(vec![elements::IpAddress::V4Addr(
+                Direction::Uni,
+                IpAddressList {
+                    accept: Some(vec![IpAddress::V4Addr(
                         Ipv4Addr::from_str("192.168.0.110").unwrap()
                     )]),
                     except: None
                 },
-                elements::PortList {
+                PortList {
                     accept: Some(vec![
-                        elements::Port::Single(445),
-                        elements::Port::Single(3389),
+                        Port::Single(445),
+                        Port::Single(3389),
                     ]),
                     except: None
                 },
@@ -134,49 +135,52 @@ mod tests {
                     SuruleOption::Message(
                         "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()
                     ),
-                    SuruleOption::Flow("established,to_server".to_string()),
-                    SuruleOption::Content(elements::Content {
+                    SuruleOption::Flow(Flow(vec![
+                        FlowMatcher::Established,
+                        FlowMatcher::ToServer
+                    ])),
+                    SuruleOption::Content(Content {
                         pattern: "\"|ff|SMB\"".to_string(),
                         depth: 0,
-                        distance: elements::Distance(elements::CountOrName::Value(0)),
+                        distance: Distance(CountOrName::Value(0)),
                         endswith: false,
                         fast_pattern: false,
                         nocase: false,
                         offset: 0,
                         startswith: false,
-                        within: elements::Within(elements::CountOrName::Value(0))
+                        within: Within(CountOrName::Value(0))
                     }),
-                    SuruleOption::Content(elements::Content {
+                    SuruleOption::Content(Content {
                         pattern: "\"|10 00 00 00|\"".to_string(),
                         depth: 0,
-                        distance: elements::Distance(elements::CountOrName::Value(0)),
+                        distance: Distance(CountOrName::Value(0)),
                         endswith: false,
                         fast_pattern: false,
                         nocase: false,
                         offset: 0,
                         startswith: false,
-                        within: elements::Within(elements::CountOrName::Value(0))
+                        within: Within(CountOrName::Value(0))
                     }),
-                    SuruleOption::Distance(elements::Distance(elements::CountOrName::Value(0))),
-                    SuruleOption::Content(elements::Content {
+                    SuruleOption::Distance(Distance(CountOrName::Value(0))),
+                    SuruleOption::Content(Content {
                         pattern: "\"|02 00|\"".to_string(),
                         depth: 0,
-                        distance: elements::Distance(elements::CountOrName::Value(0)),
+                        distance: Distance(CountOrName::Value(0)),
                         endswith: false,
                         fast_pattern: false,
                         nocase: false,
                         offset: 0,
                         startswith: false,
-                        within: elements::Within(elements::CountOrName::Value(0))
+                        within: Within(CountOrName::Value(0))
                     }),
-                    SuruleOption::Distance(elements::Distance(elements::CountOrName::Value(14))),
-                    SuruleOption::Within(elements::Within(elements::CountOrName::Value(2))),
-                    SuruleOption::ByteJump(elements::ByteJump {
+                    SuruleOption::Distance(Distance(CountOrName::Value(14))),
+                    SuruleOption::Within(Within(CountOrName::Value(2))),
+                    SuruleOption::ByteJump(ByteJump {
                         count: 4,
                         offset: 12,
                         relative: true,
                         multiplier: 2,
-                        endian: elements::Endian::Little,
+                        endian: Endian::Little,
                         string: false,
                         hex: false,
                         dec: false,
@@ -188,20 +192,20 @@ mod tests {
                         dce: false,
                         bitmask: 0
                     }),
-                    SuruleOption::Content(elements::Content {
+                    SuruleOption::Content(Content {
                         pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
                         depth: 0,
-                        distance: elements::Distance(elements::CountOrName::Value(0)),
+                        distance: Distance(CountOrName::Value(0)),
                         endswith: false,
                         fast_pattern: false,
                         nocase: false,
                         offset: 0,
                         startswith: false,
-                        within: elements::Within(elements::CountOrName::Value(0))
+                        within: Within(CountOrName::Value(0))
                     }),
-                    SuruleOption::Distance(elements::Distance(elements::CountOrName::Value(12))),
-                    SuruleOption::Within(elements::Within(elements::CountOrName::Value(8))),
-                    SuruleOption::GenericOption(elements::GenericOption {
+                    SuruleOption::Distance(Distance(CountOrName::Value(12))),
+                    SuruleOption::Within(Within(CountOrName::Value(8))),
+                    SuruleOption::GenericOption(GenericOption {
                         name: "byte_test".to_string(),
                         val: Some("4,>,2,0,relative".to_string())
                     }),

@@ -284,6 +284,56 @@ pub struct Distance(pub CountOrName);
 #[derive(PartialEq, Default, Debug, Clone)]
 pub struct FileData;
 
+/// Flow type (Suricata Body Element)
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Clone)]
+pub struct Flow(pub Vec<FlowMatcher>);
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Clone)]
+pub enum FlowMatcher {
+    #[cfg_attr(feature = "serde", serde(rename = "to_client"))]
+    ToClient,
+    #[cfg_attr(feature = "serde", serde(rename = "to_server"))]
+    ToServer,
+    #[cfg_attr(feature = "serde", serde(rename = "from_client"))]
+    FromClient,
+    #[cfg_attr(feature = "serde", serde(rename = "from_server"))]
+    FromServer,
+    #[cfg_attr(feature = "serde", serde(rename = "established"))]
+    Established,
+    #[cfg_attr(feature = "serde", serde(rename = "not_established"))]
+    NotEstablished,
+    #[cfg_attr(feature = "serde", serde(rename = "stateless"))]
+    Stateless,
+    #[cfg_attr(feature = "serde", serde(rename = "only_stream"))]
+    OnlyStream,
+    #[cfg_attr(feature = "serde", serde(rename = "no_stream"))]
+    NoStream,
+    #[cfg_attr(feature = "serde", serde(rename = "only_frag"))]
+    OnlyFrag,
+    #[cfg_attr(feature = "serde", serde(rename = "no_frag"))]
+    NoFrag,
+}
+
+impl FlowMatcher {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::ToClient => "to_client",
+            Self::ToServer => "to_server",
+            Self::FromClient => "from_client",
+            Self::FromServer => "from_server",
+            Self::Established => "established",
+            Self::NotEstablished => "not_established",
+            Self::Stateless => "stateless",
+            Self::OnlyStream => "only_stream",
+            Self::NoStream => "no_stream",
+            Self::OnlyFrag => "only_frag",
+            Self::NoFrag => "no_frag",
+        }
+    }
+}
+
 /// Flowbits type (Suricata Body Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone, PartialEq)]

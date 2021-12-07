@@ -16,45 +16,45 @@ use serde::{Deserialize, Serialize};
 #[repr(u16)]
 pub enum SuruleOption {
     /* Body Option Generic Elements */
-    // Value, 
+    // Value, Payload Keyword
     ByteJump(elements::ByteJump),
     // Value, Meta Keyword
     Classtype(String),
-    // Value, 
+    // Value, Payload Keyword
     Content(elements::Content),
-    // Value, 
+    // Value, Payload Keyword
     Depth(u64),
-    // Value, 
+    // Value, Payload Keyword
     Dsize(String),
-    // Value, 
+    // Value, Payload Keyword
     Distance(elements::Distance),
-    // Bool, 
+    // Bool, Payload Keyword
     EndsWith(bool),
-    // Bool, 
+    // Bool, Prefiltering Keyword
     FastPattern(bool),
-    // Bool, 
+    // Bool, HTTP Keyword
     FileData(elements::FileData),
-    // Value, Flow Keywords
-    Flow(String),
-    // Value, Flow Keywords
+    // Value, Flow Keyword
+    Flow(elements::Flow),
+    // Value, Flow Keyword
     Flowbits(elements::Flowbits),
-    // Bool, 
+    // Bool, FTP Keyword
     FtpBounce(bool),
-    // Value, 
+    // Value, Payload Keyword
     IsDataAt(String),
     // Value, Meta Keyword
     Message(String),
     // Value, Meta Keyword
     Metadata(String),
-    // Bool, 
+    // Bool, Belong to Flowbit
     NoAlert(bool),
-    // Bool, 
+    // Bool, Payload Keyword
     NoCase(bool),
-    // Value, 
+    // Value, Payload Keyword
     Offset(u64),
-    // Value, 
+    // Value, Payload Keyword
     Pcre(String),
-    // Bool, 
+    // Bool, Payload Keyword
     RawBytes(bool),
     // Value, Meta Keyword
     Reference(String),
@@ -62,9 +62,9 @@ pub enum SuruleOption {
     Rev(u64),
     // Value, Meta Keyword
     Sid(u64),
-    // Bool, 
+    // Bool, Payload Keyword
     StartsWith(bool),
-    // Value, 
+    // Value, Payload Keyword
     Within(elements::Within),
 
     /* Unknow Option Element */

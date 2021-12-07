@@ -68,7 +68,7 @@ fn take_option_name(input: &str) -> IResult<&str, (&str, char), SuruleParseError
     ))
 }
 
-/// 从字符流中，解析一个可选字段元素
+/// 从字符流中，解析一个通用可选字段元素
 ///
 /// Warning: 后续优化中，需要根据协议采用不同的 parse_xxx_option_element 函数
 pub(crate) fn parse_option_element(input: &str) -> IResult<&str, SuruleOption, SuruleParseError> {
@@ -86,7 +86,7 @@ pub(crate) fn parse_option_element(input: &str) -> IResult<&str, SuruleOption, S
             "depth" => SuruleOption::Depth(elements::parse_u64(value_str)?),
             "distance" => SuruleOption::Distance(elements::Distance(value_str.parse()?)),
             "dsize" => SuruleOption::Dsize(value_str.to_owned()),
-            "flow" => SuruleOption::Flow(value_str.to_owned()),
+            "flow" => SuruleOption::Flow(value_str.parse()?),
             "flowbits" => SuruleOption::Flowbits(value_str.parse()?),
             "isdataat" => SuruleOption::IsDataAt(value_str.to_owned()),
             "metadata" => SuruleOption::Metadata(value_str.to_owned()),
