@@ -11,9 +11,14 @@ pub mod elements;
 
 pub use error::SuruleParseError;
 pub use option::SuruleOption;
-pub use surules::{VecSurules, Surules};
+pub use surules::{Surules, VecSurules};
 
-use self::{elements::Action, option::{SuruleMetaOption, SurulePayloadOption, SuruleFlowOption, SuruleTcpOption, SuruleUdpOption}};
+use self::{
+    elements::Action,
+    option::{
+        SuruleFlowOption, SuruleMetaOption, SurulePayloadOption, SuruleTcpOption, SuruleUdpOption,
+    },
+};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -38,7 +43,7 @@ pub struct TcpSurule {
     pub meta_options: Vec<SuruleMetaOption>,
     pub payload_options: Vec<SurulePayloadOption>,
     pub flow_options: Vec<SuruleFlowOption>,
-    pub tcp_options: Vec<SuruleTcpOption>
+    pub tcp_options: Vec<SuruleTcpOption>,
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -55,7 +60,7 @@ pub struct UdpSurule {
     pub meta_options: Vec<SuruleMetaOption>,
     pub payload_options: Vec<SurulePayloadOption>,
     pub flow_options: Vec<SuruleFlowOption>,
-    pub udp_options: Vec<SuruleUdpOption>
+    pub udp_options: Vec<SuruleUdpOption>,
 }
 
 impl Surule {
@@ -71,22 +76,10 @@ impl Surule {
     ) -> Self {
         match protocol {
             elements::Protocol::Tcp => Self::Tcp(TcpSurule::new(
-                action,
-                src_addr,
-                src_port,
-                direction,
-                dst_addr,
-                dst_port,
-                options,
+                action, src_addr, src_port, direction, dst_addr, dst_port, options,
             )),
             elements::Protocol::Udp => Self::Udp(UdpSurule::new(
-                action,
-                src_addr,
-                src_port,
-                direction,
-                dst_addr,
-                dst_port,
-                options,
+                action, src_addr, src_port, direction, dst_addr, dst_port, options,
             )),
         }
     }
@@ -105,12 +98,20 @@ pub trait InnerSurule {
 }
 
 impl InnerSurule for TcpSurule {
-    fn new(action: Action, src_addr: elements::IpAddressList, src_port: elements::PortList, direction: elements::Direction, dst_addr: elements::IpAddressList, dst_port: elements::PortList, options: Vec<SuruleOption>) -> Self {
+    fn new(
+        action: Action,
+        src_addr: elements::IpAddressList,
+        src_port: elements::PortList,
+        direction: elements::Direction,
+        dst_addr: elements::IpAddressList,
+        dst_port: elements::PortList,
+        options: Vec<SuruleOption>,
+    ) -> Self {
         let mut meta_options = Vec::new();
         let mut payload_options = Vec::new();
         let mut flow_options = Vec::new();
         let mut tcp_options = Vec::new();
-        
+
         for option in options {
             match option {
                 SuruleOption::Meta(o) => meta_options.push(o),
@@ -131,18 +132,26 @@ impl InnerSurule for TcpSurule {
             meta_options,
             payload_options,
             flow_options,
-            tcp_options
+            tcp_options,
         }
     }
 }
 
 impl InnerSurule for UdpSurule {
-    fn new(action: Action, src_addr: elements::IpAddressList, src_port: elements::PortList, direction: elements::Direction, dst_addr: elements::IpAddressList, dst_port: elements::PortList, options: Vec<SuruleOption>) -> Self {
+    fn new(
+        action: Action,
+        src_addr: elements::IpAddressList,
+        src_port: elements::PortList,
+        direction: elements::Direction,
+        dst_addr: elements::IpAddressList,
+        dst_port: elements::PortList,
+        options: Vec<SuruleOption>,
+    ) -> Self {
         let mut meta_options = Vec::new();
         let mut payload_options = Vec::new();
         let mut flow_options = Vec::new();
         let mut udp_options = Vec::new();
-        
+
         for option in options {
             match option {
                 SuruleOption::Meta(o) => meta_options.push(o),
@@ -163,7 +172,7 @@ impl InnerSurule for UdpSurule {
             meta_options,
             payload_options,
             flow_options,
-            udp_options
+            udp_options,
         }
     }
 }

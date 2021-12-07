@@ -2,8 +2,8 @@ use nom::IResult;
 
 use std::str::FromStr;
 
-use crate::surule::SuruleParseError;
 use crate::surule::utils::strip_brackets;
+use crate::surule::SuruleParseError;
 
 /// 处理已被从字符流中提取出来的输入
 #[inline(always)]

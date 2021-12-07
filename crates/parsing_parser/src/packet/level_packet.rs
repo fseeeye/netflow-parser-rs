@@ -1,4 +1,4 @@
-use super::level::{LinkLevel, NetLevel, TransLevel, AppLevel, PhyLevel};
+use super::level::{AppLevel, LinkLevel, NetLevel, PhyLevel, TransLevel};
 use crate::{
     errors::ParseError,
     field_type::*,

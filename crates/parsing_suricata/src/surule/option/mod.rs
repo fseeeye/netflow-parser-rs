@@ -3,7 +3,6 @@ mod parser;
 
 pub(crate) use parser::parse_option_from_stream;
 
-
 use super::elements;
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +21,7 @@ pub enum SuruleOption {
     HTTP(SuruleHttpOption),
     TCP(SuruleTcpOption),
     UDP(SuruleUdpOption),
-    
+
     /* Unknow Option Element */
     Generic(elements::GenericOption),
 }

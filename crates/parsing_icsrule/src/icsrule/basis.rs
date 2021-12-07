@@ -65,10 +65,14 @@ impl IcsRuleDetector for IcsRuleBasis {
                 if !self.dst_ip.contains(packet_dst_ip) && !self.dst_ip.contains(packet_src_ip) {
                     return false;
                 }
-                if !self.src_port.contains(packet_src_port) && !self.src_port.contains(packet_dst_port) {
+                if !self.src_port.contains(packet_src_port)
+                    && !self.src_port.contains(packet_dst_port)
+                {
                     return false;
                 }
-                if !self.dst_port.contains(packet_dst_port) && !self.dst_port.contains(packet_src_port) {
+                if !self.dst_port.contains(packet_dst_port)
+                    && !self.dst_port.contains(packet_src_port)
+                {
                     return false;
                 }
             }

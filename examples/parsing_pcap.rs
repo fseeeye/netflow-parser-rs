@@ -1,8 +1,8 @@
 use colored::*;
 use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
-use walkdir::{DirEntry, WalkDir};
 use tracing::info;
+use walkdir::{DirEntry, WalkDir};
 
 use std::ffi::OsStr;
 use std::fs::metadata;
@@ -12,7 +12,7 @@ use std::process;
 use std::time::Instant;
 
 use parsing_rs::prelude::*;
-use parsing_suricata::{VecSurules, Surules};
+use parsing_suricata::{Surules, VecSurules};
 
 fn main() {
     // init tracing subscriber
@@ -116,8 +116,9 @@ fn parse_pcap(path: &str) {
                         //debug!("{:?}", _b);
                         //debug!("{:?}", _b.data);
                         let runtimer = Instant::now(); // 程序运行计时变量
-                        // 解析数据包
-                        let packet = QuinPacket::parse_from_stream(&_b.data, &QuinPacketOptions::default());
+                                                       // 解析数据包
+                        let packet =
+                            QuinPacket::parse_from_stream(&_b.data, &QuinPacketOptions::default());
                         // 匹配 ICS 规则
                         let ics_rst = icsrules.detect(&packet);
                         // 匹配 Suricata 规则
@@ -141,7 +142,12 @@ fn parse_pcap(path: &str) {
     println!("[-] total blocks: {:?}\n", num_blocks);
 }
 
-fn print_parsing_rst(packet: &QuinPacket, ics_rst: &DetectResult, suricata_rst: &DetectResult, time: f64) {
+fn print_parsing_rst(
+    packet: &QuinPacket,
+    ics_rst: &DetectResult,
+    suricata_rst: &DetectResult,
+    time: f64,
+) {
     match packet {
         QuinPacket::L1(l1) => {
             println!("l1 packet: {:?}", l1);

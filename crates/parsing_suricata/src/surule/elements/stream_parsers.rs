@@ -1,16 +1,12 @@
+//! Header Element 的解析函数，用于从字节流中解析出 Header Element
 use std::str::FromStr;
 
 use nom::IResult;
 
-use crate::surule::utils::strip_quotes;
-use crate::surule::SuruleParseError;
 use super::types::*;
 use super::util_parsers::*;
-
-
-/*
- *  Rule Header Element Parsers
- */
+use crate::surule::utils::strip_quotes;
+use crate::surule::SuruleParseError;
 
 /// 从字符流中解析 Action
 pub(crate) fn parse_action_from_stream(input: &str) -> IResult<&str, Action, SuruleParseError> {
@@ -150,7 +146,6 @@ pub(crate) fn parse_direction_from_stream(
         Err(make_err(input.to_string()))
     }
 }
-
 
 #[cfg(test)]
 mod tests {

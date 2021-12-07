@@ -1,26 +1,23 @@
-//! Rule Body Option Element Value Parsers
-use ipnet::Ipv4Net;
+//! Body Option Element 的解析函数，用于将字符串解析成 Option Element
 use anyhow::Result;
+use ipnet::Ipv4Net;
 
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 
-use crate::surule::SuruleParseError;
-use super::{Flowbits, ByteJump, Endian, CountOrName, FlowMatcher, Flow};
-use super::types::{IpAddress, Port, FlowbitCommand};
+use super::types::{FlowbitCommand, IpAddress, Port};
 use super::util_parsers::{handle_value, take_until_whitespace};
-
+use super::{ByteJump, CountOrName, Endian, Flow, FlowMatcher, Flowbits};
+use crate::surule::SuruleParseError;
 
 /// 解析数字 u64
 #[inline(always)]
-pub(crate) fn parse_u64(
-    input: &str,
-) -> Result<u64, nom::Err<SuruleParseError>> {
+pub(crate) fn parse_u64(input: &str) -> Result<u64, nom::Err<SuruleParseError>> {
     let u64_str = handle_value(input)?;
 
-    u64_str.parse::<u64>().map_err(|_| {
-        SuruleParseError::IntegerParseError(input.to_string()).into()
-    })
+    u64_str
+        .parse::<u64>()
+        .map_err(|_| SuruleParseError::IntegerParseError(input.to_string()).into())
 }
 
 /// 由字符串解析 IpAddress
@@ -134,7 +131,6 @@ impl FromStr for FlowMatcher {
         Ok(v)
     }
 }
-
 
 /// 由字符串解析 Flowbits
 impl FromStr for Flowbits {
@@ -306,7 +302,6 @@ impl FromStr for CountOrName {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -314,7 +309,12 @@ mod tests {
     #[test]
     fn test_number_str() {
         assert_eq!(parse_u64(" 12\r\n").unwrap(), 12u64);
-        assert_eq!(parse_u64(" string12 \r\n").unwrap_err(), nom::Err::Error(SuruleParseError::IntegerParseError(" string12 \r\n".to_string())))
+        assert_eq!(
+            parse_u64(" string12 \r\n").unwrap_err(),
+            nom::Err::Error(SuruleParseError::IntegerParseError(
+                " string12 \r\n".to_string()
+            ))
+        )
     }
 
     #[test]
@@ -375,8 +375,14 @@ mod tests {
             })
         );
         // Err
-        assert_eq!(ByteJump::from_str(""), Err(SuruleParseError::EmptyStr.into()));
-        assert_eq!(ByteJump::from_str("4"), Err(SuruleParseError::InvalidByteJump("no enough arguments".into()).into()));
+        assert_eq!(
+            ByteJump::from_str(""),
+            Err(SuruleParseError::EmptyStr.into())
+        );
+        assert_eq!(
+            ByteJump::from_str("4"),
+            Err(SuruleParseError::InvalidByteJump("no enough arguments".into()).into())
+        );
         assert_eq!(
             ByteJump::from_str("4,12,multiplier"),
             Err(SuruleParseError::InvalidByteJump("invalid multiplier: \"\"".into()).into())
@@ -387,14 +393,8 @@ mod tests {
     fn test_count_or_name() {
         // Ok
         assert_eq!("123".parse(), Ok(CountOrName::Value(123)));
-        assert_eq!(
-            "foo".parse(),
-            Ok(CountOrName::Var("foo".into()))
-        );
-        assert_eq!(
-            " 1aa\r\n".parse(),
-            Ok(CountOrName::Var("1aa".into()))
-        );
+        assert_eq!("foo".parse(), Ok(CountOrName::Var("foo".into())));
+        assert_eq!(" 1aa\r\n".parse(), Ok(CountOrName::Var("1aa".into())));
         // Err
         assert_eq!(
             CountOrName::from_str(""),

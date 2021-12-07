@@ -1,8 +1,7 @@
 use core::slice;
 
 use parsing_parser::{
-    ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions,
-    TransLevel,
+    ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions, TransLevel,
 };
 
 #[no_mangle]

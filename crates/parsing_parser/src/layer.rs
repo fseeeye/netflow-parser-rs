@@ -1,10 +1,7 @@
 //! Layer是包含协议解析结果的数据结构
 use std::net::IpAddr;
 
-use crate::{
-    parsers::*, 
-    field_type::MacAddress
-};
+use crate::{field_type::MacAddress, parsers::*};
 
 /// LinkLayer是表示link层内容的类型。
 #[derive(Debug, PartialEq, Clone)]

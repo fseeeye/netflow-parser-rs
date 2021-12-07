@@ -75,9 +75,9 @@ mod tests {
 
     use ipnet::Ipv4Net;
 
-    use crate::surule::option::{SuruleMetaOption, SurulePayloadOption, SuruleFlowOption};
-    use crate::surule::{elements::*, TcpSurule};
     use super::*;
+    use crate::surule::option::{SuruleFlowOption, SuruleMetaOption, SurulePayloadOption};
+    use crate::surule::{elements::*, TcpSurule};
 
     #[test]
     pub fn test_parse_suricata_rule() {
@@ -105,12 +105,12 @@ mod tests {
             Surule::Tcp(TcpSurule {
                 action: Action::Alert,
                 src_addr: IpAddressList {
-                    accept: Some(vec![
-                        IpAddress::V4Range(Ipv4Net::from_str("192.168.0.0/16").unwrap()),
-                    ]),
-                    except: Some(vec![
-                        IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())
-                    ])
+                    accept: Some(vec![IpAddress::V4Range(
+                        Ipv4Net::from_str("192.168.0.0/16").unwrap()
+                    ),]),
+                    except: Some(vec![IpAddress::V4Addr(
+                        Ipv4Addr::from_str("192.168.0.3").unwrap()
+                    )])
                 },
                 src_port: PortList {
                     accept: None,
@@ -118,16 +118,13 @@ mod tests {
                 },
                 direction: Direction::Uni,
                 dst_addr: IpAddressList {
-                    accept: Some(vec![
-                        IpAddress::V4Addr(Ipv4Addr::from_str("192.168.0.110").unwrap())
-                    ]),
+                    accept: Some(vec![IpAddress::V4Addr(
+                        Ipv4Addr::from_str("192.168.0.110").unwrap()
+                    )]),
                     except: None
                 },
                 dst_port: PortList {
-                    accept: Some(vec![
-                        Port::Single(445),
-                        Port::Single(3389),
-                    ]),
+                    accept: Some(vec![Port::Single(445), Port::Single(3389),]),
                     except: None
                 },
                 meta_options: vec![
@@ -217,12 +214,10 @@ mod tests {
                     SurulePayloadOption::Distance(Distance(CountOrName::Value(12))),
                     SurulePayloadOption::Within(Within(CountOrName::Value(8))),
                 ],
-                flow_options: vec![
-                    SuruleFlowOption::Flow(Flow(vec![
-                        FlowMatcher::Established,
-                        FlowMatcher::ToServer
-                    ])),
-                ],
+                flow_options: vec![SuruleFlowOption::Flow(Flow(vec![
+                    FlowMatcher::Established,
+                    FlowMatcher::ToServer
+                ])),],
                 tcp_options: vec![]
             })
         );

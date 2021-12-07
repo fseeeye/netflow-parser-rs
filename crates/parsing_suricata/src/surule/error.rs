@@ -8,9 +8,13 @@ use thiserror::Error;
 pub enum SuruleParseError {
     #[error("encountered error while reading the file: '{0}'")]
     FilepathError(String),
-    #[error("unterminated value of rule option. Please confirm your suricata rule write in one line.")]
+    #[error(
+        "unterminated value of rule option. Please confirm your suricata rule write in one line."
+    )]
     UnterminatedRuleOptionValue,
-    #[error("unterminated name of rule option. Please confirm your suricata rule write in one line.")]
+    #[error(
+        "unterminated name of rule option. Please confirm your suricata rule write in one line."
+    )]
     UnterminatedRuleOptionName,
     #[error("get an empty str.")]
     EmptyStr,
@@ -86,7 +90,9 @@ impl From<nom::Err<SuruleParseError>> for SuruleParseError {
         match nom_err {
             nom::Err::Error(e) => return e,
             nom::Err::Failure(e) => return e,
-            nom::Err::Incomplete(_) => return SuruleParseError::UnhandledNomError(nom::error::ErrorKind::Fail),
+            nom::Err::Incomplete(_) => {
+                return SuruleParseError::UnhandledNomError(nom::error::ErrorKind::Fail)
+            }
         }
     }
 }

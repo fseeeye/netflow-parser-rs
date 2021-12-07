@@ -3,11 +3,10 @@ mod vec_surules;
 
 pub use vec_surules::VecSurules;
 
-
-use parsing_rule::RulesDetector;
 use crate::SuruleParseError;
+use parsing_rule::RulesDetector;
 /// Suricata 规则集的数据结构接口
-/// 
+///
 /// 方便未来扩展实现更多的 Suricata 规则集数据结构
 pub trait Surules: RulesDetector {
     // ref: https://users.rust-lang.org/t/returning-option-self-in-a-trait/28081/2

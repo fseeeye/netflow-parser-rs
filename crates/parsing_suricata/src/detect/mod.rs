@@ -1,10 +1,9 @@
-mod rule;
 mod elements;
+mod rule;
 
-
-use parsing_parser::{QuinPacket, TransLevel, TransportProtocol, AppLevel, NetLevel};
-use parsing_rule::*;
 use crate::surule::{elements::Action, VecSurules};
+use parsing_parser::{AppLevel, NetLevel, QuinPacket, TransLevel, TransportProtocol};
+use parsing_rule::*;
 
 use self::rule::SuruleDetector;
 
@@ -41,11 +40,11 @@ impl RulesDetector for VecSurules {
                             if tcp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 // TODO
                                 if tcp_rule.detect_option(1) {
-                                    return DetectResult::Hit(tcp_rule.action.clone().into())
+                                    return DetectResult::Hit(tcp_rule.action.clone().into());
                                 }
                             }
                         }
-                    },
+                    }
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
                         let udp_rules = &self.udp_rules;
@@ -53,14 +52,14 @@ impl RulesDetector for VecSurules {
                             if udp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 // TODO
                                 if udp_rule.detect_option(1) {
-                                    return DetectResult::Hit(udp_rule.action.clone().into())
+                                    return DetectResult::Hit(udp_rule.action.clone().into());
                                 }
                             }
                         }
                     }
                 }
                 DetectResult::Miss
-            },
+            }
 
             QuinPacket::L5(l5) => {
                 let dst_ip = l5.get_dst_ip();
@@ -77,11 +76,11 @@ impl RulesDetector for VecSurules {
                             if tcp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 // TODO
                                 if tcp_rule.detect_option(1) {
-                                    return DetectResult::Hit(tcp_rule.action.clone().into())
+                                    return DetectResult::Hit(tcp_rule.action.clone().into());
                                 }
                             }
                         }
-                    },
+                    }
                     TransportProtocol::Udp => {
                         // detect udp suricata rules for this packet
                         let udp_rules = &self.udp_rules;
@@ -89,7 +88,7 @@ impl RulesDetector for VecSurules {
                             if udp_rule.detect_header(&dst_ip, &dst_port, &src_ip, &src_port) {
                                 // TODO
                                 if udp_rule.detect_option(1) {
-                                    return DetectResult::Hit(udp_rule.action.clone().into())
+                                    return DetectResult::Hit(udp_rule.action.clone().into());
                                 }
                             }
                         }
@@ -102,7 +101,7 @@ impl RulesDetector for VecSurules {
                 }
 
                 DetectResult::Miss
-            },
+            }
 
             // Warning：目前暂不支持 L3 规则
             QuinPacket::L3(_l3) => return DetectResult::Miss,

@@ -110,7 +110,7 @@ impl IpAddress {
     pub fn contains(&self, ip: &Ipv4Addr) -> bool {
         match self {
             Self::V4Addr(self_ip) => self_ip == ip,
-            &Self::V4Range(self_range) => self_range.contains(ip)
+            &Self::V4Range(self_range) => self_range.contains(ip),
         }
     }
 }

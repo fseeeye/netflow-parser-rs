@@ -45,7 +45,7 @@ pub enum QuinPacket<'a> {
 
 impl<'a> QuinPacket<'a> {
     /// 解析u8字节流为QuinPacket的函数
-    /// 
+    ///
     /// Warning: 暂时硬编码默认第一层是link-Ethernet。
     pub fn parse_from_stream<'b>(input: &'b [u8], options: &QuinPacketOptions) -> QuinPacket<'b> {
         parse_ethernet_layer(input, options)

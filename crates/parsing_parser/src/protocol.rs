@@ -1,7 +1,4 @@
-use crate::{
-    ParseError, 
-    LinkLayer, NetworkLayer, TransportLayer, ApplicationLayer
-};
+use crate::{ApplicationLayer, LinkLayer, NetworkLayer, ParseError, TransportLayer};
 use serde::{Deserialize, Serialize};
 
 /// ProtocolType旨在用简单结构来表示协议类型
@@ -136,7 +133,7 @@ impl From<LinkLayer> for LinkProtocol {
     #[inline]
     fn from(link_layer: LinkLayer) -> Self {
         match link_layer {
-            LinkLayer::Ethernet(_) => LinkProtocol::Ethernet
+            LinkLayer::Ethernet(_) => LinkProtocol::Ethernet,
         }
     }
 }
@@ -198,7 +195,7 @@ impl<'a> From<ApplicationLayer<'a>> for ApplicationProtocol {
             ApplicationLayer::Dnp3(_) => ApplicationProtocol::Dnp3,
             ApplicationLayer::Iec104(_) => ApplicationProtocol::Iec104,
             ApplicationLayer::Opcua(_) => ApplicationProtocol::Opcua,
-            ApplicationLayer::IsoOnTcp(_) => ApplicationProtocol::IsoOnTcp
+            ApplicationLayer::IsoOnTcp(_) => ApplicationProtocol::IsoOnTcp,
         }
     }
 }
