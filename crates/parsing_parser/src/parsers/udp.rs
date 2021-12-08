@@ -12,11 +12,12 @@ use super::{
 };
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub struct UdpHeader {
+pub struct UdpHeader<'a> {
     pub src_port: u16,
     pub dst_port: u16,
     pub length: u16,
     pub checksum: u16,
+    pub payload: &'a [u8]
 }
 
 pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
@@ -24,6 +25,7 @@ pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
     let (input, dst_port) = be_u16(input)?;
     let (input, length) = be_u16(input)?;
     let (input, checksum) = be_u16(input)?;
+    let payload = input;
     Ok((
         input,
         UdpHeader {
@@ -31,6 +33,7 @@ pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
             dst_port,
             length,
             checksum,
+            payload
         },
     ))
 }

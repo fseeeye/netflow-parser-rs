@@ -54,7 +54,7 @@ impl<'a> NetworkLayer<'a> {
 #[derive(Debug, PartialEq, Clone)]
 pub enum TransportLayer<'a> {
     Tcp(TcpHeader<'a>),
-    Udp(UdpHeader),
+    Udp(UdpHeader<'a>),
 }
 
 impl<'a> TransportLayer<'a> {

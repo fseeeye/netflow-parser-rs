@@ -60,6 +60,7 @@ pub struct TcpHeader<'a> {
     pub checksum: u16,
     pub urgent_pointer: u16,
     pub options: Option<&'a [u8]>,
+    pub payload: &'a [u8]
 }
 
 pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
@@ -82,6 +83,7 @@ pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     } else {
         Ok((input, None))
     }?;
+    let payload = input;
 
     Ok((
         input,
@@ -97,6 +99,7 @@ pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
             checksum,
             urgent_pointer,
             options,
+            payload
         },
     ))
 }

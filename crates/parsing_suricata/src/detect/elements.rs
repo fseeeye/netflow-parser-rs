@@ -15,6 +15,7 @@ pub trait SuruleElementSimpleDetector: SuruleElementDetector {
     fn check_simple(&self) -> bool;
 }
 
+
 /* Impl SuruleElementDetector for Header */
 
 // 实现 PortList 的 check 接口
@@ -122,6 +123,7 @@ impl IpAddressList {
 
 
 /* Impl SuruleElementDetector for Body */
+
 // 实现 Flowbits 的 check 接口
 impl SuruleElementDetector for Flowbits {
     type Comparison = bool;
