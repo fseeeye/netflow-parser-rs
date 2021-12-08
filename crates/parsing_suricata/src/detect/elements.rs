@@ -125,6 +125,10 @@ impl IpAddressList {
 /* Impl SuruleElementDetector for Body */
 
 // 实现 Flowbits 的 check 接口
+lazy_static! {
+    static ref FLOWBITHASH: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
+}
+
 impl SuruleElementDetector for Flowbits {
     type Comparison = bool;
 
@@ -141,11 +145,19 @@ impl SuruleElementSimpleDetector for Flowbits {
     }
 }
 
-fn check_flowbits(flowbits: &Flowbits) -> bool {
-    lazy_static! {
-        static ref FLOWBITHASH: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
+#[allow(dead_code)]
+fn register_flowbits(name: String, value: bool) {
+    match FLOWBITHASH.lock() {
+        Ok(mut flowbit_hashmap) => {
+            flowbit_hashmap.entry(name).or_insert(value);
+        },
+        Err(e) => {
+            error!(target: "SURICATA(Flowbits::check)", error = %e);
+        }
     }
-    
+}
+
+fn check_flowbits(flowbits: &Flowbits) -> bool {
     match flowbits.command {
         // 检查是否为 false
         FlowbitCommand::IsNotSet => {
