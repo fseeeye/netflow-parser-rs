@@ -17,7 +17,7 @@ typedef struct HmIcsRules HmIcsRules;
  * use parsing_parser::*;
  *
  * let input = &[1,2,3,4,5,6];
- * match parse_quin_packet(input, &QuinPacketOptions::default()) {
+ * match QuinPacket::parse_from_stream(input, &QuinPacketOptions::default()) {
  *     QuinPacket::L1(l1) => {
  *         println!("l1 packet: {:?}", l1);
  *     }
@@ -48,10 +48,10 @@ typedef struct QuinPacket QuinPacket;
  * QuinPacketOptions为QuinPacket解析选项，提供多种解析特性。
  * 支持default：
  * ```
- * use parsing_parser::{parse_quin_packet, QuinPacketOptions};
+ * use parsing_parser::{QuinPacket, QuinPacketOptions};
  *
  * let input = &[1,2,3,4,5,6];
- * parse_quin_packet(input, &QuinPacketOptions::default());
+ * QuinPacket::parse_from_stream(input, &QuinPacketOptions::default());
  * ```
  */
 typedef struct QuinPacketOptions QuinPacketOptions;

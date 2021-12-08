@@ -10,15 +10,11 @@ mod utils;
 pub mod elements;
 
 pub use error::SuruleParseError;
-pub use option::SuruleOption;
+pub use option::*;
 pub use surules::{Surules, VecSurules};
 
-use self::{
-    elements::Action,
-    option::{
-        SuruleFlowOption, SuruleMetaOption, SurulePayloadOption, SuruleTcpOption, SuruleUdpOption,
-    },
-};
+
+use self::elements::Action;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 

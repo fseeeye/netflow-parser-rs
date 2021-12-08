@@ -16,6 +16,7 @@ anyhow = "1.0" # 错误处理
 thiserror = "1.0" # 错误定义和处理
 ipnet = "2" # ipaddress处理
 tracing = "0.1" # 日志处理
+lazy_static = "1" # 方便初始化静态变量
 # ref: https://doc.rust-lang.org/cargo/reference/features.html#optional-dependencies
 serde = { version = "1.0", features = ["derive"], optional = true }
 

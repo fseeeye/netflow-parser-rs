@@ -1,8 +1,9 @@
 use std::net::IpAddr;
 
-use crate::surule::{elements::Direction, TcpSurule, UdpSurule};
+use crate::surule::{elements::Direction, TcpSurule, UdpSurule, SuruleFlowOption};
 
-use super::elements::SuruleElementDetector;
+use super::elements::{SuruleElementDetector, SuruleElementSimpleDetector};
+
 
 pub trait SuruleDetector {
     type Proto;
@@ -70,16 +71,28 @@ impl SuruleDetector for TcpSurule {
 
     // TODO
     fn detect_option(&self, _: Self::Proto) -> bool {
-        match self.payload_options {
-            _ => {}
+        for payload_option in &self.payload_options {
+            match payload_option {
+                _ => {}
+            }
         }
-        match self.tcp_options {
-            _ => {}
+        for tcp_option in &self.tcp_options {
+            match tcp_option {
+                _ => {}
+            }
         }
-        match self.flow_options {
-            _ => {}
+        for flow_option in &self.flow_options {
+            match flow_option {
+                SuruleFlowOption::Flow(_) => {},
+                SuruleFlowOption::Flowbits(flowbits) => {
+                    if !flowbits.check_simple() {
+                        return false
+                    }
+                }
+            }
         }
-        return true;
+
+        true
     }
 }
 
@@ -136,14 +149,20 @@ impl SuruleDetector for UdpSurule {
 
     // TODO
     fn detect_option(&self, _: Self::Proto) -> bool {
-        match self.payload_options {
-            _ => {}
+        for payload_option in &self.payload_options {
+            match payload_option {
+                _ => {}
+            }
         }
-        match self.udp_options {
-            _ => {}
+        for udp_option in &self.udp_options {
+            match udp_option {
+                _ => {}
+            }
         }
-        match self.flow_options {
-            _ => {}
+        for flow_option in &self.flow_options {
+            match flow_option {
+                _ => {}
+            }
         }
         return true;
     }
