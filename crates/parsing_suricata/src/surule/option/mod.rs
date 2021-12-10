@@ -1,14 +1,13 @@
 //! Option 表示 Suricata Rule 的可选字段，本模块包含其数据结构以及 parser 的定义。
 mod parser;
 
-
 pub(crate) use parser::parse_option_from_stream;
 
-use serde::{Deserialize, Serialize};
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
-use crate::SuruleParseError;
 use super::elements::{self, Content, ContentPosKey};
+use crate::SuruleParseError;
 
 /// SuruleOption 是包含 Suricata Body Optional Elements 的枚举结构体，用于存储 Suricata 可选字段的数据类型。
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -175,12 +174,14 @@ pub enum SuruleOtherOption {
 }
 
 /// 将 Payload Options 中的 Content 修饰符应用到 Content 上
-pub(crate) fn impl_content_modifiers(payload_naive_options: Vec<SuruleNaivePayloadOption>) -> Result<Vec<SurulePayloadOption>, SuruleParseError> {
+pub(crate) fn impl_content_modifiers(
+    payload_naive_options: Vec<SuruleNaivePayloadOption>,
+) -> Result<Vec<SurulePayloadOption>, SuruleParseError> {
     let mut modified_payload_options: Vec<SurulePayloadOption> = Vec::new();
     let mut current_content: Option<Content> = None;
-    
+
     if payload_naive_options.is_empty() {
-        return Ok(modified_payload_options)
+        return Ok(modified_payload_options);
     }
 
     // impl modifiers
@@ -192,159 +193,179 @@ pub(crate) fn impl_content_modifiers(payload_naive_options: Vec<SuruleNaivePaylo
                     modified_payload_options.push(SurulePayloadOption::Content(cc));
                 }
                 current_content = Some(c);
-            },
+            }
             SuruleNaivePayloadOption::FastPattern(f) => {
                 if let Some(ref mut cc) = current_content {
                     cc.fast_pattern = f;
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("fastpattern:{:?}", f)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "fastpattern:{:?}",
+                        f
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::NoCase(n) => {
                 if let Some(ref mut cc) = current_content {
                     cc.nocase = n;
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("nocase:{:?}", n)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "nocase:{:?}",
+                        n
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::Depth(d) => {
                 if let Some(ref mut cc) = current_content {
                     match cc.pos_key {
                         ContentPosKey::NotSet => {
                             cc.pos_key = ContentPosKey::Absolute {
                                 depth: d,
-                                offset: Default::default()
+                                offset: Default::default(),
                             }
-                        },
+                        }
                         ContentPosKey::Absolute { depth, offset } => {
                             if depth != Default::default() {
-                                return Err(SuruleParseError::DuplicatedContentModifier("depth".to_string()))
+                                return Err(SuruleParseError::DuplicatedContentModifier(
+                                    "depth".to_string(),
+                                ));
                             }
-                            cc.pos_key = ContentPosKey::Absolute {
-                                depth: d,
-                                offset
-                            }
-                        },
-                        _ => {
-                            return Err(SuruleParseError::ConflictContentModifier)
+                            cc.pos_key = ContentPosKey::Absolute { depth: d, offset }
                         }
+                        _ => return Err(SuruleParseError::ConflictContentModifier),
                     }
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("depth:{:?}", d)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "depth:{:?}",
+                        d
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::Distance(d) => {
                 if let Some(ref mut cc) = current_content {
                     match cc.pos_key {
                         ContentPosKey::NotSet => {
                             cc.pos_key = ContentPosKey::Relative {
                                 distance: d,
-                                within: Default::default()
+                                within: Default::default(),
                             }
-                        },
-                        ContentPosKey::Relative { ref distance, ref within} => {
+                        }
+                        ContentPosKey::Relative {
+                            ref distance,
+                            ref within,
+                        } => {
                             if *distance != Default::default() {
-                                return Err(SuruleParseError::DuplicatedContentModifier("distance".to_string()))
+                                return Err(SuruleParseError::DuplicatedContentModifier(
+                                    "distance".to_string(),
+                                ));
                             }
                             cc.pos_key = ContentPosKey::Relative {
                                 distance: d,
-                                within: within.to_owned()
+                                within: within.to_owned(),
                             }
-                        },
-                        _ => {
-                            return Err(SuruleParseError::ConflictContentModifier)
                         }
+                        _ => return Err(SuruleParseError::ConflictContentModifier),
                     }
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("distance:{:?}", d)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "distance:{:?}",
+                        d
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::EndsWith(e) => {
                 if let Some(ref mut cc) = current_content {
                     match cc.pos_key {
-                        ContentPosKey::NotSet => {
-                            cc.pos_key = ContentPosKey::EndsWith(e)
-                        },
+                        ContentPosKey::NotSet => cc.pos_key = ContentPosKey::EndsWith(e),
                         ContentPosKey::EndsWith(_) => {
-                            return Err(SuruleParseError::DuplicatedContentModifier("endswith".to_string()))
+                            return Err(SuruleParseError::DuplicatedContentModifier(
+                                "endswith".to_string(),
+                            ))
                         }
-                        _ => {
-                            return Err(SuruleParseError::ConflictContentModifier)
-                        }
+                        _ => return Err(SuruleParseError::ConflictContentModifier),
                     }
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("endswith:{:?}", e)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "endswith:{:?}",
+                        e
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::Offset(o) => {
                 if let Some(ref mut cc) = current_content {
                     match cc.pos_key {
                         ContentPosKey::NotSet => {
                             cc.pos_key = ContentPosKey::Absolute {
                                 depth: Default::default(),
-                                offset: o
+                                offset: o,
                             }
-                        },
-                        ContentPosKey::Absolute {depth, offset } => {
-                            if offset != Default::default() {
-                                return Err(SuruleParseError::DuplicatedContentModifier("offset".to_string()))
-                            }
-                            cc.pos_key = ContentPosKey::Absolute {
-                                depth,
-                                offset: o
-                            }
-                        },
-                        _ => {
-                            return Err(SuruleParseError::ConflictContentModifier)
                         }
+                        ContentPosKey::Absolute { depth, offset } => {
+                            if offset != Default::default() {
+                                return Err(SuruleParseError::DuplicatedContentModifier(
+                                    "offset".to_string(),
+                                ));
+                            }
+                            cc.pos_key = ContentPosKey::Absolute { depth, offset: o }
+                        }
+                        _ => return Err(SuruleParseError::ConflictContentModifier),
                     }
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("offset:{:?}", o)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "offset:{:?}",
+                        o
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::StartsWith(s) => {
                 if let Some(ref mut cc) = current_content {
                     match cc.pos_key {
-                        ContentPosKey::NotSet => {
-                            cc.pos_key = ContentPosKey::EndsWith(s)
-                        },
+                        ContentPosKey::NotSet => cc.pos_key = ContentPosKey::EndsWith(s),
                         ContentPosKey::StartsWith(_) => {
-                            return Err(SuruleParseError::DuplicatedContentModifier("startswith".to_string()))
+                            return Err(SuruleParseError::DuplicatedContentModifier(
+                                "startswith".to_string(),
+                            ))
                         }
-                        _ => {
-                            return Err(SuruleParseError::ConflictContentModifier)
-                        }
+                        _ => return Err(SuruleParseError::ConflictContentModifier),
                     }
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("startswith:{:?}", s)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "startswith:{:?}",
+                        s
+                    )));
                 }
-            },
+            }
             SuruleNaivePayloadOption::Within(w) => {
                 if let Some(ref mut cc) = current_content {
                     match cc.pos_key {
                         ContentPosKey::NotSet => {
                             cc.pos_key = ContentPosKey::Relative {
                                 distance: Default::default(),
-                                within: w
+                                within: w,
                             }
-                        },
-                        ContentPosKey::Relative { ref distance, ref within } => {
+                        }
+                        ContentPosKey::Relative {
+                            ref distance,
+                            ref within,
+                        } => {
                             if *within != Default::default() {
-                                return Err(SuruleParseError::DuplicatedContentModifier("within".to_string()))
+                                return Err(SuruleParseError::DuplicatedContentModifier(
+                                    "within".to_string(),
+                                ));
                             }
                             cc.pos_key = ContentPosKey::Relative {
                                 distance: distance.to_owned(),
-                                within: w
+                                within: w,
                             }
-                        },
-                        _ => {
-                            return Err(SuruleParseError::ConflictContentModifier)
                         }
+                        _ => return Err(SuruleParseError::ConflictContentModifier),
                     }
                 } else {
-                    return Err(SuruleParseError::WildContentModifier(format!("within:{:?}", w)))
+                    return Err(SuruleParseError::WildContentModifier(format!(
+                        "within:{:?}",
+                        w
+                    )));
                 }
-            },
+            }
             /* Other Payload Keywords */
             SuruleNaivePayloadOption::ByteJump(b) => {
                 if let Some(cc) = current_content {
@@ -352,28 +373,28 @@ pub(crate) fn impl_content_modifiers(payload_naive_options: Vec<SuruleNaivePaylo
                     current_content = None;
                 }
                 modified_payload_options.push(SurulePayloadOption::ByteJump(b))
-            },
+            }
             SuruleNaivePayloadOption::Dsize(d) => {
                 if let Some(cc) = current_content {
                     modified_payload_options.push(SurulePayloadOption::Content(cc));
                     current_content = None;
                 }
                 modified_payload_options.push(SurulePayloadOption::Dsize(d))
-            },
+            }
             SuruleNaivePayloadOption::IsDataAt(i) => {
                 if let Some(cc) = current_content {
                     modified_payload_options.push(SurulePayloadOption::Content(cc));
                     current_content = None;
                 }
                 modified_payload_options.push(SurulePayloadOption::IsDataAt(i))
-            },
+            }
             SuruleNaivePayloadOption::Pcre(p) => {
                 if let Some(cc) = current_content {
                     modified_payload_options.push(SurulePayloadOption::Content(cc));
                     current_content = None;
                 }
                 modified_payload_options.push(SurulePayloadOption::Pcre(p))
-            },
+            }
             SuruleNaivePayloadOption::RawBytes(_) => {
                 // ref: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#rawbytes
                 // The rawbytes keyword has no effect.

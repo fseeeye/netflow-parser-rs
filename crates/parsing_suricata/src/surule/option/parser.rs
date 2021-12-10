@@ -10,7 +10,8 @@ use crate::surule::{
 };
 
 use super::{
-    SuruleFlowOption, SuruleHttpOption, SuruleMetaOption, SuruleOtherOption, SuruleNaivePayloadOption,
+    SuruleFlowOption, SuruleHttpOption, SuruleMetaOption, SuruleNaivePayloadOption,
+    SuruleOtherOption,
 };
 
 /// 从字符流中取出 含值可选元素 的值字符串
@@ -106,17 +107,19 @@ pub(crate) fn parse_option_from_stream(
         // name_str 是含值的 option 字段
         let (input, value_str) = take_option_value(input)?;
         let surule_element = match name_str {
-            "byte_jump" => SuruleOption::Payload(SuruleNaivePayloadOption::ByteJump(value_str.parse()?)),
+            "byte_jump" => {
+                SuruleOption::Payload(SuruleNaivePayloadOption::ByteJump(value_str.parse()?))
+            }
             "classtype" => SuruleOption::Meta(SuruleMetaOption::Classtype(value_str.to_owned())),
             "content" => SuruleOption::Payload(SuruleNaivePayloadOption::Content(
                 elements::Content::new(value_str.to_owned()),
             )),
-            "depth" => {
-                SuruleOption::Payload(SuruleNaivePayloadOption::Depth(elements::parse_u64(value_str)?))
-            }
-            "distance" => SuruleOption::Payload(SuruleNaivePayloadOption::Distance(elements::Distance(
-                value_str.parse()?,
-            ))),
+            "depth" => SuruleOption::Payload(SuruleNaivePayloadOption::Depth(elements::parse_u64(
+                value_str,
+            )?)),
+            "distance" => SuruleOption::Payload(SuruleNaivePayloadOption::Distance(
+                elements::Distance(value_str.parse()?),
+            )),
             "dsize" => SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_owned())),
             "flow" => SuruleOption::Flow(SuruleFlowOption::Flow(value_str.parse()?)),
             "flowbits" => SuruleOption::Flow(SuruleFlowOption::Flowbits(value_str.parse()?)),
@@ -125,9 +128,9 @@ pub(crate) fn parse_option_from_stream(
             }
             "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(value_str.to_owned())),
             "msg" => SuruleOption::Meta(SuruleMetaOption::Message(utils::strip_quotes(value_str))),
-            "offset" => {
-                SuruleOption::Payload(SuruleNaivePayloadOption::Offset(elements::parse_u64(value_str)?))
-            }
+            "offset" => SuruleOption::Payload(SuruleNaivePayloadOption::Offset(
+                elements::parse_u64(value_str)?,
+            )),
             "pcre" => SuruleOption::Payload(SuruleNaivePayloadOption::Pcre(value_str.to_owned())),
             "reference" => SuruleOption::Meta(SuruleMetaOption::Reference(value_str.to_owned())),
             "rev" => SuruleOption::Meta(SuruleMetaOption::Rev(elements::parse_u64(value_str)?)),

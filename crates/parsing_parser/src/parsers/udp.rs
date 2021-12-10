@@ -17,7 +17,7 @@ pub struct UdpHeader<'a> {
     pub dst_port: u16,
     pub length: u16,
     pub checksum: u16,
-    pub payload: &'a [u8]
+    pub payload: &'a [u8],
 }
 
 pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
@@ -33,7 +33,7 @@ pub fn parse_udp_header(input: &[u8]) -> nom::IResult<&[u8], UdpHeader> {
             dst_port,
             length,
             checksum,
-            payload
+            payload,
         },
     ))
 }

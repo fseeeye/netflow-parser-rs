@@ -13,10 +13,9 @@ pub use error::SuruleParseError;
 pub use option::*;
 pub use surules::{Surules, VecSurules};
 
-
+use anyhow::Result;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use anyhow::Result;
 
 use self::elements::Action;
 
@@ -73,12 +72,12 @@ impl Surule {
         options: Vec<SuruleOption>,
     ) -> Result<Self, SuruleParseError> {
         match protocol {
-            elements::Protocol::Tcp => Ok(Self::Tcp(
-                TcpSurule::new(action, src_addr, src_port, direction, dst_addr, dst_port, options)?
-            )),
-            elements::Protocol::Udp => Ok(Self::Udp(
-                UdpSurule::new(action, src_addr, src_port, direction, dst_addr, dst_port, options)?
-            )),
+            elements::Protocol::Tcp => Ok(Self::Tcp(TcpSurule::new(
+                action, src_addr, src_port, direction, dst_addr, dst_port, options,
+            )?)),
+            elements::Protocol::Udp => Ok(Self::Udp(UdpSurule::new(
+                action, src_addr, src_port, direction, dst_addr, dst_port, options,
+            )?)),
         }
     }
 }

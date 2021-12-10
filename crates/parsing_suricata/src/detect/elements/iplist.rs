@@ -5,7 +5,6 @@ use crate::surule::elements::{IpAddressList, SurList};
 
 use super::SuruleElementDetector;
 
-
 impl SuruleElementDetector for IpAddressList {
     type Comparison = Ipv4Addr;
 
@@ -56,13 +55,12 @@ impl IpAddressList {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
 
-    use crate::surule::elements::IpAddress;
     use super::*;
+    use crate::surule::elements::IpAddress;
 
     #[test]
     fn test_check_iplist() {

@@ -3,7 +3,6 @@ use crate::surule::elements::{PortList, SurList};
 
 use super::SuruleElementDetector;
 
-
 impl SuruleElementDetector for PortList {
     type Comparison = u16;
     #[inline]
@@ -54,7 +53,6 @@ impl PortList {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

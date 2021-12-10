@@ -61,13 +61,12 @@ impl FromStr for Surule {
             return Err(SuruleParseError::UnterminatedRule(input.to_string()).into());
         }
 
-        Ok(
-            Surule::new(action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options)
-                .map_err(|e| e.into())?
+        Ok(Surule::new(
+            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options,
         )
+        .map_err(|e| e.into())?)
     }
 }
-
 
 #[cfg(test)]
 mod tests {

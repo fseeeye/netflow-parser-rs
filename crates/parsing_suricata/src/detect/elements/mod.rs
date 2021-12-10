@@ -1,7 +1,6 @@
-mod portlist;
-mod iplist;
 mod flowbits;
-
+mod iplist;
+mod portlist;
 
 pub trait SuruleElementDetector {
     type Comparison;

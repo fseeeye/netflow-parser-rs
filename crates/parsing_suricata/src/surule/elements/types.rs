@@ -252,7 +252,7 @@ pub struct Content {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub fast_pattern: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub pos_key: ContentPosKey
+    pub pos_key: ContentPosKey,
 }
 
 impl Content {
@@ -267,22 +267,16 @@ impl Content {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Debug, Clone)]
 pub enum ContentPosKey {
-    Absolute {
-        depth: u64,
-        offset: u64
-    },
-    Relative {
-        distance: Distance,
-        within: Within
-    },
+    Absolute { depth: u64, offset: u64 },
+    Relative { distance: Distance, within: Within },
     StartsWith(bool),
     EndsWith(bool),
-    NotSet
+    NotSet,
 }
 
 impl Default for ContentPosKey {
     fn default() -> Self {
-        return Self::NotSet
+        return Self::NotSet;
     }
 }
 

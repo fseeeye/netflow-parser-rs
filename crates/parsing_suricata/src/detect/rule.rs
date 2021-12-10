@@ -1,9 +1,8 @@
 use std::net::IpAddr;
 
-use crate::surule::{elements::Direction, TcpSurule, UdpSurule, SuruleFlowOption};
+use crate::surule::{elements::Direction, SuruleFlowOption, TcpSurule, UdpSurule};
 
 use super::elements::{SuruleElementDetector, SuruleElementSimpleDetector};
-
 
 pub trait SuruleDetector {
     type Proto;
@@ -83,10 +82,10 @@ impl SuruleDetector for TcpSurule {
         }
         for flow_option in &self.flow_options {
             match flow_option {
-                SuruleFlowOption::Flow(_) => {},
+                SuruleFlowOption::Flow(_) => {}
                 SuruleFlowOption::Flowbits(flowbits) => {
                     if !flowbits.check_simple() {
-                        return false
+                        return false;
                     }
                 }
             }

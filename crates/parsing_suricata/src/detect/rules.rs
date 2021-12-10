@@ -1,9 +1,9 @@
-use tracing::debug;
 use parsing_parser::{AppLevel, NetLevel, QuinPacket, TransLevel, TransportProtocol};
 use parsing_rule::*;
+use tracing::debug;
 
-use crate::surule::{elements::Action, VecSurules};
 use super::rule::SuruleDetector;
+use crate::surule::{elements::Action, VecSurules};
 
 impl Into<RuleAction> for Action {
     fn into(self) -> RuleAction {
