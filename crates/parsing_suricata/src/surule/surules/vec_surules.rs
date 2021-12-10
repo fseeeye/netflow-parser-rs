@@ -112,72 +112,56 @@ mod tests {
                         )
                     ],
                     payload_options: vec![
-                        SurulePayloadOption::Content(Content {
-                            pattern: "\"|ff|SMB\"".to_string(),
-                            depth: 0,
+                    SurulePayloadOption::Content(Content {
+                        pattern: "\"|ff|SMB\"".to_string(),
+                        fast_pattern: false,
+                        nocase: false,
+                        pos_key: ContentPosKey::NotSet
+                    }),
+                    SurulePayloadOption::Content(Content {
+                        pattern: "\"|10 00 00 00|\"".to_string(),
+                        fast_pattern: false,
+                        nocase: false,
+                        pos_key: ContentPosKey::Relative {
                             distance: Distance(CountOrName::Value(0)),
-                            endswith: false,
-                            fast_pattern: false,
-                            nocase: false,
-                            offset: 0,
-                            startswith: false,
                             within: Within(CountOrName::Value(0))
+                        }
+                    }),
+                    SurulePayloadOption::Content(Content {
+                        pattern: "\"|02 00|\"".to_string(),
+                        fast_pattern: false,
+                        nocase: false,
+                        pos_key: ContentPosKey::Relative {
+                            distance: Distance(CountOrName::Value(14)),
+                            within: Within(CountOrName::Value(2))
+                        }
+                    }),
+                    SurulePayloadOption::ByteJump(ByteJump {
+                        count: 4,
+                        offset: 12,
+                        relative: true,
+                        multiplier: 2,
+                        endian: Endian::Little,
+                        string: false,
+                        hex: false,
+                        dec: false,
+                        oct: false,
+                        align: false,
+                        from_beginning: false,
+                        from_end: false,
+                        post_offset: 0,
+                        dce: false,
+                        bitmask: 0
+                    }),
+                    SurulePayloadOption::Content(Content {
+                        pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
+                        fast_pattern: false,
+                        nocase: false,
+                        pos_key: ContentPosKey::Relative {
+                            distance: Distance(CountOrName::Value(12)),
+                            within: Within(CountOrName::Value(8))
+                            }
                         }),
-                        SurulePayloadOption::Content(Content {
-                            pattern: "\"|10 00 00 00|\"".to_string(),
-                            depth: 0,
-                            distance: Distance(CountOrName::Value(0)),
-                            endswith: false,
-                            fast_pattern: false,
-                            nocase: false,
-                            offset: 0,
-                            startswith: false,
-                            within: Within(CountOrName::Value(0))
-                        }),
-                        SurulePayloadOption::Distance(Distance(CountOrName::Value(0))),
-                        SurulePayloadOption::Content(Content {
-                            pattern: "\"|02 00|\"".to_string(),
-                            depth: 0,
-                            distance: Distance(CountOrName::Value(0)),
-                            endswith: false,
-                            fast_pattern: false,
-                            nocase: false,
-                            offset: 0,
-                            startswith: false,
-                            within: Within(CountOrName::Value(0))
-                        }),
-                        SurulePayloadOption::Distance(Distance(CountOrName::Value(14))),
-                        SurulePayloadOption::Within(Within(CountOrName::Value(2))),
-                        SurulePayloadOption::ByteJump(ByteJump {
-                            count: 4,
-                            offset: 12,
-                            relative: true,
-                            multiplier: 2,
-                            endian: Endian::Little,
-                            string: false,
-                            hex: false,
-                            dec: false,
-                            oct: false,
-                            align: false,
-                            from_beginning: false,
-                            from_end: false,
-                            post_offset: 0,
-                            dce: false,
-                            bitmask: 0
-                        }),
-                        SurulePayloadOption::Content(Content {
-                            pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
-                            depth: 0,
-                            distance: Distance(CountOrName::Value(0)),
-                            endswith: false,
-                            fast_pattern: false,
-                            nocase: false,
-                            offset: 0,
-                            startswith: false,
-                            within: Within(CountOrName::Value(0))
-                        }),
-                        SurulePayloadOption::Distance(Distance(CountOrName::Value(12))),
-                        SurulePayloadOption::Within(Within(CountOrName::Value(8))),
                     ],
                     flow_options: vec![SuruleFlowOption::Flow(Flow(vec![
                         FlowMatcher::Established,

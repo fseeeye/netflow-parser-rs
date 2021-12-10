@@ -52,6 +52,12 @@ pub enum SuruleParseError {
     InvalidByteJump(String),
     #[error("integer parsing error: '{0}'")]
     IntegerParseError(String),
+    #[error("find a wild content modifier which not pointing to any content: '{0}'")]
+    WildContentModifier(String),
+    #[error("relative keywords (within/distance) & abosolute keywords (depth/offset) & startswith/endswith can't exit in the same content.")]
+    ConflictContentModifier,
+    #[error("find repeated content modifier: '{0}'")]
+    DuplicatedContentModifier(String),
     #[error("unknow flow option: '{0}'")]
     UnknownFlowOption(String),
     #[error("flowbit error: '{0}'")]

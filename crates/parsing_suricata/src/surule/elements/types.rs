@@ -246,23 +246,13 @@ impl Default for Endian {
 pub struct Content {
     pub pattern: String,
 
-    // Modifiers.
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub depth: u64,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub distance: Distance,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub endswith: bool,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub fast_pattern: bool,
+    /* Modifiers */
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub nocase: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub offset: u64,
+    pub fast_pattern: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub startswith: bool,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub within: Within,
+    pub pos_key: ContentPosKey
 }
 
 impl Content {
@@ -271,6 +261,28 @@ impl Content {
             pattern: pattern.as_ref().to_string(),
             ..Default::default() // https://doc.rust-lang.org/std/default/trait.Default.html
         }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Debug, Clone)]
+pub enum ContentPosKey {
+    Absolute {
+        depth: u64,
+        offset: u64
+    },
+    Relative {
+        distance: Distance,
+        within: Within
+    },
+    StartsWith(bool),
+    EndsWith(bool),
+    NotSet
+}
+
+impl Default for ContentPosKey {
+    fn default() -> Self {
+        return Self::NotSet
     }
 }
 

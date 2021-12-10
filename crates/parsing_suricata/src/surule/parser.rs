@@ -61,11 +61,13 @@ impl FromStr for Surule {
             return Err(SuruleParseError::UnterminatedRule(input.to_string()).into());
         }
 
-        Ok(Surule::new(
-            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options,
-        ))
+        Ok(
+            Surule::new(action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options)
+                .map_err(|e| e.into())?
+        )
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -84,14 +86,11 @@ mod tests {
         let input = r#"alert tcp ["192.168.0.0/16", !"192.168.0.3"] any -> "192.168.0.110" [445,3389] (
             msg:"ET DOS NetrWkstaUserEnum Request with large Preferred Max Len";
             flow:established,to_server; 
-            content:"|ff|SMB"; content:"|10 00 00 00|";
-            distance:0; content:"|02 00|";
-            distance:14;
-            within:2;
+            content:"|ff|SMB"; 
+            content:"|10 00 00 00|"; distance:0; 
+            content:"|02 00|"; distance:14; within:2;
             byte_jump:4,12,relative,little,multiplier 2;
-            content:"|00 00 00 00 00 00 00 00|";
-            distance:12;
-            within:8;
+            content:"|00 00 00 00 00 00 00 00|"; distance:12; within:8;
             byte_test:4,>,2,0,relative;
             reference:cve,2006-6723;
             reference:url,doc.emergingthreats.net/bin/view/Main/2003236;
@@ -149,40 +148,28 @@ mod tests {
                 payload_options: vec![
                     SurulePayloadOption::Content(Content {
                         pattern: "\"|ff|SMB\"".to_string(),
-                        depth: 0,
-                        distance: Distance(CountOrName::Value(0)),
-                        endswith: false,
                         fast_pattern: false,
                         nocase: false,
-                        offset: 0,
-                        startswith: false,
-                        within: Within(CountOrName::Value(0))
+                        pos_key: ContentPosKey::NotSet
                     }),
                     SurulePayloadOption::Content(Content {
                         pattern: "\"|10 00 00 00|\"".to_string(),
-                        depth: 0,
-                        distance: Distance(CountOrName::Value(0)),
-                        endswith: false,
                         fast_pattern: false,
                         nocase: false,
-                        offset: 0,
-                        startswith: false,
-                        within: Within(CountOrName::Value(0))
+                        pos_key: ContentPosKey::Relative {
+                            distance: Distance(CountOrName::Value(0)),
+                            within: Within(CountOrName::Value(0))
+                        }
                     }),
-                    SurulePayloadOption::Distance(Distance(CountOrName::Value(0))),
                     SurulePayloadOption::Content(Content {
                         pattern: "\"|02 00|\"".to_string(),
-                        depth: 0,
-                        distance: Distance(CountOrName::Value(0)),
-                        endswith: false,
                         fast_pattern: false,
                         nocase: false,
-                        offset: 0,
-                        startswith: false,
-                        within: Within(CountOrName::Value(0))
+                        pos_key: ContentPosKey::Relative {
+                            distance: Distance(CountOrName::Value(14)),
+                            within: Within(CountOrName::Value(2))
+                        }
                     }),
-                    SurulePayloadOption::Distance(Distance(CountOrName::Value(14))),
-                    SurulePayloadOption::Within(Within(CountOrName::Value(2))),
                     SurulePayloadOption::ByteJump(ByteJump {
                         count: 4,
                         offset: 12,
@@ -202,17 +189,13 @@ mod tests {
                     }),
                     SurulePayloadOption::Content(Content {
                         pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
-                        depth: 0,
-                        distance: Distance(CountOrName::Value(0)),
-                        endswith: false,
                         fast_pattern: false,
                         nocase: false,
-                        offset: 0,
-                        startswith: false,
-                        within: Within(CountOrName::Value(0))
+                        pos_key: ContentPosKey::Relative {
+                            distance: Distance(CountOrName::Value(12)),
+                            within: Within(CountOrName::Value(8))
+                        }
                     }),
-                    SurulePayloadOption::Distance(Distance(CountOrName::Value(12))),
-                    SurulePayloadOption::Within(Within(CountOrName::Value(8))),
                 ],
                 flow_options: vec![SuruleFlowOption::Flow(Flow(vec![
                     FlowMatcher::Established,
