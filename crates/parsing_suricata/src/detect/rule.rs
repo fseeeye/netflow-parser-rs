@@ -9,9 +9,9 @@ pub trait SuruleDetector {
     fn detect_header(
         &self,
         dst_ip: &IpAddr,
-        dst_port: &u16,
+        dst_port: u16,
         src_ip: &IpAddr,
-        src_port: &u16,
+        src_port: u16,
     ) -> bool;
     fn detect_option(&self, _: Self::Proto) -> bool;
 }
@@ -22,9 +22,9 @@ impl SuruleDetector for TcpSurule {
     fn detect_header(
         &self,
         dst_ip: &IpAddr,
-        dst_port: &u16,
+        dst_port: u16,
         src_ip: &IpAddr,
-        src_port: &u16,
+        src_port: u16,
     ) -> bool {
         match self.direction {
             Direction::Uni => {
@@ -101,9 +101,9 @@ impl SuruleDetector for UdpSurule {
     fn detect_header(
         &self,
         dst_ip: &IpAddr,
-        dst_port: &u16,
+        dst_port: u16,
         src_ip: &IpAddr,
-        src_port: &u16,
+        src_port: u16,
     ) -> bool {
         match self.direction {
             Direction::Uni => {

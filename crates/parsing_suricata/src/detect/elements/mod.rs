@@ -3,8 +3,8 @@ mod iplist;
 mod portlist;
 
 pub trait SuruleElementDetector {
-    type Comparison;
-    fn check(&self, _: &Self::Comparison) -> bool;
+    type Comparison<'a>;
+    fn check<'a>(&self, _: Self::Comparison<'a>) -> bool;
 }
 
 pub trait SuruleElementSimpleDetector: SuruleElementDetector {

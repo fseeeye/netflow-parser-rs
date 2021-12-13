@@ -14,11 +14,15 @@ lazy_static! {
 }
 
 impl SuruleElementDetector for Flowbits {
-    type Comparison = bool;
+    type Comparison<'a> = bool;
 
     #[inline(always)]
-    fn check(&self, _: &Self::Comparison) -> bool {
-        check_flowbits(self)
+    fn check<'a>(&self, bool_flag: Self::Comparison<'a>) -> bool {
+        if check_flowbits(self) {
+            bool_flag
+        } else {
+            !bool_flag
+        }
     }
 }
 
@@ -29,6 +33,7 @@ impl SuruleElementSimpleDetector for Flowbits {
     }
 }
 
+#[inline]
 #[allow(dead_code)]
 fn register_flowbits(name: String, value: bool) {
     match FLOWBITHASH.lock() {

@@ -4,10 +4,9 @@ use crate::surule::elements::{PortList, SurList};
 use super::SuruleElementDetector;
 
 impl SuruleElementDetector for PortList {
-    type Comparison = u16;
+    type Comparison<'a> = u16;
     #[inline]
-    fn check(&self, compare_port_ref: &Self::Comparison) -> bool {
-        let compare_port = *compare_port_ref;
+    fn check<'a>(&self, compare_port: Self::Comparison<'a>) -> bool {
         if self.check_accept(compare_port) {
             return !self.check_except(compare_port);
         } else {
@@ -76,8 +75,8 @@ mod tests {
             except: Some(vec![Port::new_range(3300, 3400).unwrap()]),
         };
 
-        assert!(list_all.check(&port));
-        assert!(!list_except_single.check(&port));
-        assert!(!list_except_range.check(&port));
+        assert!(list_all.check(port));
+        assert!(!list_except_single.check(port));
+        assert!(!list_except_range.check(port));
     }
 }

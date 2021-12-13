@@ -6,9 +6,9 @@ use crate::surule::elements::{IpAddressList, SurList};
 use super::SuruleElementDetector;
 
 impl SuruleElementDetector for IpAddressList {
-    type Comparison = Ipv4Addr;
+    type Comparison<'a> = &'a Ipv4Addr;
 
-    fn check(&self, compare_ipv4: &Self::Comparison) -> bool {
+    fn check<'a>(&self, compare_ipv4: Self::Comparison<'a>) -> bool {
         if self.check_accept(compare_ipv4) {
             return !self.check_except(compare_ipv4);
         } else {
