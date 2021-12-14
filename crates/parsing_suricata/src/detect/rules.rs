@@ -1,4 +1,4 @@
-use parsing_parser::{AppLevel, NetLevel, QuinPacket, TransLevel, TransportProtocol};
+use parsing_parser::{AppLevel, NetLevel, QuinPacket, TransLevel, TransportLayer};
 use parsing_rule::*;
 use tracing::debug;
 
@@ -30,28 +30,28 @@ impl RulesDetector for VecSurules {
                 let src_ip = l4.get_src_ip();
                 let src_port = l4.get_src_port();
 
-                match l4.get_tran_type() {
-                    TransportProtocol::Tcp => {
+                match l4.transport_layer {
+                    TransportLayer::Tcp(tcp) => {
                         // detect tcp suricata rules for this packet
                         let tcp_rules = &self.tcp_rules;
                         for tcp_rule in tcp_rules {
                             debug!(target: "SURICATA(VecSurules::detect)", "checking TCP Rule: {:?}", &tcp_rule);
                             if tcp_rule.detect_header(&dst_ip, dst_port, &src_ip, src_port) {
                                 // TODO
-                                if tcp_rule.detect_option(1) {
+                                if tcp_rule.detect_option(tcp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current TCP Rule!");
                                     return DetectResult::Hit(tcp_rule.action.clone().into());
                                 }
                             }
                         }
                     }
-                    TransportProtocol::Udp => {
+                    TransportLayer::Udp(udp) => {
                         // detect udp suricata rules for this packet
                         let udp_rules = &self.udp_rules;
                         for udp_rule in udp_rules {
                             if udp_rule.detect_header(&dst_ip, dst_port, &src_ip, src_port) {
                                 // TODO
-                                if udp_rule.detect_option(1) {
+                                if udp_rule.detect_option(udp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current UDP Rule: {:?}", &udp_rule);
                                     return DetectResult::Hit(udp_rule.action.clone().into());
                                 }
@@ -59,6 +59,7 @@ impl RulesDetector for VecSurules {
                         }
                     }
                 }
+                debug!(target: "SURICATA(VecSurules::detect)", "MISS current Rule!");
                 DetectResult::Miss
             }
 
@@ -69,28 +70,28 @@ impl RulesDetector for VecSurules {
                 let src_port = l5.get_src_port();
 
                 // Warning: 传输层规则优先级高于应用层规则
-                match l5.get_tran_type() {
-                    TransportProtocol::Tcp => {
+                match l5.transport_layer {
+                    TransportLayer::Tcp(tcp) => {
                         // detect tcp suricata rules for this packet
                         let tcp_rules = &self.tcp_rules;
                         for tcp_rule in tcp_rules {
                             debug!(target: "SURICATA(VecSurules::detect)", "checking TCP Rule: {:?}", &tcp_rule);
                             if tcp_rule.detect_header(&dst_ip, dst_port, &src_ip, src_port) {
                                 // TODO
-                                if tcp_rule.detect_option(1) {
+                                if tcp_rule.detect_option(tcp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current TCP Rule!");
                                     return DetectResult::Hit(tcp_rule.action.clone().into());
                                 }
                             }
                         }
                     }
-                    TransportProtocol::Udp => {
+                    TransportLayer::Udp(udp) => {
                         // detect udp suricata rules for this packet
                         let udp_rules = &self.udp_rules;
                         for udp_rule in udp_rules {
                             if udp_rule.detect_header(&dst_ip, dst_port, &src_ip, src_port) {
                                 // TODO
-                                if udp_rule.detect_option(1) {
+                                if udp_rule.detect_option(udp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current TCP Rule: {:?}", &udp_rule);
                                     return DetectResult::Hit(udp_rule.action.clone().into());
                                 }
@@ -104,6 +105,7 @@ impl RulesDetector for VecSurules {
                     _ => {}
                 }
 
+                debug!(target: "SURICATA(VecSurules::detect)", "MISS current Rule!");
                 DetectResult::Miss
             }
 

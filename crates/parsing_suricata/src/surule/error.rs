@@ -52,6 +52,8 @@ pub enum SuruleParseError {
     InvalidByteJump(String),
     #[error("integer parsing error: '{0}'")]
     IntegerParseError(String),
+    #[error("find odd length hex in content pattern: '{0}'")]
+    OddContentPatternHex(String),
     #[error("find a wild content modifier which not pointing to any content: '{0}'")]
     WildContentModifier(String),
     #[error("relative keywords (within/distance) & abosolute keywords (depth/offset) & startswith/endswith can't exit in the same content.")]

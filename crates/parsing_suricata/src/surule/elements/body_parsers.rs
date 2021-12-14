@@ -1,23 +1,45 @@
 //! Body Option Element 的解析函数，用于将字符串解析成 Option Element
 use anyhow::Result;
+use bytes::BufMut;
 use ipnet::Ipv4Net;
 
 use std::net::Ipv4Addr;
+use std::ops::BitXorAssign;
 use std::str::FromStr;
 
 use super::types::{FlowbitCommand, IpAddress, Port};
 use super::util_parsers::{handle_value, take_until_whitespace};
-use super::{ByteJump, CountOrName, Endian, Flow, FlowMatcher, Flowbits};
+use super::{ByteJump, Content, CountOrName, Endian, Flow, FlowMatcher, Flowbits};
 use crate::surule::SuruleParseError;
+
+#[inline(always)]
+fn parse_num<T>(input: &str) -> Result<T, nom::Err<SuruleParseError>>
+where
+    T: FromStr,
+{
+    let clean_input = handle_value(input)?;
+
+    clean_input
+        .parse::<T>()
+        .map_err(|_| SuruleParseError::IntegerParseError(input.to_string()).into())
+}
 
 /// 解析数字 u64
 #[inline(always)]
 pub(crate) fn parse_u64(input: &str) -> Result<u64, nom::Err<SuruleParseError>> {
-    let u64_str = handle_value(input)?;
+    parse_num::<u64>(input)
+}
 
-    u64_str
-        .parse::<u64>()
-        .map_err(|_| SuruleParseError::IntegerParseError(input.to_string()).into())
+/// 解析数字 usize
+#[inline(always)]
+pub(crate) fn parse_usize(input: &str) -> Result<usize, nom::Err<SuruleParseError>> {
+    parse_num::<usize>(input)
+}
+
+/// 解析数字 isize
+#[inline(always)]
+pub(crate) fn parse_isize(input: &str) -> Result<isize, nom::Err<SuruleParseError>> {
+    parse_num::<isize>(input)
 }
 
 /// 由字符串解析 IpAddress
@@ -182,6 +204,40 @@ impl FromStr for Flowbits {
     }
 }
 
+/// 由字符串解析 Content 的 pattern 部分
+impl FromStr for Content {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let input = handle_value(input)?;
+
+        let mut hex_flag = false;
+        let mut buf: Vec<u8> = vec![];
+
+        for sub_str in input.split('|') {
+            if !hex_flag {
+                buf.put(sub_str.as_bytes())
+            } else {
+                let clear_hex: String = sub_str.chars().filter(|c| !c.is_whitespace()).collect();
+                buf.put(
+                    hex::decode(clear_hex)
+                        .map_err(|_| {
+                            SuruleParseError::OddContentPatternHex(input.to_string()).into()
+                        })?
+                        .as_ref(),
+                )
+            }
+
+            hex_flag.bitxor_assign(true);
+        }
+
+        Ok(Content {
+            pattern: buf,
+            ..Default::default()
+        })
+    }
+}
+
 /// 由字符串解析 ByteJump
 impl FromStr for ByteJump {
     type Err = nom::Err<SuruleParseError>;
@@ -307,12 +363,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_number_str() {
-        assert_eq!(parse_u64(" 12\r\n").unwrap(), 12u64);
+    fn test_parse_usize() {
+        assert_eq!(parse_usize(" 12\r\n").unwrap(), 12usize);
         assert_eq!(
-            parse_u64(" string12 \r\n").unwrap_err(),
+            parse_usize(" string12 \r\n").unwrap_err(),
             nom::Err::Error(SuruleParseError::IntegerParseError(
                 " string12 \r\n".to_string()
+            ))
+        )
+    }
+
+    #[test]
+    fn test_parse_isize() {
+        assert_eq!(parse_isize(" -12\r\n").unwrap(), -12isize);
+        assert_eq!(
+            parse_usize(" string-12 \r\n").unwrap_err(),
+            nom::Err::Error(SuruleParseError::IntegerParseError(
+                " string-12 \r\n".to_string()
             ))
         )
     }

@@ -6,7 +6,10 @@
 //!
 //! 参考项目：
 //!  - suricata 规则字符串解析参考自：[rust-suricata-rule-parser](https://github.com/jasonish/rust-suricata-rule-parser/blob/main/src/lib.rs)
+// feature ref: https://github.com/rust-lang/rust/issues/44265
 #![feature(generic_associated_types)]
+// feature ref: https://github.com/rust-lang/rust/issues/56345
+// #![feature(slice_pattern)]
 
 mod detect;
 mod surule;

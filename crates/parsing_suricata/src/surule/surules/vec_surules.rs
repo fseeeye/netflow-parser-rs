@@ -96,10 +96,6 @@ mod tests {
                             "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len"
                                 .to_string()
                         ),
-                        // SuruleOption::GenericOption(GenericOption {
-                        //     name: "byte_test".to_string(),
-                        //     val: Some("4,>,2,0,relative".to_string())
-                        // }),
                         SuruleMetaOption::Reference("cve,2006-6723".to_string()),
                         SuruleMetaOption::Reference(
                             "url,doc.emergingthreats.net/bin/view/Main/2003236".to_string()
@@ -113,27 +109,27 @@ mod tests {
                     ],
                     payload_options: vec![
                         SurulePayloadOption::Content(Content {
-                            pattern: "\"|ff|SMB\"".to_string(),
+                            pattern: vec![255, 115, 109, 98],
                             fast_pattern: false,
-                            nocase: false,
+                            nocase: true,
                             pos_key: ContentPosKey::NotSet
                         }),
                         SurulePayloadOption::Content(Content {
-                            pattern: "\"|10 00 00 00|\"".to_string(),
+                            pattern: vec![16, 0, 0, 0],
                             fast_pattern: false,
                             nocase: false,
                             pos_key: ContentPosKey::Relative {
-                                distance: Distance(CountOrName::Value(0)),
-                                within: Within(CountOrName::Value(0))
+                                within: None,
+                                distance: Some(0)
                             }
                         }),
                         SurulePayloadOption::Content(Content {
-                            pattern: "\"|02 00|\"".to_string(),
+                            pattern: vec![2, 0],
                             fast_pattern: false,
                             nocase: false,
                             pos_key: ContentPosKey::Relative {
-                                distance: Distance(CountOrName::Value(14)),
-                                within: Within(CountOrName::Value(2))
+                                within: Some(2),
+                                distance: Some(14)
                             }
                         }),
                         SurulePayloadOption::ByteJump(ByteJump {
@@ -154,12 +150,12 @@ mod tests {
                             bitmask: 0
                         }),
                         SurulePayloadOption::Content(Content {
-                            pattern: "\"|00 00 00 00 00 00 00 00|\"".to_string(),
+                            pattern: vec![0, 0, 0, 0, 0, 0, 0, 0],
                             fast_pattern: false,
                             nocase: false,
                             pos_key: ContentPosKey::Relative {
-                                distance: Distance(CountOrName::Value(12)),
-                                within: Within(CountOrName::Value(8))
+                                within: Some(8),
+                                distance: Some(12)
                             }
                         }),
                     ],

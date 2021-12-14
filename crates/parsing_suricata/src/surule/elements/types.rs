@@ -244,7 +244,7 @@ impl Default for Endian {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Default, Debug, Clone)]
 pub struct Content {
-    pub pattern: String,
+    pub pattern: Vec<u8>,
 
     /* Modifiers */
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
@@ -255,22 +255,19 @@ pub struct Content {
     pub pos_key: ContentPosKey,
 }
 
-impl Content {
-    pub fn new<S: AsRef<str>>(pattern: S) -> Self {
-        Self {
-            pattern: pattern.as_ref().to_string(),
-            ..Default::default() // https://doc.rust-lang.org/std/default/trait.Default.html
-        }
-    }
-}
-
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Debug, Clone)]
 pub enum ContentPosKey {
-    Absolute { depth: u64, offset: u64 },
-    Relative { distance: Distance, within: Within },
-    StartsWith(bool),
-    EndsWith(bool),
+    Absolute {
+        depth: Option<usize>,
+        offset: Option<usize>,
+    },
+    Relative {
+        within: Option<usize>,
+        distance: Option<isize>,
+    },
+    StartsWith,
+    EndsWith,
     NotSet,
 }
 
@@ -279,11 +276,6 @@ impl Default for ContentPosKey {
         return Self::NotSet;
     }
 }
-
-/// Distance modifier type (Suricata Body Element)
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Default, Debug, Clone)]
-pub struct Distance(pub CountOrName);
 
 /// FileData type (Suricata Body Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -381,11 +373,6 @@ impl Display for FlowbitCommand {
         write!(f, "{}", label)
     }
 }
-
-/// Within modifier type (Suricata Body Element)
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Default, Debug, Clone)]
-pub struct Within(pub CountOrName);
 
 /*
  *  Util Types

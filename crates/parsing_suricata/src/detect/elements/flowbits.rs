@@ -6,30 +6,115 @@ use std::collections::HashMap;
 use std::ops::BitXorAssign;
 use std::sync::Mutex;
 
-use super::{SuruleElementDetector, SuruleElementSimpleDetector};
 use crate::surule::elements::{FlowbitCommand, Flowbits};
 
 lazy_static! {
     static ref FLOWBITHASH: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
 }
 
-impl SuruleElementDetector for Flowbits {
-    type Comparison<'a> = bool;
-
-    #[inline(always)]
-    fn check<'a>(&self, bool_flag: Self::Comparison<'a>) -> bool {
-        if check_flowbits(self) {
-            bool_flag
-        } else {
-            !bool_flag
+impl Flowbits {
+    #[inline]
+    pub fn check(&self) -> bool {
+        match self.command {
+            // 检查是否为 false
+            FlowbitCommand::IsNotSet => {
+                for name in &self.names {
+                    match FLOWBITHASH.lock() {
+                        Ok(flowbit_hashmap) => {
+                            if let Some(v) = flowbit_hashmap.get(name) {
+                                if *v == false {
+                                    continue;
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                continue;
+                            }
+                        }
+                        Err(e) => {
+                            error!(target: "SURICATA(Flowbits::check)", error = %e)
+                        }
+                    }
+                }
+                true
+            }
+            // 检查是否为 true
+            FlowbitCommand::IsSet => {
+                for name in &self.names {
+                    match FLOWBITHASH.lock() {
+                        Ok(flowbit_hashmap) => {
+                            if let Some(v) = flowbit_hashmap.get(name) {
+                                if *v == true {
+                                    continue;
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        Err(e) => {
+                            error!(target: "SURICATA(Flowbits::check)", error = %e)
+                        }
+                    }
+                }
+                true
+            }
+            // 本条规则不告警
+            // Tips: 请放到其它 Flowbits 规则之后！
+            FlowbitCommand::NoAlert => false,
+            // 设为 true
+            FlowbitCommand::Set => {
+                for name in &self.names {
+                    match FLOWBITHASH.lock() {
+                        Ok(mut flowbit_hashmap) => {
+                            if let Some(v) = flowbit_hashmap.get_mut(name) {
+                                *v = true;
+                            } else {
+                                flowbit_hashmap.insert(name.to_string(), true);
+                            }
+                        }
+                        Err(e) => {
+                            error!(target: "SURICATA(Flowbits::check)", error = %e)
+                        }
+                    }
+                }
+                true
+            }
+            // 取反
+            FlowbitCommand::Toggle => {
+                for name in &self.names {
+                    match FLOWBITHASH.lock() {
+                        Ok(mut flowbit_hashmap) => {
+                            let v = flowbit_hashmap.entry(name.to_string()).or_insert(false);
+                            v.bitxor_assign(true);
+                        }
+                        Err(e) => {
+                            error!(target: "SURICATA(Flowbits::check)", error = %e)
+                        }
+                    }
+                }
+                true
+            }
+            // 设为 false
+            FlowbitCommand::Unset => {
+                for name in &self.names {
+                    match FLOWBITHASH.lock() {
+                        Ok(mut flowbit_hashmap) => {
+                            if let Some(v) = flowbit_hashmap.get_mut(name) {
+                                *v = false;
+                            } else {
+                                flowbit_hashmap.insert(name.to_string(), false);
+                            }
+                        }
+                        Err(e) => {
+                            error!(target: "SURICATA(Flowbits::check)", error = %e)
+                        }
+                    }
+                }
+                true
+            }
         }
-    }
-}
-
-impl SuruleElementSimpleDetector for Flowbits {
-    #[inline(always)]
-    fn check_simple(&self) -> bool {
-        check_flowbits(self)
     }
 }
 
@@ -42,109 +127,6 @@ fn register_flowbits(name: String, value: bool) {
         }
         Err(e) => {
             error!(target: "SURICATA(Flowbits::check)", error = %e);
-        }
-    }
-}
-
-fn check_flowbits(flowbits: &Flowbits) -> bool {
-    match flowbits.command {
-        // 检查是否为 false
-        FlowbitCommand::IsNotSet => {
-            for name in &flowbits.names {
-                match FLOWBITHASH.lock() {
-                    Ok(flowbit_hashmap) => {
-                        if let Some(v) = flowbit_hashmap.get(name) {
-                            if *v == false {
-                                continue;
-                            } else {
-                                return false;
-                            }
-                        } else {
-                            continue;
-                        }
-                    }
-                    Err(e) => {
-                        error!(target: "SURICATA(Flowbits::check)", error = %e)
-                    }
-                }
-            }
-            true
-        }
-        // 检查是否为 true
-        FlowbitCommand::IsSet => {
-            for name in &flowbits.names {
-                match FLOWBITHASH.lock() {
-                    Ok(flowbit_hashmap) => {
-                        if let Some(v) = flowbit_hashmap.get(name) {
-                            if *v == true {
-                                continue;
-                            } else {
-                                return false;
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
-                    Err(e) => {
-                        error!(target: "SURICATA(Flowbits::check)", error = %e)
-                    }
-                }
-            }
-            true
-        }
-        // 本条规则不告警
-        // Tips: 请放到其它 Flowbits 规则之后！
-        FlowbitCommand::NoAlert => false,
-        // 设为 true
-        FlowbitCommand::Set => {
-            for name in &flowbits.names {
-                match FLOWBITHASH.lock() {
-                    Ok(mut flowbit_hashmap) => {
-                        if let Some(v) = flowbit_hashmap.get_mut(name) {
-                            *v = true;
-                        } else {
-                            flowbit_hashmap.insert(name.to_string(), true);
-                        }
-                    }
-                    Err(e) => {
-                        error!(target: "SURICATA(Flowbits::check)", error = %e)
-                    }
-                }
-            }
-            true
-        }
-        // 取反
-        FlowbitCommand::Toggle => {
-            for name in &flowbits.names {
-                match FLOWBITHASH.lock() {
-                    Ok(mut flowbit_hashmap) => {
-                        let v = flowbit_hashmap.entry(name.to_string()).or_insert(false);
-                        v.bitxor_assign(true);
-                    }
-                    Err(e) => {
-                        error!(target: "SURICATA(Flowbits::check)", error = %e)
-                    }
-                }
-            }
-            true
-        }
-        // 设为 false
-        FlowbitCommand::Unset => {
-            for name in &flowbits.names {
-                match FLOWBITHASH.lock() {
-                    Ok(mut flowbit_hashmap) => {
-                        if let Some(v) = flowbit_hashmap.get_mut(name) {
-                            *v = false;
-                        } else {
-                            flowbit_hashmap.insert(name.to_string(), false);
-                        }
-                    }
-                    Err(e) => {
-                        error!(target: "SURICATA(Flowbits::check)", error = %e)
-                    }
-                }
-            }
-            true
         }
     }
 }
@@ -180,21 +162,21 @@ mod tests {
             names: vec![],
         };
 
-        assert!(!flowbits_isset.check_simple());
-        assert!(flowbits_isnotset.check_simple());
+        assert!(!flowbits_isset.check());
+        assert!(flowbits_isnotset.check());
 
-        assert!(flowbits_set.check_simple());
-        assert!(flowbits_isset.check_simple());
-        assert!(!flowbits_isnotset.check_simple());
+        assert!(flowbits_set.check());
+        assert!(flowbits_isset.check());
+        assert!(!flowbits_isnotset.check());
 
-        assert!(flowbits_unset.check_simple());
-        assert!(!flowbits_isset.check_simple());
-        assert!(flowbits_isnotset.check_simple());
+        assert!(flowbits_unset.check());
+        assert!(!flowbits_isset.check());
+        assert!(flowbits_isnotset.check());
 
-        assert!(flowbits_toggle.check_simple());
-        assert!(flowbits_isset.check_simple());
-        assert!(!flowbits_isnotset.check_simple());
+        assert!(flowbits_toggle.check());
+        assert!(flowbits_isset.check());
+        assert!(!flowbits_isnotset.check());
 
-        assert!(!flowbits_noallert.check_simple());
+        assert!(!flowbits_noallert.check());
     }
 }

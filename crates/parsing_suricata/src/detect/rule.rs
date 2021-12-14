@@ -1,23 +1,20 @@
 use std::net::IpAddr;
 
-use crate::surule::{elements::Direction, SuruleFlowOption, TcpSurule, UdpSurule};
+use tracing::debug;
 
-use super::elements::{SuruleElementDetector, SuruleElementSimpleDetector};
+use crate::surule::{
+    elements::Direction, SuruleFlowOption, SurulePayloadOption, TcpSurule, UdpSurule,
+};
 
 pub trait SuruleDetector {
-    type Proto;
-    fn detect_header(
-        &self,
-        dst_ip: &IpAddr,
-        dst_port: u16,
-        src_ip: &IpAddr,
-        src_port: u16,
-    ) -> bool;
-    fn detect_option(&self, _: Self::Proto) -> bool;
+    type Proto<'a>;
+    fn detect_header(&self, dst_ip: &IpAddr, dst_port: u16, src_ip: &IpAddr, src_port: u16)
+        -> bool;
+    fn detect_option<'a>(&self, _: Self::Proto<'a>) -> bool;
 }
 
 impl SuruleDetector for TcpSurule {
-    type Proto = u8;
+    type Proto<'a> = &'a [u8];
 
     fn detect_header(
         &self,
@@ -69,9 +66,20 @@ impl SuruleDetector for TcpSurule {
     }
 
     // TODO
-    fn detect_option(&self, _: Self::Proto) -> bool {
+    fn detect_option<'a>(&self, payload: Self::Proto<'a>) -> bool {
+        let mut last_pos = 0;
         for payload_option in &self.payload_options {
             match payload_option {
+                SurulePayloadOption::Content(c) => {
+                    debug!(target: "SURICATA(TcpSurule::detect_option)", ?payload);
+                    debug!(target: "SURICATA(TcpSurule::detect_option)", content = ?c);
+                    if let Some(p) = c.check(payload, last_pos) {
+                        last_pos = p;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
                 _ => {}
             }
         }
@@ -84,7 +92,7 @@ impl SuruleDetector for TcpSurule {
             match flow_option {
                 SuruleFlowOption::Flow(_) => {}
                 SuruleFlowOption::Flowbits(flowbits) => {
-                    if !flowbits.check_simple() {
+                    if !flowbits.check() {
                         return false;
                     }
                 }
@@ -96,7 +104,7 @@ impl SuruleDetector for TcpSurule {
 }
 
 impl SuruleDetector for UdpSurule {
-    type Proto = u8;
+    type Proto<'a> = &'a [u8];
 
     fn detect_header(
         &self,
@@ -147,9 +155,18 @@ impl SuruleDetector for UdpSurule {
     }
 
     // TODO
-    fn detect_option(&self, _: Self::Proto) -> bool {
+    fn detect_option<'a>(&self, payload: Self::Proto<'a>) -> bool {
+        let mut last_pos = 0;
         for payload_option in &self.payload_options {
             match payload_option {
+                SurulePayloadOption::Content(c) => {
+                    if let Some(p) = c.check(payload, last_pos) {
+                        last_pos = p;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
                 _ => {}
             }
         }

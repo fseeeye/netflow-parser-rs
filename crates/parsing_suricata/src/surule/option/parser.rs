@@ -77,14 +77,14 @@ fn take_option_name(input: &str) -> IResult<&str, (&str, char), SuruleParseError
 impl From<&str> for SuruleOption {
     fn from(name_str: &str) -> Self {
         match name_str {
-            "endswith" => Self::Payload(SuruleNaivePayloadOption::EndsWith(true)),
-            "fast_pattern" => Self::Payload(SuruleNaivePayloadOption::FastPattern(true)),
+            "endswith" => Self::Payload(SuruleNaivePayloadOption::EndsWith),
+            "fast_pattern" => Self::Payload(SuruleNaivePayloadOption::FastPattern),
             "file_data" => Self::HTTP(SuruleHttpOption::FileData(elements::FileData)),
-            "ftpbounce" => Self::Other(SuruleOtherOption::FtpBounce(true)),
-            "noalert" => Self::Other(SuruleOtherOption::NoAlert(true)),
-            "nocase" => Self::Payload(SuruleNaivePayloadOption::NoCase(true)),
-            "rawbytes" => Self::Payload(SuruleNaivePayloadOption::RawBytes(true)),
-            "startswith" => Self::Payload(SuruleNaivePayloadOption::StartsWith(true)),
+            "ftpbounce" => Self::Other(SuruleOtherOption::FtpBounce),
+            "noalert" => Self::Other(SuruleOtherOption::NoAlert),
+            "nocase" => Self::Payload(SuruleNaivePayloadOption::NoCase),
+            "rawbytes" => Self::Payload(SuruleNaivePayloadOption::RawBytes),
+            "startswith" => Self::Payload(SuruleNaivePayloadOption::StartsWith),
             _ => Self::Generic(elements::GenericOption {
                 name: name_str.to_string(),
                 val: None,
@@ -112,13 +112,13 @@ pub(crate) fn parse_option_from_stream(
             }
             "classtype" => SuruleOption::Meta(SuruleMetaOption::Classtype(value_str.to_owned())),
             "content" => SuruleOption::Payload(SuruleNaivePayloadOption::Content(
-                elements::Content::new(value_str.to_owned()),
+                utils::strip_quotes(value_str).parse()?,
             )),
-            "depth" => SuruleOption::Payload(SuruleNaivePayloadOption::Depth(elements::parse_u64(
-                value_str,
-            )?)),
+            "depth" => SuruleOption::Payload(SuruleNaivePayloadOption::Depth(
+                elements::parse_usize(value_str)?,
+            )),
             "distance" => SuruleOption::Payload(SuruleNaivePayloadOption::Distance(
-                elements::Distance(value_str.parse()?),
+                elements::parse_isize(value_str)?,
             )),
             "dsize" => SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_owned())),
             "flow" => SuruleOption::Flow(SuruleFlowOption::Flow(value_str.parse()?)),
@@ -129,15 +129,15 @@ pub(crate) fn parse_option_from_stream(
             "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(value_str.to_owned())),
             "msg" => SuruleOption::Meta(SuruleMetaOption::Message(utils::strip_quotes(value_str))),
             "offset" => SuruleOption::Payload(SuruleNaivePayloadOption::Offset(
-                elements::parse_u64(value_str)?,
+                elements::parse_usize(value_str)?,
             )),
             "pcre" => SuruleOption::Payload(SuruleNaivePayloadOption::Pcre(value_str.to_owned())),
             "reference" => SuruleOption::Meta(SuruleMetaOption::Reference(value_str.to_owned())),
             "rev" => SuruleOption::Meta(SuruleMetaOption::Rev(elements::parse_u64(value_str)?)),
             "sid" => SuruleOption::Meta(SuruleMetaOption::Sid(elements::parse_u64(value_str)?)),
-            "within" => SuruleOption::Payload(SuruleNaivePayloadOption::Within(elements::Within(
-                value_str.parse()?,
-            ))),
+            "within" => SuruleOption::Payload(SuruleNaivePayloadOption::Within(
+                elements::parse_usize(value_str)?,
+            )),
             _ => SuruleOption::Generic(elements::GenericOption {
                 name: name_str.to_string(),
                 val: Some(value_str.to_string()),

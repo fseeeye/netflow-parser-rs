@@ -3,21 +3,16 @@ use std::net::Ipv4Addr;
 
 use crate::surule::elements::{IpAddressList, SurList};
 
-use super::SuruleElementDetector;
-
-impl SuruleElementDetector for IpAddressList {
-    type Comparison<'a> = &'a Ipv4Addr;
-
-    fn check<'a>(&self, compare_ipv4: Self::Comparison<'a>) -> bool {
+impl IpAddressList {
+    #[inline]
+    pub fn check(&self, compare_ipv4: &Ipv4Addr) -> bool {
         if self.check_accept(compare_ipv4) {
             return !self.check_except(compare_ipv4);
         } else {
             return false;
         }
     }
-}
 
-impl IpAddressList {
     // 判断 port 是否存在于 accept addresses 中
     #[inline]
     fn check_accept(&self, compare_ipv4: &Ipv4Addr) -> bool {

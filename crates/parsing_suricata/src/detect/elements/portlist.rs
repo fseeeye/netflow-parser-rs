@@ -1,21 +1,16 @@
 //! 实现 PortList 的 check 接口
 use crate::surule::elements::{PortList, SurList};
 
-use super::SuruleElementDetector;
-
-impl SuruleElementDetector for PortList {
-    type Comparison<'a> = u16;
+impl PortList {
     #[inline]
-    fn check<'a>(&self, compare_port: Self::Comparison<'a>) -> bool {
+    pub fn check(&self, compare_port: u16) -> bool {
         if self.check_accept(compare_port) {
             return !self.check_except(compare_port);
         } else {
             return false;
         }
     }
-}
 
-impl PortList {
     // 判断 port 是否存在于 accept ports 中
     #[inline]
     fn check_accept(&self, compare_port: u16) -> bool {
