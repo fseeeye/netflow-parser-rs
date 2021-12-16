@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_parse_suricata_rule_from_file() {
         let vec_surules =
-            VecSurules::parse_from_file("../../examples/test_suricata.rules").unwrap();
+            VecSurules::parse_from_file("./tests/unitest_suricata.rules").unwrap();
         assert_eq!(
             vec_surules,
             VecSurules {

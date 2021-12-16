@@ -1,0 +1,31 @@
+[
+    {
+        "rid": 1,
+        "proname": "Modbus",
+        "action": "drop",
+        "src_ip": "192.168.3.189",
+        "src_port": null,
+        "dir": "<>",
+        "dst_ip": null,
+        "dst_port": null,
+        "msg": "Modbus: Read Discrete Inputs(2)",
+        "args": [
+            {
+                "args_type": "ModbusReq",
+                "transaction_id": null,
+                "protocol_id": null,
+                "length": null,
+                "unit_id": null,
+                "function": "0x02",
+                "data": {}
+            },
+            {
+                "args_type": "ModbusRsp",
+                "function": "0x02",
+                "data": {
+                    "byte_count": 1
+                }
+            }
+        ]
+    }
+]

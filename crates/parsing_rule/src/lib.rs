@@ -8,7 +8,7 @@ pub enum RuleAction {
     Pass,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum DetectResult {
     Hit(RuleAction),
     Miss,
