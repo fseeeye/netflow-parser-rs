@@ -9,4 +9,4 @@ mod detect;
 mod icsrule;
 mod icsrule_arg;
 
-pub use icsrule::HmIcsRules;
+pub use icsrule::{HmIcsRules, IcsRule, IcsRuleBasis};

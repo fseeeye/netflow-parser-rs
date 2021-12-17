@@ -12,15 +12,15 @@
         "args": [
             {
                 "args_type": "ModbusReq",
-                "transaction_id": null,
-                "protocol_id": null,
-                "length": null,
-                "unit_id": null,
                 "function_code": "0x02",
                 "data": {}
             },
             {
                 "args_type": "ModbusRsp",
+                "transaction_id": 256,
+                "protocol_id": 0,
+                "length": 4,
+                "unit_id": 1,
                 "function_code": "0x02",
                 "data": {
                     "byte_count": 1

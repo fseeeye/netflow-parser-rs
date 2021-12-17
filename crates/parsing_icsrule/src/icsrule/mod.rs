@@ -3,12 +3,13 @@ mod hm_rules;
 
 pub(crate) use self::basis::Action;
 pub use self::hm_rules::HmIcsRules;
+pub use self::basis::IcsRuleBasis;
 
-use self::basis::IcsRuleBasis;
+
 use super::icsrule_arg::IcsRuleArgs;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct IcsRule {
     #[serde(flatten)]
     pub basic: IcsRuleBasis,

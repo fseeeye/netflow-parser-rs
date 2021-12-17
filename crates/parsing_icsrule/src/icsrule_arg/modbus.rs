@@ -3,7 +3,7 @@ use crate::detect::IcsRuleDetector;
 use parsing_parser::{ApplicationLayer, L5Packet};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "args_type")]
 pub enum ModbusArg {
     ModbusReq(ModbusReqArg), // Q: Modbus? or split

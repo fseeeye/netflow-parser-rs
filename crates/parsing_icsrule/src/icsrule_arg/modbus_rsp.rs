@@ -2,7 +2,7 @@ use parsing_parser::parsers::modbus_rsp;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct MbapHeader {
     pub transaction_id: Option<u16>,
     pub protocol_id: Option<u16>,
@@ -37,7 +37,7 @@ impl MbapHeader {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "function_code", content = "data")]
 pub enum Data {
     #[serde(alias = "1", alias = "0x01")]
@@ -681,7 +681,7 @@ impl Data {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct PDU {
     #[serde(flatten)]
     pub data: Option<Data>,
@@ -699,7 +699,7 @@ impl PDU {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ModbusRspArg {
     #[serde(flatten)]
     pub mbap_header: Option<MbapHeader>,

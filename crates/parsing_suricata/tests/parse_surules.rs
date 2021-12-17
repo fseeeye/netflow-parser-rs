@@ -1,4 +1,4 @@
-use parsing_rs::suricata_rule::{Surules, VecSurules};
+use parsing_suricata::{Surules, VecSurules};
 
 #[test]
 fn parse_suricata_rules() {

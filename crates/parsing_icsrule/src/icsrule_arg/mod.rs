@@ -1,6 +1,6 @@
 mod modbus;
-mod modbus_req;
-mod modbus_rsp;
+pub(crate) mod modbus_req;
+pub(crate) mod modbus_rsp;
 
 pub use self::modbus::ModbusArg;
 pub use self::modbus_req::ModbusReqArg;
@@ -10,7 +10,7 @@ use super::detect::IcsRuleDetector;
 use parsing_parser::L5Packet;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "proname", content = "args")]
 pub enum IcsRuleArgs {
     Modbus(Vec<ModbusArg>),

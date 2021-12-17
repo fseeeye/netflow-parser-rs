@@ -30,14 +30,17 @@ impl HmIcsRules {
         // read file from sys
         let file_contents = match fs::read_to_string(rule_file_path) {
             Ok(o) => o,
-            Err(_e) => return false,
+            Err(e) => {
+                error!(target: "ICSRULE(HmIcsRules::init)", error = ?e, "occur error while reading rule string.");
+                return false
+            },
         };
 
         // convert json str to vec<Rule>
         let rules_vec: Vec<IcsRule> = match serde_json::from_str(file_contents.as_str()) {
             Ok(o) => o,
             Err(e) => {
-                error!(target: "ICSRULE(HmIcsRules::init)", error = ?e);
+                error!(target: "ICSRULE(HmIcsRules::init)", error = ?e, "occur error while serding rule string.");
                 return false;
             }
         };
@@ -57,5 +60,71 @@ impl HmIcsRules {
         }
 
         return true;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{net::IpAddr, str::FromStr};
+
+    use crate::{IcsRuleBasis, icsrule::{Action, basis::Direction}, icsrule_arg::{ModbusArg, ModbusReqArg, ModbusRspArg}};
+
+    use super::*;
+
+    #[test]
+    fn parse_ics_rules() {
+        let file_str = "./tests/unitest_ics_rules.json";
+        let mut ics_rules = HmIcsRules::new();
+        assert!(ics_rules.init(file_str));
+        
+        let mut rule_iter = ics_rules.rules_inner.iter();
+        if let Some((_, ics_rule)) = rule_iter.next() {
+            assert_eq!(
+                *ics_rule,
+                IcsRule {
+                    basic: IcsRuleBasis {
+                        rid: 1,
+                        action: Action::Drop,
+                        src_ip: Some(IpAddr::from_str("192.168.3.189").unwrap()),
+                        src_port: None,
+                        dir: Direction::Bi,
+                        dst_ip: None,
+                        dst_port: None,
+                        msg: "Modbus: Read Discrete Inputs(2)".to_string(),
+                    },
+                    args: IcsRuleArgs::Modbus(vec![
+                        ModbusArg::ModbusReq(ModbusReqArg {
+                            mbap_header: Some(crate::icsrule_arg::modbus_req::MbapHeader {
+                                transaction_id: None,
+                                protocol_id: None,
+                                length: None,
+                                unit_id: None,
+                            }),
+                            pdu: Some(crate::icsrule_arg::modbus_req::PDU {
+                                data: Some(crate::icsrule_arg::modbus_req::Data::ReadDiscreteInputs {
+                                    start_address: None,
+                                    count: None
+                                })
+                            })
+                        }),
+                        ModbusArg::ModbusRsp(ModbusRspArg {
+                            mbap_header: Some(crate::icsrule_arg::modbus_rsp::MbapHeader {
+                                transaction_id: Some(256),
+                                protocol_id: Some(0),
+                                length: Some(4),
+                                unit_id: Some(1),
+                            }),
+                            pdu: Some(crate::icsrule_arg::modbus_rsp::PDU {
+                                data: Some(crate::icsrule_arg::modbus_rsp::Data::ReadDiscreteInputs {
+                                    byte_count: Some(1)
+                                })
+                            })
+                        })
+                    ])
+                }
+            );
+        } else {
+            assert!(false);
+        }
     }
 }

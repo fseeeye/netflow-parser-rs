@@ -14,3 +14,4 @@ pub use errors::ParseError;
 pub use layer::*;
 pub use packet::*;
 pub use protocol::*;
+pub use field_type::{MacAddress, BerTL};

@@ -20,7 +20,7 @@ fn main() {
     // change paths by yourself.
     let paths = [
         // OPC UA
-        "../pcap/ICS/opcua/test/opcua_hello.pcap",
+        // "../pcap/ICS/opcua/test/opcua_hello.pcap",
         // "../pcap/ICS/opcua/test/opcua_ack.pcap",
         // "../pcap/ICS/opcua/test/opcua_error.pcap",
         // "../pcap/ICS/opcua/test/opcua_msg.pcap",
@@ -44,7 +44,7 @@ fn main() {
         // Ipv4 Option
         // "../pcap/ip/ipv4-options.pcap",
         // Modbus
-        // "../pcap/ICS/modbus/test/mod_2.pcap",
+        "../pcap/ICS/modbus/test/mod_2.pcap",
         // "./benches/modbus_fins_test.pcap",
     ];
 
@@ -174,7 +174,7 @@ fn print_parsing_rst(
         }
         QuinPacket::L5(l5) => {
             println!("l5 packet.");
-            println!("l5 app_layer:\n{:#?}", l5.application_layer);
+            println!("l5 app_layer:\n{:#?}", l5);
             if l5.error.is_none() {
                 println!("Error: {}", String::from(format!("{:?}", l5.error)).green());
             } else {

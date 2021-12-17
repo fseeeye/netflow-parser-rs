@@ -1,5 +1,6 @@
 use parsing_parser::{L5Packet, QuinPacket};
 use parsing_rule::*;
+use tracing::debug;
 
 use super::icsrule::{Action, HmIcsRules};
 
@@ -25,6 +26,7 @@ impl RulesDetector for HmIcsRules {
             // Warning: demo detect code...
             // 目前还未针对 rules 的数据结构做优化，加速规则匹配过程
             for (_, rule) in &self.rules_inner {
+                debug!(target: "ICSRULE(HmIcsRules::detect)", "detecting ICS rule: {:?}", rule);
                 if rule.basic.detect(l5) {
                     if rule.args.detect(l5) {
                         return DetectResult::Hit(rule.basic.action.to_owned().into());
