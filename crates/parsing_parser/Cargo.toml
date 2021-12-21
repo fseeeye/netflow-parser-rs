@@ -9,3 +9,8 @@ edition = "2021"
 nom = "7"
 serde = {version = "1.0", features = ["derive"]} # https://serde.rs/
 serde_json = "1.0"
+tracing = "0.1"
+
+[dev-dependencies]
+pcap-parser = "0.11.1"
+tracing-subscriber = "0.2"

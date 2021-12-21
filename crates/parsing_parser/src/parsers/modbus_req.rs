@@ -233,12 +233,12 @@ fn parse_read_exception_status(input: &[u8]) -> IResult<&[u8], Data> {
 }
 
 fn parse_get_comm_event_counter(input: &[u8]) -> IResult<&[u8], Data> {
-    let (input, _) = eof(input)?;
+    // let (input, _) = eof(input)?;
     Ok((input, Data::GetCommEventCounter {}))
 }
 
 fn parse_get_comm_event_log(input: &[u8]) -> IResult<&[u8], Data> {
-    let (input, _) = eof(input)?;
+    // let (input, _) = eof(input)?;
     Ok((input, Data::GetCommEventLog {}))
 }
 
@@ -251,7 +251,7 @@ fn parse_write_multiple_coils(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, start_address) = be_u16(input)?;
     let (input, output_count) = be_u16(input)?;
     let (input, byte_count) = u8(input)?;
-    let (input, output_values) = count(u8, output_count as usize)(input)?;
+    let (input, output_values) = count(u8, byte_count as usize)(input)?;
     Ok((
         input,
         Data::WriteMultipleCoils {
@@ -267,7 +267,7 @@ fn parse_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, start_address) = be_u16(input)?;
     let (input, output_count) = be_u16(input)?;
     let (input, byte_count) = u8(input)?;
-    let (input, output_values) = count(be_u16, (output_count * 2) as usize)(input)?;
+    let (input, output_values) = count(be_u16, (byte_count * 2) as usize)(input)?;
     Ok((
         input,
         Data::WriteMultipleRegisters {

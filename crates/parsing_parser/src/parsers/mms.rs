@@ -16,6 +16,7 @@ use nom::number::complete::{be_u16, be_u24, be_u32, u8};
 use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
+use tracing::error;
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -70,7 +71,11 @@ pub fn parse_mms_layer<'a>(
 
     let (input, mms_header) = match parse_mms_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            error!(
+                target: "PARSER(mms::parse_mms_layer)",
+                error = ?e
+            );
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
@@ -645,6 +650,7 @@ pub enum MmsPduChoice<'a> {
     UnConfirmed { value: UnConfirmedPDU<'a> },
     InitiateRequest { value: InitiateRequestPDU<'a> },
     InitiateResponse { value: InitiateResponsePDU<'a> },
+    ConcludeResponse {},
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -1661,8 +1667,8 @@ pub fn parse_read_request_choice(
     _read_request_choice_tl_tag: u8,
 ) -> IResult<&[u8], ReadRequestChoice> {
     let (input, read_request_choice) = match _read_request_choice_tl_tag.bitand(0x1f) {
-        0x81 => parse_read_request_choice_default(input),
-        0x80 => parse_read_request_choice_otherwise(input),
+        0x01 => parse_read_request_choice_default(input),
+        0x00 => parse_read_request_choice_otherwise(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -2121,6 +2127,10 @@ fn parse_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
     Ok((input, MmsPduChoice::InitiateResponse { value }))
 }
 
+fn parse_conclude_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    Ok((input, MmsPduChoice::ConcludeResponse {}))
+}
+
 pub fn parse_mms_pdu_choice(
     input: &[u8],
     _mms_pdu_choice_tl_tag: u8,
@@ -2131,6 +2141,7 @@ pub fn parse_mms_pdu_choice(
         0x03 => parse_un_confirmed(input),
         0x08 => parse_initiate_request(input),
         0x09 => parse_initiate_response(input),
+        0x0b => parse_conclude_response(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,

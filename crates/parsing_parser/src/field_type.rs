@@ -127,10 +127,13 @@ pub struct BerTL {
 
 #[inline(always)]
 #[allow(dead_code)]
-pub fn ber_tl(input: &[u8]) -> nom::IResult<&[u8], BerTL> {
-    let (input, tag) = u8(input)?;
+pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
+    let (input, tag) = u8(input_raw)?;
     if tag.bitand(0x1f) > 0x1e {
-        panic!("Tag is not Supported!")
+        return Err(nom::Err::Error(nom::error::Error {
+            input: input_raw,
+            code: nom::error::ErrorKind::Tag
+        }))
     }
     let (input, length) = u8(input)?;
     if length < 128 {
@@ -159,6 +162,7 @@ pub fn ber_tl(input: &[u8]) -> nom::IResult<&[u8], BerTL> {
                 }
             }
         } else {
+            // 定长
             let (input, slice) = take((length - 128) as usize)(input)?;
             let mut length: u8 = 0;
             for i in slice {
@@ -172,5 +176,129 @@ pub fn ber_tl(input: &[u8]) -> nom::IResult<&[u8], BerTL> {
                 },
             ))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use super::*;
+
+    #[test]
+    fn mac_parser() {
+        assert_eq!(
+            mac_address(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0xcc]),
+            Ok((
+                &[0xcc][..],
+                MacAddress([0x01, 0x02, 0x03, 0x04, 0x05, 0x06])
+            ))
+        )
+    }
+
+    #[test]
+    fn ip_address_parser() {
+        assert_eq!(
+            address4([192, 168, 0, 1, 0xcc].as_slice()),
+            Ok((
+                &[0xcc][..],
+                Ipv4Addr::from_str("192.168.0.1").unwrap()
+            ))
+        );
+
+        assert_eq!(
+            address6([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0xcc].as_slice()),
+            Ok((
+                &[0xcc][..],
+                Ipv6Addr::from_str("::1").unwrap()
+            ))
+        )
+    }
+
+    #[test]
+    fn slice_parser() {
+        assert_eq!(
+            slice_u4_4([0x11, 0x22, 0xcc].as_slice()),
+            Ok((
+                [0xcc].as_slice(),
+                [0x01, 0x01, 0x02, 0x02]
+            ))
+        );
+
+        assert_eq!(
+            slice_u4_6([0x11, 0x22, 0x33, 0xcc].as_slice()),
+            Ok((
+                [0xcc].as_slice(),
+                [0x01, 0x01, 0x02, 0x02, 0x03, 0x03]
+            ))
+        );
+
+        assert_eq!(
+            slice_u8_2([0x01, 0x02, 0xcc].as_slice()),
+            Ok((
+                [0xcc].as_slice(),
+                [0x01, 0x02]
+            ))
+        );
+
+        assert_eq!(
+            slice_u8_3([0x01, 0x02, 0x03, 0xcc].as_slice()),
+            Ok((
+                [0xcc].as_slice(),
+                [0x01, 0x02, 0x03]
+            ))
+        );
+
+        assert_eq!(
+            slice_u8_4([0x01, 0x02, 0x03, 0x04, 0xcc].as_slice()),
+            Ok((
+                [0xcc].as_slice(),
+                [0x01, 0x02, 0x03, 0x04]
+            ))
+        );
+
+        assert_eq!(
+            slice_u8_5([0x01, 0x02, 0x03, 0x04, 0x05, 0xcc].as_slice()),
+            Ok((
+                [0xcc].as_slice(),
+                [0x01, 0x02, 0x03, 0x04, 0x05]
+            ))
+        );
+    }
+
+    #[test]
+    fn tl_parser() {
+        let tl_short: &[u8] = &[0x10, 0x7f, 0x00, 0xcc, 0xcc];
+        assert_eq!(ber_tl(tl_short), Ok((
+            [0x00, 0xcc, 0xcc].as_slice(), 
+            BerTL {
+                tag: 16,
+                length: 127
+            }
+        )));
+
+        let tl_long_unknown: &[u8] = &[0x10, 0x80, 0x00, 0x01, 0x00, 0x02, 0x00, 0x00, 0xcc, 0xcc];
+        assert_eq!(ber_tl(tl_long_unknown), Ok((
+            [0xcc, 0xcc].as_slice(), 
+            BerTL {
+                tag: 16,
+                length: 3
+            }
+        )));
+
+        let tl_long_known: &[u8] = &[0x10, 0x82, 0x01, 0x02, 0xcc, 0xcc];
+        assert_eq!(ber_tl(tl_long_known), Ok((
+            [0xcc, 0xcc].as_slice(), 
+            BerTL {
+                tag: 16,
+                length: 3
+            }
+        )));
+
+        let tl_error_tag: &[u8] = &[0x1f, 0xcc];
+        assert_eq!(ber_tl(tl_error_tag), Err(nom::Err::Error(nom::error::Error {
+            input: [0x1f, 0xcc].as_slice(),
+            code: nom::error::ErrorKind::Tag
+        })));
     }
 }

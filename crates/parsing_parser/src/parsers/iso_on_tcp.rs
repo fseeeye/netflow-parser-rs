@@ -1,6 +1,7 @@
 use nom::combinator::peek;
 use nom::number::complete::{be_u16, u8};
 use nom::IResult;
+use tracing::error;
 
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
@@ -29,7 +30,11 @@ pub fn parse_iso_on_tcp_layer<'a>(
 ) -> QuinPacket<'a> {
     let (input, iso_header) = match parse_iso_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            error!(
+                target: "PARSER(iso_on_tcp::parse_iso_on_tcp_layer)",
+                error = ?e
+            );
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
@@ -51,7 +56,7 @@ pub fn parse_iso_on_tcp_layer<'a>(
                         network_layer,
                         transport_layer,
                         application_layer,
-                        error: Some(ParseError::ParsingPayload),
+                        error: None,
                         remain: input,
                     });
                 }
@@ -108,7 +113,7 @@ pub enum CotpPdu {
         parameter_dst_length: u8,
         destination_tsap: u16,
     },
-    ConnectConfirm {
+    ConnectConfirmLong {
         destination_reference: u16,
         source_reference: u16,
         bit_mask: u8,
@@ -120,6 +125,14 @@ pub enum CotpPdu {
         destination_tsap: u16,
         parameter_tpdu_size: u8,
         parameter_tpdu_length: u8,
+        tpdu_size: u8,
+    },
+    ConnectConfirmShort {
+        destination_reference: u16,
+        source_reference: u16,
+        bit_mask: u8,
+        parameter_code: u8,
+        parameter_length: u8,
         tpdu_size: u8,
     },
     Data {
@@ -135,6 +148,21 @@ pub struct Cotp {
 }
 
 pub fn parse_tpkt(input: &[u8]) -> IResult<&[u8], Tpkt> {
+    if input.first() != Some(&0x03) {
+        let length = match (input.len() + 4).try_into() {
+            Ok(o) => o,
+            Err(_) => 0xffff 
+        };
+        return Ok((
+                    input,
+                    Tpkt {
+                        version: 3,
+                        reserved: 0,
+                        length,
+                    },
+                ))
+    }
+
     let (input, version) = u8(input)?;
     let (input, reserved) = u8(input)?;
     let (input, length) = be_u16(input)?;
@@ -143,7 +171,7 @@ pub fn parse_tpkt(input: &[u8]) -> IResult<&[u8], Tpkt> {
         Tpkt {
             version,
             reserved,
-            length,
+            length
         },
     ))
 }
@@ -174,36 +202,57 @@ fn parse_connect_request(input: &[u8]) -> IResult<&[u8], CotpPdu> {
     ))
 }
 
-fn parse_connect_confirm(input: &[u8]) -> IResult<&[u8], CotpPdu> {
-    let (input, destination_reference) = be_u16(input)?;
-    let (input, source_reference) = be_u16(input)?;
-    let (input, bit_mask) = u8(input)?;
-    let (input, parameter_src_tsap) = u8(input)?;
-    let (input, parameter_src_length) = u8(input)?;
-    let (input, source_tsap) = be_u16(input)?;
-    let (input, parameter_dst_tsap) = u8(input)?;
-    let (input, parameter_dst_length) = u8(input)?;
-    let (input, destination_tsap) = be_u16(input)?;
-    let (input, parameter_tpdu_size) = u8(input)?;
-    let (input, parameter_tpdu_length) = u8(input)?;
-    let (input, tpdu_size) = u8(input)?;
-    Ok((
-        input,
-        CotpPdu::ConnectConfirm {
-            destination_reference,
-            source_reference,
-            bit_mask,
-            parameter_src_tsap,
-            parameter_src_length,
-            source_tsap,
-            parameter_dst_tsap,
-            parameter_dst_length,
-            destination_tsap,
-            parameter_tpdu_size,
-            parameter_tpdu_length,
-            tpdu_size,
-        },
-    ))
+fn parse_connect_confirm(input: &[u8], length: u8) -> IResult<&[u8], CotpPdu> {
+    if length == 17 {
+        let (input, destination_reference) = be_u16(input)?;
+        let (input, source_reference) = be_u16(input)?;
+        let (input, bit_mask) = u8(input)?;
+        let (input, parameter_src_tsap) = u8(input)?;
+        let (input, parameter_src_length) = u8(input)?;
+        let (input, source_tsap) = be_u16(input)?;
+        let (input, parameter_dst_tsap) = u8(input)?;
+        let (input, parameter_dst_length) = u8(input)?;
+        let (input, destination_tsap) = be_u16(input)?;
+        let (input, parameter_tpdu_size) = u8(input)?;
+        let (input, parameter_tpdu_length) = u8(input)?;
+        let (input, tpdu_size) = u8(input)?;
+        Ok((
+            input,
+            CotpPdu::ConnectConfirmLong {
+                destination_reference,
+                source_reference,
+                bit_mask,
+                parameter_src_tsap,
+                parameter_src_length,
+                source_tsap,
+                parameter_dst_tsap,
+                parameter_dst_length,
+                destination_tsap,
+                parameter_tpdu_size,
+                parameter_tpdu_length,
+                tpdu_size,
+            },
+        ))
+    } else {
+        let (input, destination_reference) = be_u16(input)?;
+        let (input, source_reference) = be_u16(input)?;
+        let (input, bit_mask) = u8(input)?;
+        let (input, parameter_code) = u8(input)?;
+        let (input, parameter_length) = u8(input)?;
+        let (input, tpdu_size) = u8(input)?;
+
+        Ok((
+            input,
+            CotpPdu::ConnectConfirmShort {
+                destination_reference,
+                source_reference,
+                bit_mask,
+                parameter_code,
+                parameter_length,
+                tpdu_size
+            }
+        ))
+    }
 }
 
 fn parse_cotp_pdu_data(input: &[u8]) -> IResult<&[u8], CotpPdu> {
@@ -211,10 +260,10 @@ fn parse_cotp_pdu_data(input: &[u8]) -> IResult<&[u8], CotpPdu> {
     Ok((input, CotpPdu::Data { bit_mask }))
 }
 
-pub fn parse_cotp_pdu(input: &[u8], pdu_type: u8) -> IResult<&[u8], CotpPdu> {
+pub fn parse_cotp_pdu(input: &[u8], pdu_type: u8, length: u8) -> IResult<&[u8], CotpPdu> {
     let (input, cotp_pdu) = match pdu_type {
         0xe0 => parse_connect_request(input),
-        0xd0 => parse_connect_confirm(input),
+        0xd0 => parse_connect_confirm(input, length),
         0xf0 => parse_cotp_pdu_data(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
@@ -227,7 +276,7 @@ pub fn parse_cotp_pdu(input: &[u8], pdu_type: u8) -> IResult<&[u8], CotpPdu> {
 pub fn parse_cotp(input: &[u8]) -> IResult<&[u8], Cotp> {
     let (input, length) = u8(input)?;
     let (input, pdu_type) = u8(input)?;
-    let (input, cotp_pdu) = parse_cotp_pdu(input, pdu_type)?;
+    let (input, cotp_pdu) = parse_cotp_pdu(input, pdu_type, length)?;
     Ok((
         input,
         Cotp {

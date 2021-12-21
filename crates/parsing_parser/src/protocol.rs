@@ -206,3 +206,36 @@ impl<'a> From<ApplicationLayer<'a>> for ProtocolType {
         ProtocolType::Application(app_layer.into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn protocol_type_eq() {
+        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsTcpRsp.into());
+        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsTcpReq.into());
+        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsUdpRsp.into());
+        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsUdpReq.into());
+
+        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsTcpReq).into());
+        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsTcpRsp).into());
+        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsUdpReq).into());
+        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsUdpRsp).into());
+
+        assert_eq!(ApplicationNaiveProtocol::Modbus, ApplicationProtocol::ModbusReq.into());
+        assert_eq!(ApplicationNaiveProtocol::Modbus, ApplicationProtocol::ModbusRsp.into());
+        
+        assert_eq!(ApplicationNaiveProtocol::Modbus, (&ApplicationProtocol::ModbusReq).into());
+        assert_eq!(ApplicationNaiveProtocol::Modbus, (&ApplicationProtocol::ModbusRsp).into());
+
+        assert_eq!(ProtocolType::Application(ApplicationProtocol::FinsTcpReq), ProtocolType::Application(ApplicationProtocol::FinsUdpRsp));
+        assert_eq!(ProtocolType::Application(ApplicationProtocol::ModbusReq), ProtocolType::Application(ApplicationProtocol::ModbusRsp));
+        assert_ne!(ProtocolType::Application(ApplicationProtocol::S7comm), ProtocolType::Application(ApplicationProtocol::Mms));
+        assert_eq!(ProtocolType::Link(LinkProtocol::Ethernet), ProtocolType::Link(LinkProtocol::Ethernet));
+        assert_eq!(ProtocolType::Network(NetworkProtocol::Ipv4), ProtocolType::Network(NetworkProtocol::Ipv4));
+        assert_ne!(ProtocolType::Network(NetworkProtocol::Ipv4), ProtocolType::Network(NetworkProtocol::Ipv6));
+        assert_eq!(ProtocolType::Transport(TransportProtocol::Tcp), ProtocolType::Transport(TransportProtocol::Tcp));
+        assert_ne!(ProtocolType::Transport(TransportProtocol::Tcp), ProtocolType::Transport(TransportProtocol::Udp));
+    }
+}

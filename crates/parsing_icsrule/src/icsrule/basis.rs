@@ -122,6 +122,7 @@ mod tests {
                 checksum: 45344,
                 urgent_pointer: 0,
                 options: None,
+                padding: None,
                 payload: &[1,0,0,0,0,4,1,2,1,0 ],
             }),
             application_layer: ApplicationLayer::ModbusRsp( ModbusRspHeader {

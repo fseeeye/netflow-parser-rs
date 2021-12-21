@@ -16,7 +16,7 @@ pub struct L1Packet<'a> {
 impl<'a> PhyLevel for L1Packet<'a> {
     #[inline(always)]
     fn is_error(&self) -> bool {
-        self.error.is_none()
+        self.error.is_some()
     }
 }
 
@@ -32,7 +32,7 @@ pub struct L2Packet<'a> {
 impl<'a> PhyLevel for L2Packet<'a> {
     #[inline(always)]
     fn is_error(&self) -> bool {
-        self.error.is_none()
+        self.error.is_some()
     }
 }
 
@@ -66,7 +66,7 @@ pub struct L3Packet<'a> {
 impl<'a> PhyLevel for L3Packet<'a> {
     #[inline(always)]
     fn is_error(&self) -> bool {
-        self.error.is_none()
+        self.error.is_some()
     }
 }
 
@@ -118,7 +118,7 @@ pub struct L4Packet<'a> {
 impl<'a> PhyLevel for L4Packet<'a> {
     #[inline(always)]
     fn is_error(&self) -> bool {
-        self.error.is_none()
+        self.error.is_some()
     }
 }
 
@@ -188,7 +188,7 @@ pub struct L5Packet<'a> {
 impl<'a> PhyLevel for L5Packet<'a> {
     #[inline(always)]
     fn is_error(&self) -> bool {
-        self.error.is_none()
+        self.error.is_some()
     }
 }
 

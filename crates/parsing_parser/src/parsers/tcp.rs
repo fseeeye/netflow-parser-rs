@@ -60,10 +60,12 @@ pub struct TcpHeader<'a> {
     pub checksum: u16,
     pub urgent_pointer: u16,
     pub options: Option<&'a [u8]>,
+    pub padding: Option<&'a [u8]>,
     pub payload: &'a [u8],
 }
 
 pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
+    let tcp_len = input.len();
     let (input, src_port) = be_u16(input)?;
     let (input, dst_port) = be_u16(input)?;
     let (input, seq) = be_u32(input)?;
@@ -79,10 +81,15 @@ pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
     let (input, urgent_pointer) = be_u16(input)?;
     let (input, options) = if (header_length * 4) > 20 {
         let (input, options) = take(header_length * 4 - 20)(input)?;
-        Ok((input, Some(options)))
+        (input, Some(options))
     } else {
-        Ok((input, None))
-    }?;
+        (input, None)
+    };
+    let (input, padding) = if tcp_len == 26 {
+        ([].as_slice(), Some(input))
+    } else {
+        (input, None)
+    };
     let payload = input;
 
     Ok((
@@ -99,6 +106,7 @@ pub fn parse_tcp_header(input: &[u8]) -> nom::IResult<&[u8], TcpHeader> {
             checksum,
             urgent_pointer,
             options,
+            padding,
             payload,
         },
     ))

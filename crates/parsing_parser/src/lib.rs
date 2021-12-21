@@ -1,4 +1,5 @@
-#![feature(destructuring_assignment)]
+// `destructuring_assignment` has been stable since 1.59.0
+// #![feature(destructuring_assignment)]
 
 mod errors;
 mod field_type;

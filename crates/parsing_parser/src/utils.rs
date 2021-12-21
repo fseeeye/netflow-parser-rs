@@ -76,11 +76,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn crc16_0x3d65_check_test() {
-        // let crc16: u16 = 0xce7a;
-        let crc16: u16 = 0x3185;
+    fn test_crc16_0x3d65_check() {
+        let crc16: u16 = 0xce7a;
         let bytes: &[u8] = &[0xc0, 0xd7, 0x00];
         let seed: u16 = 0;
-        assert!(!crc16_0x3d65_check(crc16, bytes, seed));
+        assert!(crc16_0x3d65_check(crc16, bytes, seed));
+    }
+
+    #[test]
+    fn test_crc16_0x9949_check() {
+        let crc16: u16 = 0x5b30;
+        let bytes: &[u8] = &[0xc1, 0xd7, 0x00];
+        let seed: u16 = 0;
+        assert!(crc16_0x9949_check(crc16, bytes, seed))
     }
 }

@@ -16,6 +16,7 @@ use nom::number::complete::{be_u16, be_u24, be_u32, le_u16, le_u24, le_u32, u8};
 use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
+use tracing::{error, debug};
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -73,7 +74,8 @@ pub fn parse_bacnet_layer<'a>(
 
     let (input, bacnet_header) = match parse_bacnet_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            error!(target: "PARSER(parse_bacnet_layer)", error = ?e, "occurs error when parsing BACNET");
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
@@ -1504,28 +1506,50 @@ pub fn parse_bacnet_object_property_reference_ack_info(
             },
         ))
     } else if context_tag_number == 3 && length_value_type == 6 {
+        debug!(
+            target: "PARSER(bacnet::parse_bacnet_object_property_reference_ack_info)",
+            "open tag input: {:?}", input
+        );
         let (input, (app_context_tag_number, app_tag_class, app_length_value_type)) =
             bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
                 take_bits(4usize),
                 take_bits(1usize),
                 take_bits(3usize),
             )))(input)?;
-        let (input, (object_type, instance_number)) =
-            bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
-                take_bits(10usize),
-                take_bits(22usize),
-            )))(input)?;
-        Ok((
-            input,
-            BacnetObjectPropertyReferenceAckInfo::PropertyValueOpen {
-                app_context_tag_number,
-                app_tag_class,
-                app_length_value_type,
-                object_type,
-                instance_number,
-            },
-        ))
+        if app_length_value_type == 0x04 {
+            let (input, (object_type, instance_number)) =
+                bits::<_, _, nom::error::Error<(&[u8], usize)>, _, _>(tuple((
+                    take_bits(10usize),
+                    take_bits(22usize),
+                )))(input)?;
+
+            Ok((
+                input,
+                BacnetObjectPropertyReferenceAckInfo::PropertyValueOpen {
+                    app_context_tag_number,
+                    app_tag_class,
+                    app_length_value_type,
+                    object_type,
+                    instance_number,
+                },
+            ))
+        } else {
+            Ok((
+                input,
+                BacnetObjectPropertyReferenceAckInfo::PropertyValueOpen {
+                    app_context_tag_number,
+                    app_tag_class,
+                    app_length_value_type,
+                    object_type: 0,
+                    instance_number: 0,
+                },
+            ))
+        }
     } else if context_tag_number == 3 && length_value_type == 7 {
+        debug!(
+            target: "PARSER(bacnet::parse_bacnet_object_property_reference_ack_info)",
+            "close tag input: {:?}", input
+        );
         Ok((
             input,
             BacnetObjectPropertyReferenceAckInfo::PropertyValueClose {},
@@ -1600,6 +1624,10 @@ fn get_property_items_with_bacnet_object_property_reference_ack_item(
     let mut input = input;
 
     while input.len() > 0 {
+        debug!(
+            target: "PARSER(bacnet::get_property_items_with_bacnet_object_property_reference_ack_item)",
+            "input: {:?}", input
+        );
         (input, _property_items) = parse_bacnet_object_property_reference_ack_item(input)?;
         property_items.push(_property_items);
     }
