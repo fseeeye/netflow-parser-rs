@@ -92,8 +92,7 @@ fn parse_opcua_pcap() {
         "./tests/opcua_msg.pcap",
         "./tests/opcua_ack.pcap",
         "./tests/opcua_error.pcap",
-        "./tests/opcua_hello.pcap",
-        "./tests/opcua_all.pcap"
+        "./tests/opcua_hello.pcap"
     ];
 
     for path in opcua_pcap_path {

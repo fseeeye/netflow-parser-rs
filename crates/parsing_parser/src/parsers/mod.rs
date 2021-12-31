@@ -1,6 +1,6 @@
+pub mod eof;
 pub mod bacnet;
 pub mod dnp3;
-pub mod eof;
 pub mod ethernet;
 pub mod fins_tcp_req;
 pub mod fins_tcp_rsp;
@@ -18,9 +18,9 @@ pub mod s7comm;
 pub mod tcp;
 pub mod udp;
 
+pub use eof::*;
 pub use bacnet::{parse_bacnet_layer, BacnetHeader};
 pub use dnp3::{parse_dnp3_layer, Dnp3Header};
-pub use eof::*;
 pub use ethernet::{parse_ethernet_layer, EthernetHeader};
 pub use fins_tcp_req::{parse_fins_tcp_req_layer, FinsTcpReqHeader};
 pub use fins_tcp_rsp::{parse_fins_tcp_rsp_layer, FinsTcpRspHeader};

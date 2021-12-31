@@ -91,19 +91,19 @@ pub enum ApplicationNaiveProtocol {
 impl From<ApplicationProtocol> for ApplicationNaiveProtocol {
     fn from(p: ApplicationProtocol) -> Self {
         match p {
-            ApplicationProtocol::Bacnet => ApplicationNaiveProtocol::Bacnet,
-            ApplicationProtocol::Dnp3 => ApplicationNaiveProtocol::Dnp3,
+            ApplicationProtocol::ModbusReq => ApplicationNaiveProtocol::Modbus,
+            ApplicationProtocol::ModbusRsp => ApplicationNaiveProtocol::Modbus,
             ApplicationProtocol::FinsTcpReq => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsTcpRsp => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpReq => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpRsp => ApplicationNaiveProtocol::Fins,
-            ApplicationProtocol::Iec104 => ApplicationNaiveProtocol::Iec104,
-            ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
             ApplicationProtocol::Mms => ApplicationNaiveProtocol::Mms,
-            ApplicationProtocol::ModbusReq => ApplicationNaiveProtocol::Modbus,
-            ApplicationProtocol::ModbusRsp => ApplicationNaiveProtocol::Modbus,
-            ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
             ApplicationProtocol::S7comm => ApplicationNaiveProtocol::S7comm,
+            ApplicationProtocol::Bacnet => ApplicationNaiveProtocol::Bacnet,
+            ApplicationProtocol::Dnp3 => ApplicationNaiveProtocol::Dnp3,
+            ApplicationProtocol::Iec104 => ApplicationNaiveProtocol::Iec104,
+            ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
+            ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
         }
     }
 }
@@ -111,19 +111,19 @@ impl From<ApplicationProtocol> for ApplicationNaiveProtocol {
 impl From<&ApplicationProtocol> for ApplicationNaiveProtocol {
     fn from(p: &ApplicationProtocol) -> Self {
         match p {
-            ApplicationProtocol::Bacnet => ApplicationNaiveProtocol::Bacnet,
-            ApplicationProtocol::Dnp3 => ApplicationNaiveProtocol::Dnp3,
+            ApplicationProtocol::ModbusReq => ApplicationNaiveProtocol::Modbus,
+            ApplicationProtocol::ModbusRsp => ApplicationNaiveProtocol::Modbus,
             ApplicationProtocol::FinsTcpReq => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsTcpRsp => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpReq => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpRsp => ApplicationNaiveProtocol::Fins,
-            ApplicationProtocol::Iec104 => ApplicationNaiveProtocol::Iec104,
-            ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
             ApplicationProtocol::Mms => ApplicationNaiveProtocol::Mms,
-            ApplicationProtocol::ModbusReq => ApplicationNaiveProtocol::Modbus,
-            ApplicationProtocol::ModbusRsp => ApplicationNaiveProtocol::Modbus,
-            ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
             ApplicationProtocol::S7comm => ApplicationNaiveProtocol::S7comm,
+            ApplicationProtocol::Bacnet => ApplicationNaiveProtocol::Bacnet,
+            ApplicationProtocol::Dnp3 => ApplicationNaiveProtocol::Dnp3,
+            ApplicationProtocol::Iec104 => ApplicationNaiveProtocol::Iec104,
+            ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
+            ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
         }
     }
 }
@@ -204,38 +204,5 @@ impl<'a> From<ApplicationLayer<'a>> for ProtocolType {
     #[inline(always)]
     fn from(app_layer: ApplicationLayer<'a>) -> Self {
         ProtocolType::Application(app_layer.into())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn protocol_type_eq() {
-        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsTcpRsp.into());
-        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsTcpReq.into());
-        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsUdpRsp.into());
-        assert_eq!(ApplicationNaiveProtocol::Fins, ApplicationProtocol::FinsUdpReq.into());
-
-        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsTcpReq).into());
-        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsTcpRsp).into());
-        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsUdpReq).into());
-        assert_eq!(ApplicationNaiveProtocol::Fins, (&ApplicationProtocol::FinsUdpRsp).into());
-
-        assert_eq!(ApplicationNaiveProtocol::Modbus, ApplicationProtocol::ModbusReq.into());
-        assert_eq!(ApplicationNaiveProtocol::Modbus, ApplicationProtocol::ModbusRsp.into());
-        
-        assert_eq!(ApplicationNaiveProtocol::Modbus, (&ApplicationProtocol::ModbusReq).into());
-        assert_eq!(ApplicationNaiveProtocol::Modbus, (&ApplicationProtocol::ModbusRsp).into());
-
-        assert_eq!(ProtocolType::Application(ApplicationProtocol::FinsTcpReq), ProtocolType::Application(ApplicationProtocol::FinsUdpRsp));
-        assert_eq!(ProtocolType::Application(ApplicationProtocol::ModbusReq), ProtocolType::Application(ApplicationProtocol::ModbusRsp));
-        assert_ne!(ProtocolType::Application(ApplicationProtocol::S7comm), ProtocolType::Application(ApplicationProtocol::Mms));
-        assert_eq!(ProtocolType::Link(LinkProtocol::Ethernet), ProtocolType::Link(LinkProtocol::Ethernet));
-        assert_eq!(ProtocolType::Network(NetworkProtocol::Ipv4), ProtocolType::Network(NetworkProtocol::Ipv4));
-        assert_ne!(ProtocolType::Network(NetworkProtocol::Ipv4), ProtocolType::Network(NetworkProtocol::Ipv6));
-        assert_eq!(ProtocolType::Transport(TransportProtocol::Tcp), ProtocolType::Transport(TransportProtocol::Tcp));
-        assert_ne!(ProtocolType::Transport(TransportProtocol::Tcp), ProtocolType::Transport(TransportProtocol::Udp));
     }
 }
