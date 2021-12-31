@@ -1,6 +1,6 @@
 # refs: https://docs.gitlab.com/ee/ci/yaml/index.html
 # refs: https://doc.rust-lang.org/cargo/guide/continuous-integration.html#gitlab-ci
-image: rustlang/rust:nightly
+image: rustlang/rust:nightly@sha256:dba2a275810d367f70a047cf39e390ffc88b52cab67dc0aebed6382329eac39d
 # image: rust/latest
 
 stages:
