@@ -3,7 +3,7 @@ use std::default::Default;
 use super::level::PhyLevel;
 use super::level_packet::{L1Packet, L2Packet, L3Packet, L4Packet, L5Packet};
 use crate::parsers::parse_ethernet_layer;
-use crate::{ProtocolType, ParseError};
+use crate::{ParseError, ProtocolType};
 
 /// QuinPacket是由 Level1 - Level5 Packet 构成的枚举结构，使用示例如下：
 /// ```

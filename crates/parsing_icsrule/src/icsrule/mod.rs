@@ -2,9 +2,8 @@ mod basis;
 mod hm_rules;
 
 pub(crate) use self::basis::Action;
-pub use self::hm_rules::HmIcsRules;
 pub use self::basis::IcsRuleBasis;
-
+pub use self::hm_rules::HmIcsRules;
 
 use super::icsrule_arg::IcsRuleArgs;
 use serde::{Deserialize, Serialize};

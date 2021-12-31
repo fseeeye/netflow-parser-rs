@@ -12,7 +12,7 @@ pub mod parsers;
 
 pub use errors::ParseError;
 // field -> protocol -> layer -> packet => parser
+pub use field_type::{BerTL, MacAddress};
 pub use layer::*;
 pub use packet::*;
 pub use protocol::*;
-pub use field_type::{MacAddress, BerTL};

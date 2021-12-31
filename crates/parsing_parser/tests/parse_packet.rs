@@ -3,10 +3,9 @@ use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 
 use std::fs::File;
 
-use parsing_parser::{QuinPacket, QuinPacketOptions, ParseError};
+use parsing_parser::{ParseError, QuinPacket, QuinPacketOptions};
 
-
-fn parse_pcap(path: &str)-> Result<(), ()> {
+fn parse_pcap(path: &str) -> Result<(), ()> {
     let file = File::open(path).unwrap();
     let mut num_blocks = 0;
     let mut reader = LegacyPcapReader::new(65536, file).unwrap();
@@ -28,7 +27,7 @@ fn parse_pcap(path: &str)-> Result<(), ()> {
                             }
                         }
                     }
-                    _ => {},
+                    _ => {}
                 }
                 reader.consume(offset);
             }
@@ -92,7 +91,8 @@ fn parse_opcua_pcap() {
         "./tests/opcua_msg.pcap",
         "./tests/opcua_ack.pcap",
         "./tests/opcua_error.pcap",
-        "./tests/opcua_hello.pcap"
+        "./tests/opcua_hello.pcap",
+        "./tests/opcua_all.pcap",
     ];
 
     for path in opcua_pcap_path {
@@ -104,6 +104,6 @@ fn parse_opcua_pcap() {
 fn parse_mms_pcap() {
     // tracing_subscriber::fmt::init();
     let mms_pcap_path = "./tests/mms_3.pcap";
-    
+
     assert!(parse_pcap(mms_pcap_path).is_ok());
 }

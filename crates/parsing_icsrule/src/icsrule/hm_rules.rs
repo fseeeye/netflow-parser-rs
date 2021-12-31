@@ -32,8 +32,8 @@ impl HmIcsRules {
             Ok(o) => o,
             Err(e) => {
                 error!(target: "ICSRULE(HmIcsRules::init)", error = ?e, "occur error while reading rule string.");
-                return false
-            },
+                return false;
+            }
         };
 
         // convert json str to vec<Rule>
@@ -67,7 +67,11 @@ impl HmIcsRules {
 mod tests {
     use std::{net::IpAddr, str::FromStr};
 
-    use crate::{IcsRuleBasis, icsrule::{Action, basis::Direction}, icsrule_arg::{ModbusArg, ModbusReqArg, ModbusRspArg}};
+    use crate::{
+        icsrule::{basis::Direction, Action},
+        icsrule_arg::{ModbusArg, ModbusReqArg, ModbusRspArg},
+        IcsRuleBasis,
+    };
 
     use super::*;
 
@@ -76,7 +80,7 @@ mod tests {
         let file_str = "./tests/unitest_ics_rules.json";
         let mut ics_rules = HmIcsRules::new();
         assert!(ics_rules.init(file_str));
-        
+
         let mut rule_iter = ics_rules.rules_inner.iter();
         if let Some((_, ics_rule)) = rule_iter.next() {
             assert_eq!(
@@ -101,10 +105,12 @@ mod tests {
                                 unit_id: None,
                             }),
                             pdu: Some(crate::icsrule_arg::modbus_req::PDU {
-                                data: Some(crate::icsrule_arg::modbus_req::Data::ReadDiscreteInputs {
-                                    start_address: None,
-                                    count: None
-                                })
+                                data: Some(
+                                    crate::icsrule_arg::modbus_req::Data::ReadDiscreteInputs {
+                                        start_address: None,
+                                        count: None
+                                    }
+                                )
                             })
                         }),
                         ModbusArg::ModbusRsp(ModbusRspArg {
@@ -115,9 +121,11 @@ mod tests {
                                 unit_id: Some(1),
                             }),
                             pdu: Some(crate::icsrule_arg::modbus_rsp::PDU {
-                                data: Some(crate::icsrule_arg::modbus_rsp::Data::ReadDiscreteInputs {
-                                    byte_count: Some(1)
-                                })
+                                data: Some(
+                                    crate::icsrule_arg::modbus_rsp::Data::ReadDiscreteInputs {
+                                        byte_count: Some(1)
+                                    }
+                                )
                             })
                         })
                     ])

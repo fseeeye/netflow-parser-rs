@@ -41,7 +41,7 @@ pub fn parse_iso_on_tcp_layer<'a>(
                 transport_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
-            })
+            });
         }
     };
 
@@ -151,16 +151,16 @@ pub fn parse_tpkt(input: &[u8]) -> IResult<&[u8], Tpkt> {
     if input.first() != Some(&0x03) {
         let length = match (input.len() + 4).try_into() {
             Ok(o) => o,
-            Err(_) => 0xffff 
+            Err(_) => 0xffff,
         };
         return Ok((
-                    input,
-                    Tpkt {
-                        version: 3,
-                        reserved: 0,
-                        length,
-                    },
-                ))
+            input,
+            Tpkt {
+                version: 3,
+                reserved: 0,
+                length,
+            },
+        ));
     }
 
     let (input, version) = u8(input)?;
@@ -171,7 +171,7 @@ pub fn parse_tpkt(input: &[u8]) -> IResult<&[u8], Tpkt> {
         Tpkt {
             version,
             reserved,
-            length
+            length,
         },
     ))
 }
@@ -249,8 +249,8 @@ fn parse_connect_confirm(input: &[u8], length: u8) -> IResult<&[u8], CotpPdu> {
                 bit_mask,
                 parameter_code,
                 parameter_length,
-                tpdu_size
-            }
+                tpdu_size,
+            },
         ))
     }
 }

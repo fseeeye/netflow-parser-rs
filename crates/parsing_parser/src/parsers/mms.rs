@@ -82,7 +82,7 @@ pub fn parse_mms_layer<'a>(
                 transport_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
-            })
+            });
         }
     };
 
@@ -889,14 +889,13 @@ fn parse_normal_mode_parameters_cp_choice(
 }
 
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
-    input: &[u8]
+    input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
     let (input, _tag) = peek(u8)(input)?;
-    let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) =
-        match _tag {
-            0x80 => parse_normal_mode_parameters_cp_with_protocol_version_choice(input),
-            _ => parse_normal_mode_parameters_cp_choice(input),
-        }?;
+    let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) = match _tag {
+        0x80 => parse_normal_mode_parameters_cp_with_protocol_version_choice(input),
+        _ => parse_normal_mode_parameters_cp_choice(input),
+    }?;
     Ok((input, osi_pres_pdu_normal_mode_parameters_cp_choice))
 }
 

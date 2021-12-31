@@ -16,7 +16,7 @@ use nom::number::complete::{be_u16, be_u24, be_u32, le_u16, le_u24, le_u32, u8};
 use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
-use tracing::{error, debug};
+use tracing::{debug, error};
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -82,7 +82,7 @@ pub fn parse_bacnet_layer<'a>(
                 transport_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
-            })
+            });
         }
     };
 

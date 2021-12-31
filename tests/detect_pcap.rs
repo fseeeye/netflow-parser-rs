@@ -18,7 +18,7 @@ fn detect_pcap() {
     // change paths by yourself.
     let paths = [
         // "../pcap/ICS/opcua/test/opcua_hello.pcap",
-        "./tests/detect.pcap"
+        "./tests/detect.pcap",
     ];
 
     for path in paths.iter() {
@@ -76,9 +76,12 @@ fn parse_pcap(path: &str) {
                         // 匹配 ICS 规则
                         // assert_eq!(icsrules.detect(&packet), DetectResult::Hit(RuleAction::Drop));
                         // 匹配 Suricata 规则
-                        assert_eq!(surules.detect(&packet), DetectResult::Hit(RuleAction::Alert))
+                        assert_eq!(
+                            surules.detect(&packet),
+                            DetectResult::Hit(RuleAction::Alert)
+                        )
                     }
-                    _ => {},
+                    _ => {}
                 }
                 reader.consume(offset);
             }
