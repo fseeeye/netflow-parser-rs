@@ -164,7 +164,7 @@ pub fn parse_tcp_layer<'a>(
             let transport_layer = TransportLayer::Tcp(tcp_header);
             parse_fins_tcp_rsp_layer(input, link_layer, network_layer, transport_layer, options)
         }
-        12001 => {
+        12001 | 48400 => {
             let transport_layer = TransportLayer::Tcp(tcp_header);
             parse_opcua_layer(input, link_layer, network_layer, transport_layer, options)
         }
@@ -193,7 +193,7 @@ pub fn parse_tcp_layer<'a>(
                 let transport_layer = TransportLayer::Tcp(tcp_header);
                 parse_fins_tcp_req_layer(input, link_layer, network_layer, transport_layer, options)
             }
-            12001 => {
+            12001 | 48400 => {
                 let transport_layer = TransportLayer::Tcp(tcp_header);
                 parse_opcua_layer(input, link_layer, network_layer, transport_layer, options)
             }

@@ -16,6 +16,8 @@ use nom::number::complete::{be_u16, be_u24, be_u32, be_u64, le_u16, le_u24, le_u
 use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
+#[allow(unused)]
+use tracing::{error, debug};
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -75,7 +77,11 @@ pub fn parse_opcua_layer<'a>(
 
     let (input, opcua_header) = match parse_opcua_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            error!(
+                target: "PARSER(opcua::parse_opcua_layer)",
+                error = ?e
+            );
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
