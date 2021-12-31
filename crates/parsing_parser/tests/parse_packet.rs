@@ -23,7 +23,7 @@ fn parse_pcap(path: &str)-> Result<(), ()> {
                             QuinPacket::parse_from_stream(&_b.data, &QuinPacketOptions::default());
                         if let Some(err) = packet.get_error() {
                             if err != ParseError::NotEndPayload {
-                                println!("[!] Find Error Packet: {:#?}", packet);
+                                println!("[!] Find Error Packet: {:?}", packet);
                                 return Err(());
                             }
                         }
@@ -74,7 +74,6 @@ fn parse_dnp3_pcap() {
 
 #[test]
 fn parse_bacnet_pcap() {
-    // tracing_subscriber::fmt::init();
     let bacnet_pcap_path = "./tests/bacnet_simple.pcap";
 
     assert!(parse_pcap(bacnet_pcap_path).is_ok());
@@ -88,11 +87,13 @@ fn parse_iec104_pcap() {
 
 #[test]
 fn parse_opcua_pcap() {
+    tracing_subscriber::fmt::init();
     let opcua_pcap_path = [
         "./tests/opcua_msg.pcap",
         "./tests/opcua_ack.pcap",
         "./tests/opcua_error.pcap",
-        "./tests/opcua_hello.pcap"
+        "./tests/opcua_hello.pcap",
+        "./tests/opcua_all.pcap"
     ];
 
     for path in opcua_pcap_path {
@@ -102,6 +103,7 @@ fn parse_opcua_pcap() {
 
 #[test]
 fn parse_mms_pcap() {
+    // tracing_subscriber::fmt::init();
     let mms_pcap_path = "./tests/mms_3.pcap";
     
     assert!(parse_pcap(mms_pcap_path).is_ok());

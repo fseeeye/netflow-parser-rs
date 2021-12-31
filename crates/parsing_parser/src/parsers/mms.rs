@@ -889,11 +889,11 @@ fn parse_normal_mode_parameters_cp_choice(
 }
 
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
-    input: &[u8],
-    _normal_mode_parameters_tl_tag: u8,
+    input: &[u8]
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    let (input, _tag) = peek(u8)(input)?;
     let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) =
-        match _normal_mode_parameters_tl_tag.bitand(0xff) {
+        match _tag {
             0x80 => parse_normal_mode_parameters_cp_with_protocol_version_choice(input),
             _ => parse_normal_mode_parameters_cp_choice(input),
         }?;
@@ -944,7 +944,7 @@ pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
     let (input, _normal_mode_parameters_tl) = ber_tl(input)?;
     let (input, normal_mode_parameters) =
-        parse_osi_pres_pdu_normal_mode_parameters_cp_choice(input, _normal_mode_parameters_tl.tag)?;
+        parse_osi_pres_pdu_normal_mode_parameters_cp_choice(input)?;
     Ok((
         input,
         OsiPresCp {
@@ -978,6 +978,15 @@ pub fn parse_osi_acse_aarq(input: &[u8]) -> IResult<&[u8], OsiAcseAarq> {
     let (input, aso_context_name) = parse_simple_item(input)?;
     let (input, called_ap_title) = parse_simple_item(input)?;
     let (input, called_ae_qualifier) = parse_simple_item(input)?;
+
+    let (_, _tag) = peek(u8)(input)?;
+    let mut input = input;
+    if _tag.bitand(0xf0) == 0xa0 {
+        // parse calling ap title / calling ae qulifier
+        (input, ..) = parse_simple_item(input)?;
+        (input, ..) = parse_simple_item(input)?;
+    }
+
     let (input, _user_information_tl) = ber_tl(input)?;
     let (input, _association_data_tl) = ber_tl(input)?;
     let (input, direct_ref) = parse_simple_item(input)?;
