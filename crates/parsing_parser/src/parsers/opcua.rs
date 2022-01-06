@@ -17,7 +17,7 @@ use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
 #[allow(unused)]
-use tracing::{error, debug};
+use tracing::{debug, error};
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -88,7 +88,7 @@ pub fn parse_opcua_layer<'a>(
                 transport_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
-            })
+            });
         }
     };
 

@@ -11,12 +11,13 @@ use nom::error::{Error, ErrorKind};
 #[allow(unused)]
 use nom::multi::count;
 #[allow(unused)]
-use nom::number::complete::{be_u16, be_u24, be_u32, u8};
+use nom::number::complete::{be_u16, be_u24, be_u32, be_u64, le_u16, le_u24, le_u32, le_u64, u8};
 #[allow(unused)]
 use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
-use tracing::error;
+#[allow(unused)]
+use tracing::{debug, error, info, warn};
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -31,8 +32,12 @@ use crate::packet::{
 #[allow(unused)]
 use crate::protocol::*;
 #[allow(unused)]
+use crate::utils::*;
+#[allow(unused)]
 use crate::ProtocolType;
 
+#[allow(unused)]
+use std::convert::TryInto;
 #[allow(unused)]
 use std::ops::BitAnd;
 #[allow(unused)]
@@ -42,6 +47,7 @@ use std::ops::BitXor;
 
 use super::parse_l5_eof_layer;
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MmsHeader<'a> {
     pub osi_protocol_stack: OsiProtocolStack<'a>,
@@ -109,16 +115,19 @@ pub fn parse_mms_layer<'a>(
     );
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SimpleItem<'a> {
     pub data: &'a [u8],
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SimpleU8Data {
     pub data: u8,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiSesConnectAcceptItem {
     pub connect_accept_item_parameter_type: u8,
@@ -131,6 +140,7 @@ pub struct OsiSesConnectAcceptItem {
     pub version_number_parameter_flag: u8,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiSesSessionRequirement {
     pub session_requirement_parameter_type: u8,
@@ -138,6 +148,7 @@ pub struct OsiSesSessionRequirement {
     pub session_requirement_flag: u16,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiSesCallingSessionSelector {
     pub calling_session_selector_parameter_type: u8,
@@ -145,6 +156,7 @@ pub struct OsiSesCallingSessionSelector {
     pub calling_session_selector_value: u16,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiSesCalledSessionSelector {
     pub called_session_selector_parameter_type: u8,
@@ -152,12 +164,14 @@ pub struct OsiSesCalledSessionSelector {
     pub called_session_selector_value: u16,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiSesSessionUserData {
     pub session_user_data_parameter_type: u8,
     pub session_user_data_parameter_length: u8,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiSesConnectRequest {
     pub connect_accept_item: OsiSesConnectAcceptItem,
@@ -167,11 +181,13 @@ pub struct OsiSesConnectRequest {
     pub session_user_data: OsiSesSessionUserData,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresUserData {
     pub presentation_context_indentifier: SimpleU8Data,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct NormalModeParametersCpWithProtocolVersion<'a> {
     pub protocol_version: SimpleItem<'a>,
@@ -182,6 +198,7 @@ pub struct NormalModeParametersCpWithProtocolVersion<'a> {
     pub user_data: OsiPresUserData,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct NormalModeParametersCpaWithProtocolVersion<'a> {
     pub protocol_version: SimpleItem<'a>,
@@ -190,6 +207,7 @@ pub struct NormalModeParametersCpaWithProtocolVersion<'a> {
     pub user_data: OsiPresUserData,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresPduNormalModeParametersCp<'a> {
     pub calling_presentation_selector: SimpleItem<'a>,
@@ -199,6 +217,7 @@ pub struct OsiPresPduNormalModeParametersCp<'a> {
     pub user_data: OsiPresUserData,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresPduNormalModeParametersCpa<'a> {
     pub responding_presentation_selector: SimpleItem<'a>,
@@ -206,6 +225,7 @@ pub struct OsiPresPduNormalModeParametersCpa<'a> {
     pub user_data: OsiPresUserData,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum OsiPresPduNormalModeParametersCpChoice<'a> {
     NormalModeParametersCpWithProtocolVersionChoice {
@@ -217,6 +237,7 @@ pub enum OsiPresPduNormalModeParametersCpChoice<'a> {
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum OsiPresPduNormalModeParametersCpaChoice<'a> {
     NormalModeParametersCpaWithProtocolVersionChoice {
@@ -228,18 +249,21 @@ pub enum OsiPresPduNormalModeParametersCpaChoice<'a> {
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCp<'a> {
     pub pres_cp_mode_selector: SimpleItem<'a>,
     pub normal_mode_parameters: OsiPresPduNormalModeParametersCpChoice<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCpa<'a> {
     pub pres_cp_mode_selector: SimpleItem<'a>,
     pub normal_mode_parameters: OsiPresPduNormalModeParametersCpaChoice<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiAcseAarq<'a> {
     pub protocol_version: SimpleItem<'a>,
@@ -250,6 +274,7 @@ pub struct OsiAcseAarq<'a> {
     pub indirect_ref: SimpleItem<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiAcseAare<'a> {
     pub protocol_version: SimpleItem<'a>,
@@ -261,6 +286,7 @@ pub struct OsiAcseAare<'a> {
     pub user_information: SimpleItem<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum OsiSesChoice<'a> {
     Request {
@@ -280,6 +306,7 @@ pub enum OsiSesChoice<'a> {
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiProtocolStack<'a> {
     pub ses_type: u8,
@@ -287,6 +314,7 @@ pub struct OsiProtocolStack<'a> {
     pub ses: OsiSesChoice<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ObjectClass<'a> {
     NamedVariable { named_variable: SimpleItem<'a> },
@@ -303,70 +331,56 @@ pub enum ObjectClass<'a> {
     OperatorStation { operator_station: SimpleItem<'a> },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Identifier<'a> {
-    pub value: &'a [u8],
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ObjectScope<'a> {
     ObjectScopeVmd {
-        object_scope_vmd: Identifier<'a>,
+        object_scope_vmd: &'a [u8],
     },
     ObjectScopeDomain {
-        object_scope_domain_id: Identifier<'a>,
-        object_scope_item_id: Identifier<'a>,
+        object_scope_domain_id: &'a [u8],
+        object_scope_item_id: &'a [u8],
     },
     ObjectScopeAaSpecific {
-        object_scope_aa_specific: Identifier<'a>,
+        object_scope_aa_specific: &'a [u8],
     },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct BoolResult {
-    pub result: u8,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ListOfData<'a> {
-    pub lod: Vec<SimpleItem<'a>>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ObjectName<'a> {
     ObjectNameVmd {
-        object_name_vmd: Identifier<'a>,
+        object_name_vmd: &'a [u8],
     },
     ObjectNameDomain {
-        object_name_domain_id: Identifier<'a>,
-        object_name_item_id: Identifier<'a>,
+        object_name_domain_id: &'a [u8],
+        object_name_item_id: &'a [u8],
     },
     ObjectNameAaSpecific {
-        object_name_aa_specific: Identifier<'a>,
+        object_name_aa_specific: &'a [u8],
     },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ObjectNameStruct<'a> {
-    pub object_name: ObjectName<'a>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum VariableSpecification<'a> {
-    Name { res: ObjectNameStruct<'a> },
+    Name { object_name: ObjectName<'a> },
     Others { value: &'a [u8] },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct VariableSpecificationStruct<'a> {
     pub variable_specification: VariableSpecification<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfVariableSpecification<'a> {
     pub lovs: Vec<VariableSpecificationStruct<'a>>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum DataAccessError {
     ObjectInvalidated {
@@ -407,37 +421,32 @@ pub enum DataAccessError {
     },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct DataAccessErrorConstruct {
-    pub data_access_error: DataAccessError,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Data<'a> {
-    pub data: SimpleItem<'a>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum AccessResult<'a> {
-    AccessResultFailure { failure: DataAccessErrorConstruct },
-    AccessResultSuccess { success: Data<'a> },
+    AccessResultFailure { data_access_error: DataAccessError },
+    AccessResultSuccess { data: SimpleItem<'a> },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct AccessResultStruct<'a> {
     pub access_result: AccessResult<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfAccessResult<'a> {
     pub loar: Vec<AccessResultStruct<'a>>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ListOfIdentifier<'a> {
-    pub loar: Vec<Identifier<'a>>,
+    pub loar: Vec<&'a [u8]>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct InitDetailRequest<'a> {
     pub proposed_version_number: SimpleItem<'a>,
@@ -445,6 +454,7 @@ pub struct InitDetailRequest<'a> {
     pub service_supported_calling: SimpleItem<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct InitDetailResponse<'a> {
     pub proposed_version_number: SimpleItem<'a>,
@@ -452,70 +462,36 @@ pub struct InitDetailResponse<'a> {
     pub service_supported_called: SimpleItem<'a>,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct InvokeId {
     pub invoke_id: u8,
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum VariableAccessSpecificationChoice<'a> {
     ListOfVariable {
         res: ListOfVariableSpecification<'a>,
     },
     VaribaleListName {
-        res: ObjectNameStruct<'a>,
+        object_name: ObjectName<'a>,
     },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct VariableAccessSpecificationChoiceStruct<'a> {
-    pub variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ReadRequestChoice<'a> {
     ReadRequestChoiceDefault {
-        res: VariableAccessSpecificationChoiceStruct<'a>,
+        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
     },
     ReadRequestChoiceOtherwise {
-        specification_with_result: BoolResult,
-        res: VariableAccessSpecificationChoiceStruct<'a>,
+        specification_with_result: u8,
+        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
     },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct WriteRequestChoiceConstruct<'a> {
-    pub variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
-    pub list_of_data: ListOfData<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct GetNamedVariableListAttributesRequestChoiceConstruct<'a> {
-    pub object_name: ObjectName<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct GetNameListRequestChoiceConstruct<'a> {
-    pub object_class: ObjectClass<'a>,
-    pub object_scope: ObjectScope<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct GetNameListResponseChoiceConstruct<'a> {
-    pub list_of_identifier: ListOfIdentifier<'a>,
-    pub more_follows: BoolResult,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct IdentifyRequestChoiceConstruct {}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct IdentifyResponseChoiceConstruct<'a> {
-    pub vendor_name: SimpleItem<'a>,
-    pub model_name: SimpleItem<'a>,
-    pub revision: SimpleItem<'a>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ReadResponseChoice<'a> {
     ReadResponseChoiceNone {},
@@ -524,77 +500,58 @@ pub enum ReadResponseChoice<'a> {
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum WriteResponseChoice {
-    WriteResponseChoiceFailure { failure: DataAccessErrorConstruct },
+    WriteResponseChoiceFailure { data_access_error: DataAccessError },
     WriteResponseChoiceSuccess {},
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ReadResponseChoiceConstruct<'a> {
-    pub read_response_choice: ReadResponseChoice<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct WriteResponseChoiceConstruct {
-    pub write_response_choice: WriteResponseChoice,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct GetNamedVariableListAttributesResponseChoice<'a> {
-    pub mms_deleteable: BoolResult,
-    pub list_of_variable_specification: ListOfVariableSpecification<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct InformationReportChoice<'a> {
-    pub variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
-    pub list_of_access_result: ListOfAccessResult<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ReadRequestChoiceStruct<'a> {
-    pub read_request_choice: ReadRequestChoice<'a>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ConfirmedServiceRequestChoice<'a> {
     GetNameListRequest {
-        res: GetNameListRequestChoiceConstruct<'a>,
+        object_class: ObjectClass<'a>,
+        object_scope: ObjectScope<'a>,
     },
-    IdentifyRequest {
-        res: IdentifyRequestChoiceConstruct,
-    },
+    IdentifyRequest {},
     ReadRequest {
-        res: ReadRequestChoiceStruct<'a>,
+        read_request_choice: ReadRequestChoice<'a>,
     },
     WriteRequest {
-        res: WriteRequestChoiceConstruct<'a>,
+        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
+        lod: Vec<SimpleItem<'a>>,
     },
     GetNamedVariableListAttributesRequest {
-        res: GetNamedVariableListAttributesRequestChoiceConstruct<'a>,
+        object_name: ObjectName<'a>,
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ConfirmedServiceResponseChoice<'a> {
     GetNameListResponse {
-        res: GetNameListResponseChoiceConstruct<'a>,
+        list_of_identifier: ListOfIdentifier<'a>,
+        more_follows: u8,
     },
     IdentifyResponse {
-        res: IdentifyResponseChoiceConstruct<'a>,
+        vendor_name: SimpleItem<'a>,
+        model_name: SimpleItem<'a>,
+        revision: SimpleItem<'a>,
     },
     ReadResponse {
-        res: ReadResponseChoiceConstruct<'a>,
+        read_response_choice: ReadResponseChoice<'a>,
     },
     WriteResponse {
-        res: WriteResponseChoiceConstruct,
+        write_response_choice: WriteResponseChoice,
     },
     GetNamedVariableListAttributesResponse {
-        res: GetNamedVariableListAttributesResponseChoice<'a>,
+        mms_deleteable: u8,
+        list_of_variable_specification: ListOfVariableSpecification<'a>,
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ConfirmedServiceResponseStruct<'a> {
     ConfirmedServiceResponseStructNone {},
@@ -603,56 +560,47 @@ pub enum ConfirmedServiceResponseStruct<'a> {
     },
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum UnConfirmedChoice<'a> {
-    InformationReport { res: InformationReportChoice<'a> },
+    InformationReport {
+        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
+        list_of_access_result: ListOfAccessResult<'a>,
+    },
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ConfirmedRequestPDU<'a> {
-    pub invoke_id: InvokeId,
-    pub service: ConfirmedServiceRequestChoice<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ConfirmedResponsePDU<'a> {
-    pub invoke_id: InvokeId,
-    pub service: ConfirmedServiceResponseStruct<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct UnConfirmedPDU<'a> {
-    pub service: UnConfirmedChoice<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct InitiateRequestPDU<'a> {
-    pub local_detail_calling: SimpleItem<'a>,
-    pub proposed_max_serv_outstanding_calling: SimpleItem<'a>,
-    pub proposed_max_serv_outstanding_called: SimpleItem<'a>,
-    pub proposed_data_structure_nesting_level: SimpleItem<'a>,
-    pub init_request_detail: InitDetailRequest<'a>,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct InitiateResponsePDU<'a> {
-    pub local_detail_called: SimpleItem<'a>,
-    pub proposed_max_serv_outstanding_calling: SimpleItem<'a>,
-    pub proposed_max_serv_outstanding_called: SimpleItem<'a>,
-    pub proposed_data_structure_nesting_level: SimpleItem<'a>,
-    pub init_response_detail: InitDetailResponse<'a>,
-}
-
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum MmsPduChoice<'a> {
-    ConfirmedRequest { value: ConfirmedRequestPDU<'a> },
-    ConfirmedResponse { value: ConfirmedResponsePDU<'a> },
-    UnConfirmed { value: UnConfirmedPDU<'a> },
-    InitiateRequest { value: InitiateRequestPDU<'a> },
-    InitiateResponse { value: InitiateResponsePDU<'a> },
-    ConcludeResponse {},
+    ConfirmedRequest {
+        invoke_id: InvokeId,
+        service: ConfirmedServiceRequestChoice<'a>,
+    },
+    ConfirmedResponse {
+        invoke_id: InvokeId,
+        service: ConfirmedServiceResponseStruct<'a>,
+    },
+    UnConfirmed {
+        service: UnConfirmedChoice<'a>,
+    },
+    InitiateRequest {
+        local_detail_calling: SimpleItem<'a>,
+        proposed_max_serv_outstanding_calling: SimpleItem<'a>,
+        proposed_max_serv_outstanding_called: SimpleItem<'a>,
+        proposed_data_structure_nesting_level: SimpleItem<'a>,
+        init_request_detail: InitDetailRequest<'a>,
+    },
+    InitiateResponse {
+        local_detail_called: SimpleItem<'a>,
+        proposed_max_serv_outstanding_calling: SimpleItem<'a>,
+        proposed_max_serv_outstanding_called: SimpleItem<'a>,
+        proposed_data_structure_nesting_level: SimpleItem<'a>,
+        init_response_detail: InitDetailResponse<'a>,
+    },
+    ConcludeRequest {},
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MmsPdu<'a> {
     pub mms_pdu_choice: MmsPduChoice<'a>,
@@ -862,7 +810,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa(
     ))
 }
 
-fn parse_normal_mode_parameters_cp_with_protocol_version_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
     let (input, normal_mode_parameters_cp_with_protocol_version) =
@@ -875,7 +823,7 @@ fn parse_normal_mode_parameters_cp_with_protocol_version_choice(
     ))
 }
 
-fn parse_normal_mode_parameters_cp_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
     let (input, osi_pres_pdu_normal_mode_parameters_cp) =
@@ -893,13 +841,13 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
     let (input, _tag) = peek(u8)(input)?;
     let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) = match _tag {
-        0x80 => parse_normal_mode_parameters_cp_with_protocol_version_choice(input),
-        _ => parse_normal_mode_parameters_cp_choice(input),
+        0x80 => parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice(input),
+        _ => parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_choice(input),
     }?;
     Ok((input, osi_pres_pdu_normal_mode_parameters_cp_choice))
 }
 
-fn parse_normal_mode_parameters_cpa_with_protocol_version_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
     let (input, normal_mode_parameters_cpa_with_protocol_version) =
@@ -912,7 +860,7 @@ fn parse_normal_mode_parameters_cpa_with_protocol_version_choice(
     ))
 }
 
-fn parse_normal_mode_parameters_cpa_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
     let (input, osi_pres_pdu_normal_mode_parameters_cpa) =
@@ -927,13 +875,12 @@ fn parse_normal_mode_parameters_cpa_choice(
 
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
     input: &[u8],
-    _normal_mode_parameters_tl_tag: u8,
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
-    let (input, osi_pres_pdu_normal_mode_parameters_cpa_choice) =
-        match _normal_mode_parameters_tl_tag.bitand(0xff) {
-            0x80 => parse_normal_mode_parameters_cpa_with_protocol_version_choice(input),
-            _ => parse_normal_mode_parameters_cpa_choice(input),
-        }?;
+    let (input, _tag) = peek(u8)(input)?;
+    let (input, osi_pres_pdu_normal_mode_parameters_cpa_choice) = match _tag {
+        0x80 => parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice(input),
+        _ => parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_choice(input),
+    }?;
     Ok((input, osi_pres_pdu_normal_mode_parameters_cpa_choice))
 }
 
@@ -958,10 +905,8 @@ pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
     let (input, _pres_cpa_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
     let (input, _normal_mode_parameters_tl) = ber_tl(input)?;
-    let (input, normal_mode_parameters) = parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
-        input,
-        _normal_mode_parameters_tl.tag,
-    )?;
+    let (input, normal_mode_parameters) =
+        parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(input)?;
     Ok((
         input,
         OsiPresCpa {
@@ -977,7 +922,6 @@ pub fn parse_osi_acse_aarq(input: &[u8]) -> IResult<&[u8], OsiAcseAarq> {
     let (input, aso_context_name) = parse_simple_item(input)?;
     let (input, called_ap_title) = parse_simple_item(input)?;
     let (input, called_ae_qualifier) = parse_simple_item(input)?;
-
     let (_, _tag) = peek(u8)(input)?;
     let mut input = input;
     if _tag.bitand(0xf0) == 0xa0 {
@@ -985,7 +929,6 @@ pub fn parse_osi_acse_aarq(input: &[u8]) -> IResult<&[u8], OsiAcseAarq> {
         (input, ..) = parse_simple_item(input)?;
         (input, ..) = parse_simple_item(input)?;
     }
-
     let (input, _user_information_tl) = ber_tl(input)?;
     let (input, _association_data_tl) = ber_tl(input)?;
     let (input, direct_ref) = parse_simple_item(input)?;
@@ -1027,7 +970,7 @@ pub fn parse_osi_acse_aare(input: &[u8]) -> IResult<&[u8], OsiAcseAare> {
     ))
 }
 
-fn parse_request(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
+fn parse_osi_ses_choice_request(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
     let (input, connect_accept) = parse_osi_ses_connect_request(input)?;
     let (input, pres_cp) = parse_osi_pres_cp(input)?;
     let (input, acse) = parse_osi_acse_aarq(input)?;
@@ -1041,7 +984,7 @@ fn parse_request(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
     ))
 }
 
-fn parse_response(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
+fn parse_osi_ses_choice_response(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
     let (input, accept) = parse_osi_ses_connect_request(input)?;
     let (input, pres_cpa) = parse_osi_pres_cpa(input)?;
     let (input, acse) = parse_osi_acse_aare(input)?;
@@ -1055,7 +998,7 @@ fn parse_response(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
     ))
 }
 
-fn parse_give_tokens(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
+fn parse_osi_ses_choice_give_tokens(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
     let (input, ses2_type) = u8(input)?;
     let (input, ses2_len) = u8(input)?;
     let (input, _pres_cpa_tl) = ber_tl(input)?;
@@ -1072,9 +1015,9 @@ fn parse_give_tokens(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
 
 pub fn parse_osi_ses_choice(input: &[u8], ses_type: u8) -> IResult<&[u8], OsiSesChoice> {
     let (input, osi_ses_choice) = match ses_type {
-        0x0d => parse_request(input),
-        0x0e => parse_response(input),
-        0x01 => parse_give_tokens(input),
+        0x0d => parse_osi_ses_choice_request(input),
+        0x0e => parse_osi_ses_choice_response(input),
+        0x01 => parse_osi_ses_choice_give_tokens(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1097,17 +1040,17 @@ pub fn parse_osi_protocol_stack(input: &[u8]) -> IResult<&[u8], OsiProtocolStack
     ))
 }
 
-fn parse_named_variable(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_named_variable(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, named_variable) = parse_simple_item(input)?;
     Ok((input, ObjectClass::NamedVariable { named_variable }))
 }
 
-fn parse_scattered_access(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_scattered_access(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, scattered_access) = parse_simple_item(input)?;
     Ok((input, ObjectClass::ScatteredAccess { scattered_access }))
 }
 
-fn parse_named_variable_list(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_named_variable_list(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, named_variable_list) = parse_simple_item(input)?;
     Ok((
         input,
@@ -1117,65 +1060,65 @@ fn parse_named_variable_list(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     ))
 }
 
-fn parse_named_type(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_named_type(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, named_type) = parse_simple_item(input)?;
     Ok((input, ObjectClass::NamedType { named_type }))
 }
 
-fn parse_semaphore(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_semaphore(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, semaphore) = parse_simple_item(input)?;
     Ok((input, ObjectClass::Semaphore { semaphore }))
 }
 
-fn parse_event_condition(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_event_condition(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, event_condition) = parse_simple_item(input)?;
     Ok((input, ObjectClass::EventCondition { event_condition }))
 }
 
-fn parse_event_action(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_event_action(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, event_action) = parse_simple_item(input)?;
     Ok((input, ObjectClass::EventAction { event_action }))
 }
 
-fn parse_event_enrollment(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_event_enrollment(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, event_enrollment) = parse_simple_item(input)?;
     Ok((input, ObjectClass::EventEnrollment { event_enrollment }))
 }
 
-fn parse_journal(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_journal(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, journal) = parse_simple_item(input)?;
     Ok((input, ObjectClass::Journal { journal }))
 }
 
-fn parse_domain(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_domain(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, domain) = parse_simple_item(input)?;
     Ok((input, ObjectClass::Domain { domain }))
 }
 
-fn parse_program_invocation(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_program_invocation(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, program_invocation) = parse_simple_item(input)?;
     Ok((input, ObjectClass::ProgramInvocation { program_invocation }))
 }
 
-fn parse_operator_station(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+fn parse_object_class_operator_station(input: &[u8]) -> IResult<&[u8], ObjectClass> {
     let (input, operator_station) = parse_simple_item(input)?;
     Ok((input, ObjectClass::OperatorStation { operator_station }))
 }
 
 pub fn parse_object_class(input: &[u8], _object_class_tl_tag: u8) -> IResult<&[u8], ObjectClass> {
     let (input, object_class) = match _object_class_tl_tag.bitand(0x1f) {
-        0x0 => parse_named_variable(input),
-        0x01 => parse_scattered_access(input),
-        0x02 => parse_named_variable_list(input),
-        0x03 => parse_named_type(input),
-        0x04 => parse_semaphore(input),
-        0x05 => parse_event_condition(input),
-        0x06 => parse_event_action(input),
-        0x07 => parse_event_enrollment(input),
-        0x08 => parse_journal(input),
-        0x09 => parse_domain(input),
-        0x0a => parse_program_invocation(input),
-        0x0b => parse_operator_station(input),
+        0x0 => parse_object_class_named_variable(input),
+        0x01 => parse_object_class_scattered_access(input),
+        0x02 => parse_object_class_named_variable_list(input),
+        0x03 => parse_object_class_named_type(input),
+        0x04 => parse_object_class_semaphore(input),
+        0x05 => parse_object_class_event_condition(input),
+        0x06 => parse_object_class_event_action(input),
+        0x07 => parse_object_class_event_enrollment(input),
+        0x08 => parse_object_class_journal(input),
+        0x09 => parse_object_class_domain(input),
+        0x0a => parse_object_class_program_invocation(input),
+        0x0b => parse_object_class_operator_station(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1184,19 +1127,14 @@ pub fn parse_object_class(input: &[u8], _object_class_tl_tag: u8) -> IResult<&[u
     Ok((input, object_class))
 }
 
-pub fn parse_identifier(input: &[u8]) -> IResult<&[u8], Identifier> {
-    let (input, value) = take(input.len() as usize)(input)?;
-    Ok((input, Identifier { value }))
-}
-
-fn parse_object_scope_vmd(input: &[u8]) -> IResult<&[u8], ObjectScope> {
-    let (input, object_scope_vmd) = parse_identifier(input)?;
+fn parse_object_scope_object_scope_vmd(input: &[u8]) -> IResult<&[u8], ObjectScope> {
+    let (input, object_scope_vmd) = take(input.len() as usize)(input)?;
     Ok((input, ObjectScope::ObjectScopeVmd { object_scope_vmd }))
 }
 
-fn parse_object_scope_domain(input: &[u8]) -> IResult<&[u8], ObjectScope> {
-    let (input, object_scope_domain_id) = parse_identifier(input)?;
-    let (input, object_scope_item_id) = parse_identifier(input)?;
+fn parse_object_scope_object_scope_domain(input: &[u8]) -> IResult<&[u8], ObjectScope> {
+    let (input, object_scope_domain_id) = take(input.len() as usize)(input)?;
+    let (input, object_scope_item_id) = take(input.len() as usize)(input)?;
     Ok((
         input,
         ObjectScope::ObjectScopeDomain {
@@ -1206,8 +1144,8 @@ fn parse_object_scope_domain(input: &[u8]) -> IResult<&[u8], ObjectScope> {
     ))
 }
 
-fn parse_object_scope_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectScope> {
-    let (input, object_scope_aa_specific) = parse_identifier(input)?;
+fn parse_object_scope_object_scope_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectScope> {
+    let (input, object_scope_aa_specific) = take(input.len() as usize)(input)?;
     Ok((
         input,
         ObjectScope::ObjectScopeAaSpecific {
@@ -1218,9 +1156,9 @@ fn parse_object_scope_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectScope> {
 
 pub fn parse_object_scope(input: &[u8], _object_scope_tl_tag: u8) -> IResult<&[u8], ObjectScope> {
     let (input, object_scope) = match _object_scope_tl_tag.bitand(0x1f) {
-        0x0 => parse_object_scope_vmd(input),
-        0x01 => parse_object_scope_domain(input),
-        0x02 => parse_object_scope_aa_specific(input),
+        0x0 => parse_object_scope_object_scope_vmd(input),
+        0x01 => parse_object_scope_object_scope_domain(input),
+        0x02 => parse_object_scope_object_scope_aa_specific(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1229,39 +1167,14 @@ pub fn parse_object_scope(input: &[u8], _object_scope_tl_tag: u8) -> IResult<&[u
     Ok((input, object_scope))
 }
 
-pub fn parse_bool_result(input: &[u8]) -> IResult<&[u8], BoolResult> {
-    let (input, result) = u8(input)?;
-    Ok((input, BoolResult { result }))
-}
-
-pub fn parse_list_of_data(input: &[u8]) -> IResult<&[u8], ListOfData> {
-    let (input, _lod_tl) = ber_tl(input)?;
-    let (input, lod) = get_lod_with_simple_item(input, _lod_tl.length)?;
-    Ok((input, ListOfData { lod }))
-}
-
-fn get_lod_with_simple_item(input: &[u8], _lod_tl_length: u16) -> IResult<&[u8], Vec<SimpleItem>> {
-    let mut lod = Vec::new();
-    let mut _lod: SimpleItem;
-    let mut input = input;
-    let len_flag = input.len() - _lod_tl_length as usize;
-
-    while input.len() > len_flag {
-        (input, _lod) = parse_simple_item(input)?;
-        lod.push(_lod);
-    }
-
-    Ok((input, lod))
-}
-
-fn parse_object_name_vmd(input: &[u8]) -> IResult<&[u8], ObjectName> {
-    let (input, object_name_vmd) = parse_identifier(input)?;
+fn parse_object_name_object_name_vmd(input: &[u8]) -> IResult<&[u8], ObjectName> {
+    let (input, object_name_vmd) = take(input.len() as usize)(input)?;
     Ok((input, ObjectName::ObjectNameVmd { object_name_vmd }))
 }
 
-fn parse_object_name_domain(input: &[u8]) -> IResult<&[u8], ObjectName> {
-    let (input, object_name_domain_id) = parse_identifier(input)?;
-    let (input, object_name_item_id) = parse_identifier(input)?;
+fn parse_object_name_object_name_domain(input: &[u8]) -> IResult<&[u8], ObjectName> {
+    let (input, object_name_domain_id) = take(input.len() as usize)(input)?;
+    let (input, object_name_item_id) = take(input.len() as usize)(input)?;
     Ok((
         input,
         ObjectName::ObjectNameDomain {
@@ -1271,8 +1184,8 @@ fn parse_object_name_domain(input: &[u8]) -> IResult<&[u8], ObjectName> {
     ))
 }
 
-fn parse_object_name_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectName> {
-    let (input, object_name_aa_specific) = parse_identifier(input)?;
+fn parse_object_name_object_name_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectName> {
+    let (input, object_name_aa_specific) = take(input.len() as usize)(input)?;
     Ok((
         input,
         ObjectName::ObjectNameAaSpecific {
@@ -1283,9 +1196,9 @@ fn parse_object_name_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectName> {
 
 pub fn parse_object_name(input: &[u8], _object_name_tl_tag: u8) -> IResult<&[u8], ObjectName> {
     let (input, object_name) = match _object_name_tl_tag.bitand(0x1f) {
-        0x0 => parse_object_name_vmd(input),
-        0x01 => parse_object_name_domain(input),
-        0x02 => parse_object_name_aa_specific(input),
+        0x0 => parse_object_name_object_name_vmd(input),
+        0x01 => parse_object_name_object_name_domain(input),
+        0x02 => parse_object_name_object_name_aa_specific(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1294,18 +1207,13 @@ pub fn parse_object_name(input: &[u8], _object_name_tl_tag: u8) -> IResult<&[u8]
     Ok((input, object_name))
 }
 
-pub fn parse_object_name_struct(input: &[u8]) -> IResult<&[u8], ObjectNameStruct> {
+fn parse_variable_specification_name(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
     let (input, _object_name_tl) = ber_tl(input)?;
     let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
-    Ok((input, ObjectNameStruct { object_name }))
+    Ok((input, VariableSpecification::Name { object_name }))
 }
 
-fn parse_name(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
-    let (input, res) = parse_object_name_struct(input)?;
-    Ok((input, VariableSpecification::Name { res }))
-}
-
-fn parse_others(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
+fn parse_variable_specification_others(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
     let (input, _variable_specification_tl) = ber_tl(input)?;
     let (input, value) = take(_variable_specification_tl.length as usize)(input)?;
     Ok((input, VariableSpecification::Others { value }))
@@ -1316,8 +1224,8 @@ pub fn parse_variable_specification(
     _variable_specification_tl_tag: u8,
 ) -> IResult<&[u8], VariableSpecification> {
     let (input, variable_specification) = match _variable_specification_tl_tag.bitand(0x1f) {
-        0x0 => parse_name(input),
-        0x01 => parse_others(input),
+        0x0 => parse_variable_specification_name(input),
+        0x01 => parse_variable_specification_others(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1344,28 +1252,21 @@ pub fn parse_list_of_variable_specification(
     input: &[u8],
 ) -> IResult<&[u8], ListOfVariableSpecification> {
     let (input, _lovs_tl) = ber_tl(input)?;
-    let (input, lovs) = get_lovs_with_variable_specification_struct(input, _lovs_tl.length)?;
-    Ok((input, ListOfVariableSpecification { lovs }))
-}
-
-fn get_lovs_with_variable_specification_struct(
-    input: &[u8],
-    _lovs_tl_length: u16,
-) -> IResult<&[u8], Vec<VariableSpecificationStruct>> {
+    /* LimitedLenVecLoopField Start */
     let mut lovs = Vec::new();
     let mut _lovs: VariableSpecificationStruct;
     let mut input = input;
-    let len_flag = input.len() - _lovs_tl_length as usize;
-
+    let len_flag = input.len() - _lovs_tl.length as usize;
     while input.len() > len_flag {
         (input, _lovs) = parse_variable_specification_struct(input)?;
         lovs.push(_lovs);
     }
-
-    Ok((input, lovs))
+    let input = input;
+    /* LimitedLenVecLoopField End. */
+    Ok((input, ListOfVariableSpecification { lovs }))
 }
 
-fn parse_object_invalidated(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_invalidated(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, object_invalidated) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1373,12 +1274,14 @@ fn parse_object_invalidated(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     ))
 }
 
-fn parse_hardware_fault(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_hardware_fault(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, hardware_fault) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::HardwareFault { hardware_fault }))
 }
 
-fn parse_temporarily_unavailable(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_temporarily_unavailable(
+    input: &[u8],
+) -> IResult<&[u8], DataAccessError> {
     let (input, temporarily_unavailable) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1388,7 +1291,7 @@ fn parse_temporarily_unavailable(input: &[u8]) -> IResult<&[u8], DataAccessError
     ))
 }
 
-fn parse_object_access_denied(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_access_denied(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, object_access_denied) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1398,22 +1301,22 @@ fn parse_object_access_denied(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     ))
 }
 
-fn parse_object_undefined(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_undefined(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, object_undefined) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::ObjectUndefined { object_undefined }))
 }
 
-fn parse_invalid_address(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_invalid_address(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, invalid_address) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::InvalidAddress { invalid_address }))
 }
 
-fn parse_type_unsupported(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_type_unsupported(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, type_unsupported) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::TypeUnsupported { type_unsupported }))
 }
 
-fn parse_type_inconsistent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_type_inconsistent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, type_inconsistent) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1421,7 +1324,9 @@ fn parse_type_inconsistent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     ))
 }
 
-fn parse_object_attribute_inconsistent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_attribute_inconsistent(
+    input: &[u8],
+) -> IResult<&[u8], DataAccessError> {
     let (input, object_attribute_inconsistent) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1431,7 +1336,9 @@ fn parse_object_attribute_inconsistent(input: &[u8]) -> IResult<&[u8], DataAcces
     ))
 }
 
-fn parse_object_access_unsupported(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_access_unsupported(
+    input: &[u8],
+) -> IResult<&[u8], DataAccessError> {
     let (input, object_access_unsupported) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1441,7 +1348,7 @@ fn parse_object_access_unsupported(input: &[u8]) -> IResult<&[u8], DataAccessErr
     ))
 }
 
-fn parse_object_non_existent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_non_existent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, object_non_existent) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1451,7 +1358,7 @@ fn parse_object_non_existent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     ))
 }
 
-fn parse_object_value_invalid(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+fn parse_data_access_error_object_value_invalid(input: &[u8]) -> IResult<&[u8], DataAccessError> {
     let (input, object_value_invalid) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1466,18 +1373,18 @@ pub fn parse_data_access_error(
     _data_access_error_tl_tag: u8,
 ) -> IResult<&[u8], DataAccessError> {
     let (input, data_access_error) = match _data_access_error_tl_tag.bitand(0x1f) {
-        0x0 => parse_object_invalidated(input),
-        0x01 => parse_hardware_fault(input),
-        0x02 => parse_temporarily_unavailable(input),
-        0x03 => parse_object_access_denied(input),
-        0x04 => parse_object_undefined(input),
-        0x05 => parse_invalid_address(input),
-        0x06 => parse_type_unsupported(input),
-        0x07 => parse_type_inconsistent(input),
-        0x08 => parse_object_attribute_inconsistent(input),
-        0x09 => parse_object_access_unsupported(input),
-        0x0a => parse_object_non_existent(input),
-        0x0b => parse_object_value_invalid(input),
+        0x0 => parse_data_access_error_object_invalidated(input),
+        0x01 => parse_data_access_error_hardware_fault(input),
+        0x02 => parse_data_access_error_temporarily_unavailable(input),
+        0x03 => parse_data_access_error_object_access_denied(input),
+        0x04 => parse_data_access_error_object_undefined(input),
+        0x05 => parse_data_access_error_invalid_address(input),
+        0x06 => parse_data_access_error_type_unsupported(input),
+        0x07 => parse_data_access_error_type_inconsistent(input),
+        0x08 => parse_data_access_error_object_attribute_inconsistent(input),
+        0x09 => parse_data_access_error_object_access_unsupported(input),
+        0x0a => parse_data_access_error_object_non_existent(input),
+        0x0b => parse_data_access_error_object_value_invalid(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1486,25 +1393,18 @@ pub fn parse_data_access_error(
     Ok((input, data_access_error))
 }
 
-pub fn parse_data_access_error_construct(input: &[u8]) -> IResult<&[u8], DataAccessErrorConstruct> {
+fn parse_access_result_access_result_failure(input: &[u8]) -> IResult<&[u8], AccessResult> {
     let (input, _data_access_error_tl) = ber_tl(input)?;
     let (input, data_access_error) = parse_data_access_error(input, _data_access_error_tl.tag)?;
-    Ok((input, DataAccessErrorConstruct { data_access_error }))
+    Ok((
+        input,
+        AccessResult::AccessResultFailure { data_access_error },
+    ))
 }
 
-pub fn parse_data(input: &[u8]) -> IResult<&[u8], Data> {
+fn parse_access_result_access_result_success(input: &[u8]) -> IResult<&[u8], AccessResult> {
     let (input, data) = parse_simple_item(input)?;
-    Ok((input, Data { data }))
-}
-
-fn parse_access_result_failure(input: &[u8]) -> IResult<&[u8], AccessResult> {
-    let (input, failure) = parse_data_access_error_construct(input)?;
-    Ok((input, AccessResult::AccessResultFailure { failure }))
-}
-
-fn parse_access_result_success(input: &[u8]) -> IResult<&[u8], AccessResult> {
-    let (input, success) = parse_data(input)?;
-    Ok((input, AccessResult::AccessResultSuccess { success }))
+    Ok((input, AccessResult::AccessResultSuccess { data }))
 }
 
 pub fn parse_access_result(
@@ -1512,8 +1412,8 @@ pub fn parse_access_result(
     _access_result_tl_tag: u8,
 ) -> IResult<&[u8], AccessResult> {
     let (input, access_result) = match _access_result_tl_tag.bitand(0x1f) {
-        0x0 => parse_access_result_failure(input),
-        0x01 => parse_access_result_success(input),
+        0x0 => parse_access_result_access_result_failure(input),
+        0x01 => parse_access_result_access_result_success(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1530,45 +1430,34 @@ pub fn parse_access_result_struct(input: &[u8]) -> IResult<&[u8], AccessResultSt
 
 pub fn parse_list_of_access_result(input: &[u8]) -> IResult<&[u8], ListOfAccessResult> {
     let (input, _loar_tl) = ber_tl(input)?;
-    let (input, loar) = get_loar_with_access_result_struct(input, _loar_tl.length)?;
-    Ok((input, ListOfAccessResult { loar }))
-}
-
-fn get_loar_with_access_result_struct(
-    input: &[u8],
-    _loar_tl_length: u16,
-) -> IResult<&[u8], Vec<AccessResultStruct>> {
+    /* LimitedLenVecLoopField Start */
     let mut loar = Vec::new();
     let mut _loar: AccessResultStruct;
     let mut input = input;
-    let len_flag = input.len() - _loar_tl_length as usize;
-
+    let len_flag = input.len() - _loar_tl.length as usize;
     while input.len() > len_flag {
         (input, _loar) = parse_access_result_struct(input)?;
         loar.push(_loar);
     }
-
-    Ok((input, loar))
+    let input = input;
+    /* LimitedLenVecLoopField End. */
+    Ok((input, ListOfAccessResult { loar }))
 }
 
 pub fn parse_list_of_identifier(input: &[u8]) -> IResult<&[u8], ListOfIdentifier> {
     let (input, _loar_tl) = ber_tl(input)?;
-    let (input, loar) = get_loar_with_identifier(input, _loar_tl.length)?;
-    Ok((input, ListOfIdentifier { loar }))
-}
-
-fn get_loar_with_identifier(input: &[u8], _loar_tl_length: u16) -> IResult<&[u8], Vec<Identifier>> {
+    /* LimitedLenVecLoopField Start */
     let mut loar = Vec::new();
-    let mut _loar: Identifier;
+    let mut _loar: &[u8];
     let mut input = input;
-    let len_flag = input.len() - _loar_tl_length as usize;
-
+    let len_flag = input.len() - _loar_tl.length as usize;
     while input.len() > len_flag {
-        (input, _loar) = parse_identifier(input)?;
+        (input, _loar) = take(input.len() as usize)(input)?;
         loar.push(_loar);
     }
-
-    Ok((input, loar))
+    let input = input;
+    /* LimitedLenVecLoopField End. */
+    Ok((input, ListOfIdentifier { loar }))
 }
 
 pub fn parse_init_detail_request(input: &[u8]) -> IResult<&[u8], InitDetailRequest> {
@@ -1604,7 +1493,9 @@ pub fn parse_invoke_id(input: &[u8]) -> IResult<&[u8], InvokeId> {
     Ok((input, InvokeId { invoke_id }))
 }
 
-fn parse_list_of_variable(input: &[u8]) -> IResult<&[u8], VariableAccessSpecificationChoice> {
+fn parse_variable_access_specification_choice_list_of_variable(
+    input: &[u8],
+) -> IResult<&[u8], VariableAccessSpecificationChoice> {
     let (input, res) = parse_list_of_variable_specification(input)?;
     Ok((
         input,
@@ -1612,11 +1503,14 @@ fn parse_list_of_variable(input: &[u8]) -> IResult<&[u8], VariableAccessSpecific
     ))
 }
 
-fn parse_varibale_list_name(input: &[u8]) -> IResult<&[u8], VariableAccessSpecificationChoice> {
-    let (input, res) = parse_object_name_struct(input)?;
+fn parse_variable_access_specification_choice_varibale_list_name(
+    input: &[u8],
+) -> IResult<&[u8], VariableAccessSpecificationChoice> {
+    let (input, _object_name_tl) = ber_tl(input)?;
+    let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
     Ok((
         input,
-        VariableAccessSpecificationChoice::VaribaleListName { res },
+        VariableAccessSpecificationChoice::VaribaleListName { object_name },
     ))
 }
 
@@ -1626,8 +1520,8 @@ pub fn parse_variable_access_specification_choice(
 ) -> IResult<&[u8], VariableAccessSpecificationChoice> {
     let (input, variable_access_specification_choice) =
         match _variable_access_specification_choice_tl_tag.bitand(0x1f) {
-            0x0 => parse_list_of_variable(input),
-            0x01 => parse_varibale_list_name(input),
+            0x0 => parse_variable_access_specification_choice_list_of_variable(input),
+            0x01 => parse_variable_access_specification_choice_varibale_list_name(input),
             _ => Err(nom::Err::Error(nom::error::Error::new(
                 input,
                 nom::error::ErrorKind::Verify,
@@ -1636,9 +1530,9 @@ pub fn parse_variable_access_specification_choice(
     Ok((input, variable_access_specification_choice))
 }
 
-pub fn parse_variable_access_specification_choice_struct(
+fn parse_read_request_choice_read_request_choice_default(
     input: &[u8],
-) -> IResult<&[u8], VariableAccessSpecificationChoiceStruct> {
+) -> IResult<&[u8], ReadRequestChoice> {
     let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
     let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
         input,
@@ -1646,37 +1540,38 @@ pub fn parse_variable_access_specification_choice_struct(
     )?;
     Ok((
         input,
-        VariableAccessSpecificationChoiceStruct {
+        ReadRequestChoice::ReadRequestChoiceDefault {
             variable_access_specification_choice,
         },
     ))
 }
 
-fn parse_read_request_choice_default(input: &[u8]) -> IResult<&[u8], ReadRequestChoice> {
-    let (input, res) = parse_variable_access_specification_choice_struct(input)?;
-    Ok((input, ReadRequestChoice::ReadRequestChoiceDefault { res }))
-}
-
-fn parse_read_request_choice_otherwise(input: &[u8]) -> IResult<&[u8], ReadRequestChoice> {
-    let (input, specification_with_result) = parse_bool_result(input)?;
+fn parse_read_request_choice_read_request_choice_otherwise(
+    input: &[u8],
+) -> IResult<&[u8], ReadRequestChoice> {
+    let (input, specification_with_result) = u8(input)?;
     let (input, _variable_access_specification_choice_struct_tl) = ber_tl(input)?;
-    let (input, res) = parse_variable_access_specification_choice_struct(input)?;
+    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
+        input,
+        _variable_access_specification_choice_tl.tag,
+    )?;
     Ok((
         input,
         ReadRequestChoice::ReadRequestChoiceOtherwise {
             specification_with_result,
-            res,
+            variable_access_specification_choice,
         },
     ))
 }
 
-pub fn parse_read_request_choice(
-    input: &[u8],
-    _read_request_choice_tl_tag: u8,
-) -> IResult<&[u8], ReadRequestChoice> {
-    let (input, read_request_choice) = match _read_request_choice_tl_tag.bitand(0x1f) {
-        0x01 => parse_read_request_choice_default(input),
-        0x00 => parse_read_request_choice_otherwise(input),
+pub fn parse_read_request_choice<'a>(
+    input: &'a [u8],
+    _read_request_choice_tl: &BerTL,
+) -> IResult<&'a [u8], ReadRequestChoice<'a>> {
+    let (input, read_request_choice) = match _read_request_choice_tl.tag {
+        0x81 => parse_read_request_choice_read_request_choice_default(input),
+        0x80 => parse_read_request_choice_read_request_choice_otherwise(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1685,98 +1580,15 @@ pub fn parse_read_request_choice(
     Ok((input, read_request_choice))
 }
 
-pub fn parse_write_request_choice_construct(
+fn parse_read_response_choice_read_response_choice_none(
     input: &[u8],
-) -> IResult<&[u8], WriteRequestChoiceConstruct> {
-    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
-    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
-        input,
-        _variable_access_specification_choice_tl.tag,
-    )?;
-    let (input, _list_of_data_tl) = ber_tl(input)?;
-    let (input, list_of_data) = parse_list_of_data(input)?;
-    Ok((
-        input,
-        WriteRequestChoiceConstruct {
-            variable_access_specification_choice,
-            list_of_data,
-        },
-    ))
-}
-
-pub fn parse_get_named_variable_list_attributes_request_choice_construct(
-    input: &[u8],
-) -> IResult<&[u8], GetNamedVariableListAttributesRequestChoiceConstruct> {
-    let (input, _object_name_tl) = ber_tl(input)?;
-    let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
-    Ok((
-        input,
-        GetNamedVariableListAttributesRequestChoiceConstruct { object_name },
-    ))
-}
-
-pub fn parse_get_name_list_request_choice_construct(
-    input: &[u8],
-) -> IResult<&[u8], GetNameListRequestChoiceConstruct> {
-    let (input, _object_class_tl) = ber_tl(input)?;
-    let (input, object_class) = parse_object_class(input, _object_class_tl.tag)?;
-    let (input, _object_scope_tl) = ber_tl(input)?;
-    let (input, object_scope) = parse_object_scope(input, _object_scope_tl.tag)?;
-    Ok((
-        input,
-        GetNameListRequestChoiceConstruct {
-            object_class,
-            object_scope,
-        },
-    ))
-}
-
-pub fn parse_get_name_list_response_choice_construct(
-    input: &[u8],
-) -> IResult<&[u8], GetNameListResponseChoiceConstruct> {
-    let (input, _list_of_identifier_tl) = ber_tl(input)?;
-    let (input, list_of_identifier) = parse_list_of_identifier(input)?;
-    let (input, _more_follows_tl) = ber_tl(input)?;
-    let (input, more_follows) = parse_bool_result(input)?;
-    Ok((
-        input,
-        GetNameListResponseChoiceConstruct {
-            list_of_identifier,
-            more_follows,
-        },
-    ))
-}
-
-pub fn parse_identify_request_choice_construct(
-    input: &[u8],
-) -> IResult<&[u8], IdentifyRequestChoiceConstruct> {
-    Ok((input, IdentifyRequestChoiceConstruct {}))
-}
-
-pub fn parse_identify_response_choice_construct(
-    input: &[u8],
-) -> IResult<&[u8], IdentifyResponseChoiceConstruct> {
-    let (input, _vendor_name_tl) = ber_tl(input)?;
-    let (input, vendor_name) = parse_simple_item(input)?;
-    let (input, _model_name_tl) = ber_tl(input)?;
-    let (input, model_name) = parse_simple_item(input)?;
-    let (input, _revision_tl) = ber_tl(input)?;
-    let (input, revision) = parse_simple_item(input)?;
-    Ok((
-        input,
-        IdentifyResponseChoiceConstruct {
-            vendor_name,
-            model_name,
-            revision,
-        },
-    ))
-}
-
-fn parse_read_response_choice_none(input: &[u8]) -> IResult<&[u8], ReadResponseChoice> {
+) -> IResult<&[u8], ReadResponseChoice> {
     Ok((input, ReadResponseChoice::ReadResponseChoiceNone {}))
 }
 
-fn parse_read_response_choice_with_data(input: &[u8]) -> IResult<&[u8], ReadResponseChoice> {
+fn parse_read_response_choice_read_response_choice_with_data(
+    input: &[u8],
+) -> IResult<&[u8], ReadResponseChoice> {
     let (input, _list_of_access_result_tl) = ber_tl(input)?;
     let (input, list_of_access_result) = parse_list_of_access_result(input)?;
     Ok((
@@ -1789,21 +1601,27 @@ fn parse_read_response_choice_with_data(input: &[u8]) -> IResult<&[u8], ReadResp
 
 pub fn parse_read_response_choice(input: &[u8]) -> IResult<&[u8], ReadResponseChoice> {
     let (input, read_response_choice) = match input.len() {
-        0x0 => parse_read_response_choice_none(input),
-        _ => parse_read_response_choice_with_data(input),
+        0x0 => parse_read_response_choice_read_response_choice_none(input),
+        _ => parse_read_response_choice_read_response_choice_with_data(input),
     }?;
     Ok((input, read_response_choice))
 }
 
-fn parse_write_response_choice_failure(input: &[u8]) -> IResult<&[u8], WriteResponseChoice> {
-    let (input, failure) = parse_data_access_error_construct(input)?;
+fn parse_write_response_choice_write_response_choice_failure(
+    input: &[u8],
+) -> IResult<&[u8], WriteResponseChoice> {
+    let (input, _data_access_error_tl) = ber_tl(input)?;
+    let (input, data_access_error) = parse_data_access_error(input, _data_access_error_tl.tag)?;
     Ok((
         input,
-        WriteResponseChoice::WriteResponseChoiceFailure { failure },
+        WriteResponseChoice::WriteResponseChoiceFailure { data_access_error },
     ))
 }
 
-fn parse_write_response_choice_success(input: &[u8]) -> IResult<&[u8], WriteResponseChoice> {
+#[inline(always)]
+fn parse_write_response_choice_write_response_choice_success(
+    input: &[u8],
+) -> IResult<&[u8], WriteResponseChoice> {
     Ok((input, WriteResponseChoice::WriteResponseChoiceSuccess {}))
 }
 
@@ -1812,8 +1630,8 @@ pub fn parse_write_response_choice(
     _write_response_choice_tl_tag: u8,
 ) -> IResult<&[u8], WriteResponseChoice> {
     let (input, write_response_choice) = match _write_response_choice_tl_tag.bitand(0x1f) {
-        0x0 => parse_write_response_choice_failure(input),
-        0x01 => parse_write_response_choice_success(input),
+        0x0 => parse_write_response_choice_write_response_choice_failure(input),
+        0x01 => parse_write_response_choice_write_response_choice_success(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1822,111 +1640,80 @@ pub fn parse_write_response_choice(
     Ok((input, write_response_choice))
 }
 
-pub fn parse_read_response_choice_construct(
+fn parse_confirmed_service_request_choice_get_name_list_request(
     input: &[u8],
-) -> IResult<&[u8], ReadResponseChoiceConstruct> {
-    let (input, _read_response_choice_tl) = ber_tl(input)?;
-    let (input, read_response_choice) = parse_read_response_choice(input)?;
+) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    let (input, _object_class_tl) = ber_tl(input)?;
+    let (input, object_class) = parse_object_class(input, _object_class_tl.tag)?;
+    let (input, _object_scope_tl) = ber_tl(input)?;
+    let (input, object_scope) = parse_object_scope(input, _object_scope_tl.tag)?;
     Ok((
         input,
-        ReadResponseChoiceConstruct {
-            read_response_choice,
+        ConfirmedServiceRequestChoice::GetNameListRequest {
+            object_class,
+            object_scope,
         },
     ))
 }
 
-pub fn parse_write_response_choice_construct(
+#[inline(always)]
+fn parse_confirmed_service_request_choice_identify_request(
     input: &[u8],
-) -> IResult<&[u8], WriteResponseChoiceConstruct> {
-    let (input, _write_response_choice_tl) = ber_tl(input)?;
-    let (input, write_response_choice) =
-        parse_write_response_choice(input, _write_response_choice_tl.tag)?;
-    Ok((
-        input,
-        WriteResponseChoiceConstruct {
-            write_response_choice,
-        },
-    ))
+) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    Ok((input, ConfirmedServiceRequestChoice::IdentifyRequest {}))
 }
 
-pub fn parse_get_named_variable_list_attributes_response_choice(
+fn parse_confirmed_service_request_choice_read_request(
     input: &[u8],
-) -> IResult<&[u8], GetNamedVariableListAttributesResponseChoice> {
-    let (input, _mms_deleteable_tl) = ber_tl(input)?;
-    let (input, mms_deleteable) = parse_bool_result(input)?;
-    let (input, _list_of_variable_specification_tl) = ber_tl(input)?;
-    let (input, list_of_variable_specification) = parse_list_of_variable_specification(input)?;
-    Ok((
-        input,
-        GetNamedVariableListAttributesResponseChoice {
-            mms_deleteable,
-            list_of_variable_specification,
-        },
-    ))
-}
-
-pub fn parse_information_report_choice(input: &[u8]) -> IResult<&[u8], InformationReportChoice> {
-    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
-    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
-        input,
-        _variable_access_specification_choice_tl.tag,
-    )?;
-    let (input, _list_of_access_result_tl) = ber_tl(input)?;
-    let (input, list_of_access_result) = parse_list_of_access_result(input)?;
-    Ok((
-        input,
-        InformationReportChoice {
-            variable_access_specification_choice,
-            list_of_access_result,
-        },
-    ))
-}
-
-pub fn parse_read_request_choice_struct(input: &[u8]) -> IResult<&[u8], ReadRequestChoiceStruct> {
+) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
     let (input, _read_request_choice_tl) = ber_tl(input)?;
-    let (input, read_request_choice) =
-        parse_read_request_choice(input, _read_request_choice_tl.tag)?;
+    let (input, read_request_choice) = parse_read_request_choice(input, &_read_request_choice_tl)?;
     Ok((
         input,
-        ReadRequestChoiceStruct {
+        ConfirmedServiceRequestChoice::ReadRequest {
             read_request_choice,
         },
     ))
 }
 
-fn parse_get_name_list_request(input: &[u8]) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    let (input, res) = parse_get_name_list_request_choice_construct(input)?;
-    Ok((
-        input,
-        ConfirmedServiceRequestChoice::GetNameListRequest { res },
-    ))
-}
-
-fn parse_identify_request(input: &[u8]) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    let (input, res) = parse_identify_request_choice_construct(input)?;
-    Ok((
-        input,
-        ConfirmedServiceRequestChoice::IdentifyRequest { res },
-    ))
-}
-
-fn parse_read_request(input: &[u8]) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    let (input, res) = parse_read_request_choice_struct(input)?;
-    Ok((input, ConfirmedServiceRequestChoice::ReadRequest { res }))
-}
-
-fn parse_write_request(input: &[u8]) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    let (input, res) = parse_write_request_choice_construct(input)?;
-    Ok((input, ConfirmedServiceRequestChoice::WriteRequest { res }))
-}
-
-fn parse_get_named_variable_list_attributes_request(
+fn parse_confirmed_service_request_choice_write_request(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    let (input, res) = parse_get_named_variable_list_attributes_request_choice_construct(input)?;
+    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
+        input,
+        _variable_access_specification_choice_tl.tag,
+    )?;
+    let (input, _list_of_data_tl) = ber_tl(input)?;
+    let (input, _lod_tl) = ber_tl(input)?;
+    /* LimitedLenVecLoopField Start */
+    let mut lod = Vec::new();
+    let mut _lod: SimpleItem;
+    let mut input = input;
+    let len_flag = input.len() - _lod_tl.length as usize;
+    while input.len() > len_flag {
+        (input, _lod) = parse_simple_item(input)?;
+        lod.push(_lod);
+    }
+    let input = input;
+    /* LimitedLenVecLoopField End. */
     Ok((
         input,
-        ConfirmedServiceRequestChoice::GetNamedVariableListAttributesRequest { res },
+        ConfirmedServiceRequestChoice::WriteRequest {
+            variable_access_specification_choice,
+            lod,
+        },
+    ))
+}
+
+fn parse_confirmed_service_request_choice_get_named_variable_list_attributes_request(
+    input: &[u8],
+) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    let (input, _object_name_tl) = ber_tl(input)?;
+    let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
+    Ok((
+        input,
+        ConfirmedServiceRequestChoice::GetNamedVariableListAttributesRequest { object_name },
     ))
 }
 
@@ -1935,11 +1722,13 @@ pub fn parse_confirmed_service_request_choice(
     _service_tl_tag: u8,
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
     let (input, confirmed_service_request_choice) = match _service_tl_tag.bitand(0x1f) {
-        0x0 => parse_get_name_list_request(input),
-        0x02 => parse_identify_request(input),
-        0x04 => parse_read_request(input),
-        0x05 => parse_write_request(input),
-        0x0c => parse_get_named_variable_list_attributes_request(input),
+        0x0 => parse_confirmed_service_request_choice_get_name_list_request(input),
+        0x02 => parse_confirmed_service_request_choice_identify_request(input),
+        0x04 => parse_confirmed_service_request_choice_read_request(input),
+        0x05 => parse_confirmed_service_request_choice_write_request(input),
+        0x0c => {
+            parse_confirmed_service_request_choice_get_named_variable_list_attributes_request(input)
+        }
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -1948,39 +1737,81 @@ pub fn parse_confirmed_service_request_choice(
     Ok((input, confirmed_service_request_choice))
 }
 
-fn parse_get_name_list_response(input: &[u8]) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    let (input, res) = parse_get_name_list_response_choice_construct(input)?;
-    Ok((
-        input,
-        ConfirmedServiceResponseChoice::GetNameListResponse { res },
-    ))
-}
-
-fn parse_identify_response(input: &[u8]) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    let (input, res) = parse_identify_response_choice_construct(input)?;
-    Ok((
-        input,
-        ConfirmedServiceResponseChoice::IdentifyResponse { res },
-    ))
-}
-
-fn parse_read_response(input: &[u8]) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    let (input, res) = parse_read_response_choice_construct(input)?;
-    Ok((input, ConfirmedServiceResponseChoice::ReadResponse { res }))
-}
-
-fn parse_write_response(input: &[u8]) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    let (input, res) = parse_write_response_choice_construct(input)?;
-    Ok((input, ConfirmedServiceResponseChoice::WriteResponse { res }))
-}
-
-fn parse_get_named_variable_list_attributes_response(
+fn parse_confirmed_service_response_choice_get_name_list_response(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    let (input, res) = parse_get_named_variable_list_attributes_response_choice(input)?;
+    let (input, _list_of_identifier_tl) = ber_tl(input)?;
+    let (input, list_of_identifier) = parse_list_of_identifier(input)?;
+    let (input, _more_follows_tl) = ber_tl(input)?;
+    let (input, more_follows) = u8(input)?;
     Ok((
         input,
-        ConfirmedServiceResponseChoice::GetNamedVariableListAttributesResponse { res },
+        ConfirmedServiceResponseChoice::GetNameListResponse {
+            list_of_identifier,
+            more_follows,
+        },
+    ))
+}
+
+fn parse_confirmed_service_response_choice_identify_response(
+    input: &[u8],
+) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    let (input, _vendor_name_tl) = ber_tl(input)?;
+    let (input, vendor_name) = parse_simple_item(input)?;
+    let (input, _model_name_tl) = ber_tl(input)?;
+    let (input, model_name) = parse_simple_item(input)?;
+    let (input, _revision_tl) = ber_tl(input)?;
+    let (input, revision) = parse_simple_item(input)?;
+    Ok((
+        input,
+        ConfirmedServiceResponseChoice::IdentifyResponse {
+            vendor_name,
+            model_name,
+            revision,
+        },
+    ))
+}
+
+fn parse_confirmed_service_response_choice_read_response(
+    input: &[u8],
+) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    let (input, _read_response_choice_tl) = ber_tl(input)?;
+    let (input, read_response_choice) = parse_read_response_choice(input)?;
+    Ok((
+        input,
+        ConfirmedServiceResponseChoice::ReadResponse {
+            read_response_choice,
+        },
+    ))
+}
+
+fn parse_confirmed_service_response_choice_write_response(
+    input: &[u8],
+) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    let (input, _write_response_choice_tl) = ber_tl(input)?;
+    let (input, write_response_choice) =
+        parse_write_response_choice(input, _write_response_choice_tl.tag)?;
+    Ok((
+        input,
+        ConfirmedServiceResponseChoice::WriteResponse {
+            write_response_choice,
+        },
+    ))
+}
+
+fn parse_confirmed_service_response_choice_get_named_variable_list_attributes_response(
+    input: &[u8],
+) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    let (input, _mms_deleteable_tl) = ber_tl(input)?;
+    let (input, mms_deleteable) = u8(input)?;
+    let (input, _list_of_variable_specification_tl) = ber_tl(input)?;
+    let (input, list_of_variable_specification) = parse_list_of_variable_specification(input)?;
+    Ok((
+        input,
+        ConfirmedServiceResponseChoice::GetNamedVariableListAttributesResponse {
+            mms_deleteable,
+            list_of_variable_specification,
+        },
     ))
 }
 
@@ -1989,11 +1820,15 @@ pub fn parse_confirmed_service_response_choice(
     _service_tl_tag: u8,
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
     let (input, confirmed_service_response_choice) = match _service_tl_tag.bitand(0x1f) {
-        0x0 => parse_get_name_list_response(input),
-        0x02 => parse_identify_response(input),
-        0x04 => parse_read_response(input),
-        0x05 => parse_write_response(input),
-        0x0c => parse_get_named_variable_list_attributes_response(input),
+        0x0 => parse_confirmed_service_response_choice_get_name_list_response(input),
+        0x02 => parse_confirmed_service_response_choice_identify_response(input),
+        0x04 => parse_confirmed_service_response_choice_read_response(input),
+        0x05 => parse_confirmed_service_response_choice_write_response(input),
+        0x0c => {
+            parse_confirmed_service_response_choice_get_named_variable_list_attributes_response(
+                input,
+            )
+        }
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -2002,7 +1837,7 @@ pub fn parse_confirmed_service_response_choice(
     Ok((input, confirmed_service_response_choice))
 }
 
-fn parse_confirmed_service_response_struct_none(
+fn parse_confirmed_service_response_struct_confirmed_service_response_struct_none(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
     Ok((
@@ -2011,7 +1846,7 @@ fn parse_confirmed_service_response_struct_none(
     ))
 }
 
-fn parse_confirmed_service_response_struct_with_data(
+fn parse_confirmed_service_response_struct_confirmed_service_response_struct_with_data(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
     let (input, _service_tl) = ber_tl(input)?;
@@ -2026,15 +1861,31 @@ pub fn parse_confirmed_service_response_struct(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
     let (input, confirmed_service_response_struct) = match input.len() {
-        0x0 => parse_confirmed_service_response_struct_none(input),
-        _ => parse_confirmed_service_response_struct_with_data(input),
+        0x0 => {
+            parse_confirmed_service_response_struct_confirmed_service_response_struct_none(input)
+        }
+        _ => parse_confirmed_service_response_struct_confirmed_service_response_struct_with_data(
+            input,
+        ),
     }?;
     Ok((input, confirmed_service_response_struct))
 }
 
-fn parse_information_report(input: &[u8]) -> IResult<&[u8], UnConfirmedChoice> {
-    let (input, res) = parse_information_report_choice(input)?;
-    Ok((input, UnConfirmedChoice::InformationReport { res }))
+fn parse_un_confirmed_choice_information_report(input: &[u8]) -> IResult<&[u8], UnConfirmedChoice> {
+    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
+        input,
+        _variable_access_specification_choice_tl.tag,
+    )?;
+    let (input, _list_of_access_result_tl) = ber_tl(input)?;
+    let (input, list_of_access_result) = parse_list_of_access_result(input)?;
+    Ok((
+        input,
+        UnConfirmedChoice::InformationReport {
+            variable_access_specification_choice,
+            list_of_access_result,
+        },
+    ))
 }
 
 pub fn parse_un_confirmed_choice(
@@ -2042,7 +1893,7 @@ pub fn parse_un_confirmed_choice(
     _service_tl_tag: u8,
 ) -> IResult<&[u8], UnConfirmedChoice> {
     let (input, un_confirmed_choice) = match _service_tl_tag.bitand(0x1f) {
-        0x0 => parse_information_report(input),
+        0x0 => parse_un_confirmed_choice_information_report(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
@@ -2051,28 +1902,31 @@ pub fn parse_un_confirmed_choice(
     Ok((input, un_confirmed_choice))
 }
 
-pub fn parse_confirmed_request_pdu(input: &[u8]) -> IResult<&[u8], ConfirmedRequestPDU> {
+fn parse_mms_pdu_choice_confirmed_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
     let (input, _invoke_id_tl) = ber_tl(input)?;
     let (input, invoke_id) = parse_invoke_id(input)?;
     let (input, _service_tl) = ber_tl(input)?;
     let (input, service) = parse_confirmed_service_request_choice(input, _service_tl.tag)?;
-    Ok((input, ConfirmedRequestPDU { invoke_id, service }))
+    Ok((input, MmsPduChoice::ConfirmedRequest { invoke_id, service }))
 }
 
-pub fn parse_confirmed_response_pdu(input: &[u8]) -> IResult<&[u8], ConfirmedResponsePDU> {
+fn parse_mms_pdu_choice_confirmed_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
     let (input, _invoke_id_tl) = ber_tl(input)?;
     let (input, invoke_id) = parse_invoke_id(input)?;
     let (input, service) = parse_confirmed_service_response_struct(input)?;
-    Ok((input, ConfirmedResponsePDU { invoke_id, service }))
+    Ok((
+        input,
+        MmsPduChoice::ConfirmedResponse { invoke_id, service },
+    ))
 }
 
-pub fn parse_un_confirmed_pdu(input: &[u8]) -> IResult<&[u8], UnConfirmedPDU> {
+fn parse_mms_pdu_choice_un_confirmed(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
     let (input, _service_tl) = ber_tl(input)?;
     let (input, service) = parse_un_confirmed_choice(input, _service_tl.tag)?;
-    Ok((input, UnConfirmedPDU { service }))
+    Ok((input, MmsPduChoice::UnConfirmed { service }))
 }
 
-pub fn parse_initiate_request_pdu(input: &[u8]) -> IResult<&[u8], InitiateRequestPDU> {
+fn parse_mms_pdu_choice_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
     let (input, local_detail_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_called) = parse_simple_item(input)?;
@@ -2081,7 +1935,7 @@ pub fn parse_initiate_request_pdu(input: &[u8]) -> IResult<&[u8], InitiateReques
     let (input, init_request_detail) = parse_init_detail_request(input)?;
     Ok((
         input,
-        InitiateRequestPDU {
+        MmsPduChoice::InitiateRequest {
             local_detail_calling,
             proposed_max_serv_outstanding_calling,
             proposed_max_serv_outstanding_called,
@@ -2091,7 +1945,7 @@ pub fn parse_initiate_request_pdu(input: &[u8]) -> IResult<&[u8], InitiateReques
     ))
 }
 
-pub fn parse_initiate_response_pdu(input: &[u8]) -> IResult<&[u8], InitiateResponsePDU> {
+fn parse_mms_pdu_choice_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
     let (input, local_detail_called) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_called) = parse_simple_item(input)?;
@@ -2100,7 +1954,7 @@ pub fn parse_initiate_response_pdu(input: &[u8]) -> IResult<&[u8], InitiateRespo
     let (input, init_response_detail) = parse_init_detail_response(input)?;
     Ok((
         input,
-        InitiateResponsePDU {
+        MmsPduChoice::InitiateResponse {
             local_detail_called,
             proposed_max_serv_outstanding_calling,
             proposed_max_serv_outstanding_called,
@@ -2110,33 +1964,9 @@ pub fn parse_initiate_response_pdu(input: &[u8]) -> IResult<&[u8], InitiateRespo
     ))
 }
 
-fn parse_confirmed_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    let (input, value) = parse_confirmed_request_pdu(input)?;
-    Ok((input, MmsPduChoice::ConfirmedRequest { value }))
-}
-
-fn parse_confirmed_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    let (input, value) = parse_confirmed_response_pdu(input)?;
-    Ok((input, MmsPduChoice::ConfirmedResponse { value }))
-}
-
-fn parse_un_confirmed(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    let (input, value) = parse_un_confirmed_pdu(input)?;
-    Ok((input, MmsPduChoice::UnConfirmed { value }))
-}
-
-fn parse_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    let (input, value) = parse_initiate_request_pdu(input)?;
-    Ok((input, MmsPduChoice::InitiateRequest { value }))
-}
-
-fn parse_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    let (input, value) = parse_initiate_response_pdu(input)?;
-    Ok((input, MmsPduChoice::InitiateResponse { value }))
-}
-
-fn parse_conclude_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    Ok((input, MmsPduChoice::ConcludeResponse {}))
+#[inline(always)]
+fn parse_mms_pdu_choice_conclude_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    Ok((input, MmsPduChoice::ConcludeRequest {}))
 }
 
 pub fn parse_mms_pdu_choice(
@@ -2144,12 +1974,12 @@ pub fn parse_mms_pdu_choice(
     _mms_pdu_choice_tl_tag: u8,
 ) -> IResult<&[u8], MmsPduChoice> {
     let (input, mms_pdu_choice) = match _mms_pdu_choice_tl_tag.bitand(0x1f) {
-        0x0 => parse_confirmed_request(input),
-        0x01 => parse_confirmed_response(input),
-        0x03 => parse_un_confirmed(input),
-        0x08 => parse_initiate_request(input),
-        0x09 => parse_initiate_response(input),
-        0x0b => parse_conclude_response(input),
+        0x0 => parse_mms_pdu_choice_confirmed_request(input),
+        0x01 => parse_mms_pdu_choice_confirmed_response(input),
+        0x03 => parse_mms_pdu_choice_un_confirmed(input),
+        0x08 => parse_mms_pdu_choice_initiate_request(input),
+        0x09 => parse_mms_pdu_choice_initiate_response(input),
+        0x0b => parse_mms_pdu_choice_conclude_request(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,

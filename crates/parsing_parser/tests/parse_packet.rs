@@ -86,7 +86,7 @@ fn parse_iec104_pcap() {
 
 #[test]
 fn parse_opcua_pcap() {
-    tracing_subscriber::fmt::init();
+    // tracing_subscriber::fmt::init();
     let opcua_pcap_path = [
         "./tests/opcua_msg.pcap",
         "./tests/opcua_ack.pcap",
@@ -102,7 +102,7 @@ fn parse_opcua_pcap() {
 
 #[test]
 fn parse_mms_pcap() {
-    // tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt::init();
     let mms_pcap_path = "./tests/mms_3.pcap";
 
     assert!(parse_pcap(mms_pcap_path).is_ok());
