@@ -127,6 +127,12 @@ pub struct BerTL {
     pub length: u16,
 }
 
+impl std::fmt::Display for BerTL {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "TL(tag: 0x{:x}, len: {})", self.tag, self.length)
+    }
+}
+
 #[inline]
 pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
     let (input, tag) = u8(input_raw)?;

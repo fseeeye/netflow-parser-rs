@@ -551,9 +551,9 @@ pub enum ConfirmedServiceResponseChoice<'a> {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ConfirmedServiceResponseStruct<'a> {
-    ConfirmedServiceResponseStructNone {},
-    ConfirmedServiceResponseStructWithData {
+pub enum ConfirmedServiceResponseEnum<'a> {
+    None {},
+    WithData {
         service: ConfirmedServiceResponseChoice<'a>,
     },
 }
@@ -576,7 +576,7 @@ pub enum MmsPduChoice<'a> {
     },
     ConfirmedResponse {
         invoke_id: u16,
-        service: ConfirmedServiceResponseStruct<'a>,
+        service: ConfirmedServiceResponseEnum<'a>,
     },
     UnConfirmed {
         service: UnConfirmedChoice<'a>,
@@ -1940,41 +1940,31 @@ pub fn parse_confirmed_service_response_choice(
     Ok((input, confirmed_service_response_choice))
 }
 
-fn parse_confirmed_service_response_struct_confirmed_service_response_struct_none(
+fn parse_confirmed_service_response_enum_none(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
-    debug!(target: "PARSER(parse_confirmed_service_response_struct_confirmed_service_response_struct_none)", "struct ConfirmedServiceResponseStructNone");
-    Ok((
-        input,
-        ConfirmedServiceResponseStruct::ConfirmedServiceResponseStructNone {},
-    ))
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_none)", "struct None");
+    Ok((input, ConfirmedServiceResponseEnum::None {}))
 }
 
-fn parse_confirmed_service_response_struct_confirmed_service_response_struct_with_data(
+fn parse_confirmed_service_response_enum_with_data(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
-    debug!(target: "PARSER(parse_confirmed_service_response_struct_confirmed_service_response_struct_with_data)", "struct ConfirmedServiceResponseStructWithData");
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_with_data)", "struct WithData");
     let (input, _service_tl) = ber_tl(input)?;
     let (input, service) = parse_confirmed_service_response_choice(input, _service_tl.tag)?;
-    Ok((
-        input,
-        ConfirmedServiceResponseStruct::ConfirmedServiceResponseStructWithData { service },
-    ))
+    Ok((input, ConfirmedServiceResponseEnum::WithData { service }))
 }
 
-pub fn parse_confirmed_service_response_struct(
+pub fn parse_confirmed_service_response_enum(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
-    debug!(target: "PARSER(parse_confirmed_service_response_struct)", "enum ConfirmedServiceResponseStruct");
-    let (input, confirmed_service_response_struct) = match input.len() {
-        0x0 => {
-            parse_confirmed_service_response_struct_confirmed_service_response_struct_none(input)
-        }
-        _ => parse_confirmed_service_response_struct_confirmed_service_response_struct_with_data(
-            input,
-        ),
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum)", "enum ConfirmedServiceResponseEnum");
+    let (input, confirmed_service_response_enum) = match input.len() {
+        0x0 => parse_confirmed_service_response_enum_none(input),
+        _ => parse_confirmed_service_response_enum_with_data(input),
     }?;
-    Ok((input, confirmed_service_response_struct))
+    Ok((input, confirmed_service_response_enum))
 }
 
 fn parse_un_confirmed_choice_information_report(input: &[u8]) -> IResult<&[u8], UnConfirmedChoice> {
@@ -2049,8 +2039,7 @@ fn parse_mms_pdu_choice_confirmed_response(input: &[u8]) -> IResult<&[u8], MmsPd
             nom::error::ErrorKind::Verify,
         )));
     }
-    let (input, _service_tl) = ber_tl(input)?;
-    let (input, service) = parse_confirmed_service_response_struct(input)?;
+    let (input, service) = parse_confirmed_service_response_enum(input)?;
     Ok((
         input,
         MmsPduChoice::ConfirmedResponse { invoke_id, service },
