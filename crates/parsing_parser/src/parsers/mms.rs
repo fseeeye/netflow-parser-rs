@@ -55,6 +55,7 @@ pub struct MmsHeader<'a> {
 }
 
 pub fn parse_mms_header(input: &[u8]) -> IResult<&[u8], MmsHeader> {
+    debug!(target: "PARSER(parse_mms_header)", "struct MmsHeader");
     let (input, osi_protocol_stack) = parse_osi_protocol_stack(input)?;
     let (input, mms_pdu) = parse_mms_pdu(input)?;
     Ok((
@@ -73,6 +74,7 @@ pub fn parse_mms_layer<'a>(
     transport_layer: TransportLayer<'a>,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
+    info!(target: "PARSER(mms::parse_mms_layer)", "parsing Mms protocol.");
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Mms);
 
     let (input, mms_header) = match parse_mms_header(input) {
@@ -607,18 +609,21 @@ pub struct MmsPdu<'a> {
 }
 
 pub fn parse_simple_item(input: &[u8]) -> IResult<&[u8], SimpleItem> {
+    debug!(target: "PARSER(parse_simple_item)", "struct SimpleItem");
     let (input, _simple_item_tl) = ber_tl(input)?;
     let (input, data) = take(_simple_item_tl.length as usize)(input)?;
     Ok((input, SimpleItem { data }))
 }
 
 pub fn parse_simple_u8_data(input: &[u8]) -> IResult<&[u8], SimpleU8Data> {
+    debug!(target: "PARSER(parse_simple_u8_data)", "struct SimpleU8Data");
     let (input, _simple_u8_item_tl) = ber_tl(input)?;
     let (input, data) = u8(input)?;
     Ok((input, SimpleU8Data { data }))
 }
 
 pub fn parse_osi_ses_connect_accept_item(input: &[u8]) -> IResult<&[u8], OsiSesConnectAcceptItem> {
+    debug!(target: "PARSER(parse_osi_ses_connect_accept_item)", "struct OsiSesConnectAcceptItem");
     let (input, connect_accept_item_parameter_type) = u8(input)?;
     let (input, connect_accept_item_parameter_length) = u8(input)?;
     let (input, porocol_parameter_type) = u8(input)?;
@@ -643,6 +648,7 @@ pub fn parse_osi_ses_connect_accept_item(input: &[u8]) -> IResult<&[u8], OsiSesC
 }
 
 pub fn parse_osi_ses_session_requirement(input: &[u8]) -> IResult<&[u8], OsiSesSessionRequirement> {
+    debug!(target: "PARSER(parse_osi_ses_session_requirement)", "struct OsiSesSessionRequirement");
     let (input, session_requirement_parameter_type) = u8(input)?;
     let (input, session_requirement_parameter_length) = u8(input)?;
     let (input, session_requirement_flag) = be_u16(input)?;
@@ -659,6 +665,7 @@ pub fn parse_osi_ses_session_requirement(input: &[u8]) -> IResult<&[u8], OsiSesS
 pub fn parse_osi_ses_calling_session_selector(
     input: &[u8],
 ) -> IResult<&[u8], OsiSesCallingSessionSelector> {
+    debug!(target: "PARSER(parse_osi_ses_calling_session_selector)", "struct OsiSesCallingSessionSelector");
     let (input, calling_session_selector_parameter_type) = u8(input)?;
     let (input, calling_session_selector_parameter_length) = u8(input)?;
     let (input, calling_session_selector_value) = be_u16(input)?;
@@ -675,6 +682,7 @@ pub fn parse_osi_ses_calling_session_selector(
 pub fn parse_osi_ses_called_session_selector(
     input: &[u8],
 ) -> IResult<&[u8], OsiSesCalledSessionSelector> {
+    debug!(target: "PARSER(parse_osi_ses_called_session_selector)", "struct OsiSesCalledSessionSelector");
     let (input, called_session_selector_parameter_type) = u8(input)?;
     let (input, called_session_selector_parameter_length) = u8(input)?;
     let (input, called_session_selector_value) = be_u16(input)?;
@@ -689,6 +697,7 @@ pub fn parse_osi_ses_called_session_selector(
 }
 
 pub fn parse_osi_ses_session_user_data(input: &[u8]) -> IResult<&[u8], OsiSesSessionUserData> {
+    debug!(target: "PARSER(parse_osi_ses_session_user_data)", "struct OsiSesSessionUserData");
     let (input, session_user_data_parameter_type) = u8(input)?;
     let (input, session_user_data_parameter_length) = u8(input)?;
     Ok((
@@ -701,6 +710,7 @@ pub fn parse_osi_ses_session_user_data(input: &[u8]) -> IResult<&[u8], OsiSesSes
 }
 
 pub fn parse_osi_ses_connect_request(input: &[u8]) -> IResult<&[u8], OsiSesConnectRequest> {
+    debug!(target: "PARSER(parse_osi_ses_connect_request)", "struct OsiSesConnectRequest");
     let (input, connect_accept_item) = parse_osi_ses_connect_accept_item(input)?;
     let (input, session_requirement) = parse_osi_ses_session_requirement(input)?;
     let (input, calling_session_selector) = parse_osi_ses_calling_session_selector(input)?;
@@ -719,6 +729,7 @@ pub fn parse_osi_ses_connect_request(input: &[u8]) -> IResult<&[u8], OsiSesConne
 }
 
 pub fn parse_osi_pres_user_data(input: &[u8]) -> IResult<&[u8], OsiPresUserData> {
+    debug!(target: "PARSER(parse_osi_pres_user_data)", "struct OsiPresUserData");
     let (input, _fullt_encode_data_tl) = ber_tl(input)?;
     let (input, presentation_context_indentifier) = parse_simple_u8_data(input)?;
     let (input, _presentation_context_values_tl) = ber_tl(input)?;
@@ -733,6 +744,7 @@ pub fn parse_osi_pres_user_data(input: &[u8]) -> IResult<&[u8], OsiPresUserData>
 pub fn parse_normal_mode_parameters_cp_with_protocol_version(
     input: &[u8],
 ) -> IResult<&[u8], NormalModeParametersCpWithProtocolVersion> {
+    debug!(target: "PARSER(parse_normal_mode_parameters_cp_with_protocol_version)", "struct NormalModeParametersCpWithProtocolVersion");
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, calling_presentation_selector) = parse_simple_item(input)?;
     let (input, called_presentation_selector) = parse_simple_item(input)?;
@@ -756,6 +768,7 @@ pub fn parse_normal_mode_parameters_cp_with_protocol_version(
 pub fn parse_normal_mode_parameters_cpa_with_protocol_version(
     input: &[u8],
 ) -> IResult<&[u8], NormalModeParametersCpaWithProtocolVersion> {
+    debug!(target: "PARSER(parse_normal_mode_parameters_cpa_with_protocol_version)", "struct NormalModeParametersCpaWithProtocolVersion");
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, responding_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_result_list) = parse_simple_item(input)?;
@@ -775,6 +788,7 @@ pub fn parse_normal_mode_parameters_cpa_with_protocol_version(
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cp(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCp> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp)", "struct OsiPresPduNormalModeParametersCp");
     let (input, calling_presentation_selector) = parse_simple_item(input)?;
     let (input, called_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_list) = parse_simple_item(input)?;
@@ -796,6 +810,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cp(
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpa> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa)", "struct OsiPresPduNormalModeParametersCpa");
     let (input, responding_presentation_selector) = parse_simple_item(input)?;
     let (input, presentation_context_definition_result_list) = parse_simple_item(input)?;
     let (input, _user_data_tl) = ber_tl(input)?;
@@ -813,6 +828,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa(
 fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    debug!(target: "PARSER(parse_normal_mode_parameters_cp_with_protocol_version_choice)", "struct NormalModeParametersCpWithProtocolVersionChoice");
     let (input, normal_mode_parameters_cp_with_protocol_version) =
         parse_normal_mode_parameters_cp_with_protocol_version(input)?;
     Ok((
@@ -826,6 +842,7 @@ fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp
 fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    debug!(target: "PARSER(parse_normal_mode_parameters_cp_choice)", "struct NormalModeParametersCpChoice");
     let (input, osi_pres_pdu_normal_mode_parameters_cp) =
         parse_osi_pres_pdu_normal_mode_parameters_cp(input)?;
     Ok((
@@ -839,6 +856,7 @@ fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_choice)", "enum OsiPresPduNormalModeParametersCpChoice");
     let (input, _tag) = peek(u8)(input)?;
     let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) = match _tag {
         0x80 => parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice(input),
@@ -850,6 +868,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
 fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
+    debug!(target: "PARSER(parse_normal_mode_parameters_cpa_with_protocol_version_choice)", "struct NormalModeParametersCpaWithProtocolVersionChoice");
     let (input, normal_mode_parameters_cpa_with_protocol_version) =
         parse_normal_mode_parameters_cpa_with_protocol_version(input)?;
     Ok((
@@ -863,6 +882,7 @@ fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_c
 fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
+    debug!(target: "PARSER(parse_normal_mode_parameters_cpa_choice)", "struct NormalModeParametersCpaChoice");
     let (input, osi_pres_pdu_normal_mode_parameters_cpa) =
         parse_osi_pres_pdu_normal_mode_parameters_cpa(input)?;
     Ok((
@@ -876,6 +896,7 @@ fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_c
 pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
     input: &[u8],
 ) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_choice)", "enum OsiPresPduNormalModeParametersCpaChoice");
     let (input, _tag) = peek(u8)(input)?;
     let (input, osi_pres_pdu_normal_mode_parameters_cpa_choice) = match _tag {
         0x80 => parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice(input),
@@ -885,6 +906,7 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
 }
 
 pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
+    debug!(target: "PARSER(parse_osi_pres_cp)", "struct OsiPresCp");
     let (input, _pres_tl) = ber_tl(input)?;
     let (input, _pres_cp_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
@@ -901,6 +923,7 @@ pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
 }
 
 pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
+    debug!(target: "PARSER(parse_osi_pres_cpa)", "struct OsiPresCpa");
     let (input, _pres_tl) = ber_tl(input)?;
     let (input, _pres_cpa_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = parse_simple_item(input)?;
@@ -917,6 +940,7 @@ pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
 }
 
 pub fn parse_osi_acse_aarq(input: &[u8]) -> IResult<&[u8], OsiAcseAarq> {
+    debug!(target: "PARSER(parse_osi_acse_aarq)", "struct OsiAcseAarq");
     let (input, _acse_aarq_tl) = ber_tl(input)?;
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, aso_context_name) = parse_simple_item(input)?;
@@ -948,6 +972,7 @@ pub fn parse_osi_acse_aarq(input: &[u8]) -> IResult<&[u8], OsiAcseAarq> {
 }
 
 pub fn parse_osi_acse_aare(input: &[u8]) -> IResult<&[u8], OsiAcseAare> {
+    debug!(target: "PARSER(parse_osi_acse_aare)", "struct OsiAcseAare");
     let (input, _acse_aare_tl) = ber_tl(input)?;
     let (input, protocol_version) = parse_simple_item(input)?;
     let (input, aso_context_name) = parse_simple_item(input)?;
@@ -971,6 +996,7 @@ pub fn parse_osi_acse_aare(input: &[u8]) -> IResult<&[u8], OsiAcseAare> {
 }
 
 fn parse_osi_ses_choice_request(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
+    debug!(target: "PARSER(parse_request)", "struct Request");
     let (input, connect_accept) = parse_osi_ses_connect_request(input)?;
     let (input, pres_cp) = parse_osi_pres_cp(input)?;
     let (input, acse) = parse_osi_acse_aarq(input)?;
@@ -985,6 +1011,7 @@ fn parse_osi_ses_choice_request(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
 }
 
 fn parse_osi_ses_choice_response(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
+    debug!(target: "PARSER(parse_response)", "struct Response");
     let (input, accept) = parse_osi_ses_connect_request(input)?;
     let (input, pres_cpa) = parse_osi_pres_cpa(input)?;
     let (input, acse) = parse_osi_acse_aare(input)?;
@@ -999,6 +1026,7 @@ fn parse_osi_ses_choice_response(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
 }
 
 fn parse_osi_ses_choice_give_tokens(input: &[u8]) -> IResult<&[u8], OsiSesChoice> {
+    debug!(target: "PARSER(parse_give_tokens)", "struct GiveTokens");
     let (input, ses2_type) = u8(input)?;
     let (input, ses2_len) = u8(input)?;
     let (input, _pres_cpa_tl) = ber_tl(input)?;
@@ -1014,6 +1042,7 @@ fn parse_osi_ses_choice_give_tokens(input: &[u8]) -> IResult<&[u8], OsiSesChoice
 }
 
 pub fn parse_osi_ses_choice(input: &[u8], ses_type: u8) -> IResult<&[u8], OsiSesChoice> {
+    debug!(target: "PARSER(parse_osi_ses_choice)", "enum OsiSesChoice");
     let (input, osi_ses_choice) = match ses_type {
         0x0d => parse_osi_ses_choice_request(input),
         0x0e => parse_osi_ses_choice_response(input),
@@ -1027,6 +1056,7 @@ pub fn parse_osi_ses_choice(input: &[u8], ses_type: u8) -> IResult<&[u8], OsiSes
 }
 
 pub fn parse_osi_protocol_stack(input: &[u8]) -> IResult<&[u8], OsiProtocolStack> {
+    debug!(target: "PARSER(parse_osi_protocol_stack)", "struct OsiProtocolStack");
     let (input, ses_type) = u8(input)?;
     let (input, ses_len) = u8(input)?;
     let (input, ses) = parse_osi_ses_choice(input, ses_type)?;
@@ -1041,16 +1071,19 @@ pub fn parse_osi_protocol_stack(input: &[u8]) -> IResult<&[u8], OsiProtocolStack
 }
 
 fn parse_object_class_named_variable(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_named_variable)", "struct NamedVariable");
     let (input, named_variable) = parse_simple_item(input)?;
     Ok((input, ObjectClass::NamedVariable { named_variable }))
 }
 
 fn parse_object_class_scattered_access(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_scattered_access)", "struct ScatteredAccess");
     let (input, scattered_access) = parse_simple_item(input)?;
     Ok((input, ObjectClass::ScatteredAccess { scattered_access }))
 }
 
 fn parse_object_class_named_variable_list(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_named_variable_list)", "struct NamedVariableList");
     let (input, named_variable_list) = parse_simple_item(input)?;
     Ok((
         input,
@@ -1061,51 +1094,61 @@ fn parse_object_class_named_variable_list(input: &[u8]) -> IResult<&[u8], Object
 }
 
 fn parse_object_class_named_type(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_named_type)", "struct NamedType");
     let (input, named_type) = parse_simple_item(input)?;
     Ok((input, ObjectClass::NamedType { named_type }))
 }
 
 fn parse_object_class_semaphore(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_semaphore)", "struct Semaphore");
     let (input, semaphore) = parse_simple_item(input)?;
     Ok((input, ObjectClass::Semaphore { semaphore }))
 }
 
 fn parse_object_class_event_condition(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_event_condition)", "struct EventCondition");
     let (input, event_condition) = parse_simple_item(input)?;
     Ok((input, ObjectClass::EventCondition { event_condition }))
 }
 
 fn parse_object_class_event_action(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_event_action)", "struct EventAction");
     let (input, event_action) = parse_simple_item(input)?;
     Ok((input, ObjectClass::EventAction { event_action }))
 }
 
 fn parse_object_class_event_enrollment(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_event_enrollment)", "struct EventEnrollment");
     let (input, event_enrollment) = parse_simple_item(input)?;
     Ok((input, ObjectClass::EventEnrollment { event_enrollment }))
 }
 
 fn parse_object_class_journal(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_journal)", "struct Journal");
     let (input, journal) = parse_simple_item(input)?;
     Ok((input, ObjectClass::Journal { journal }))
 }
 
 fn parse_object_class_domain(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_domain)", "struct Domain");
     let (input, domain) = parse_simple_item(input)?;
     Ok((input, ObjectClass::Domain { domain }))
 }
 
 fn parse_object_class_program_invocation(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_program_invocation)", "struct ProgramInvocation");
     let (input, program_invocation) = parse_simple_item(input)?;
     Ok((input, ObjectClass::ProgramInvocation { program_invocation }))
 }
 
 fn parse_object_class_operator_station(input: &[u8]) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_operator_station)", "struct OperatorStation");
     let (input, operator_station) = parse_simple_item(input)?;
     Ok((input, ObjectClass::OperatorStation { operator_station }))
 }
 
 pub fn parse_object_class(input: &[u8], _object_class_tl_tag: u8) -> IResult<&[u8], ObjectClass> {
+    debug!(target: "PARSER(parse_object_class)", "enum ObjectClass");
     let (input, object_class) = match _object_class_tl_tag.bitand(0x1f) {
         0x0 => parse_object_class_named_variable(input),
         0x01 => parse_object_class_scattered_access(input),
@@ -1128,11 +1171,13 @@ pub fn parse_object_class(input: &[u8], _object_class_tl_tag: u8) -> IResult<&[u
 }
 
 fn parse_object_scope_object_scope_vmd(input: &[u8]) -> IResult<&[u8], ObjectScope> {
+    debug!(target: "PARSER(parse_object_scope_vmd)", "struct ObjectScopeVmd");
     let (input, object_scope_vmd) = take(input.len() as usize)(input)?;
     Ok((input, ObjectScope::ObjectScopeVmd { object_scope_vmd }))
 }
 
 fn parse_object_scope_object_scope_domain(input: &[u8]) -> IResult<&[u8], ObjectScope> {
+    debug!(target: "PARSER(parse_object_scope_domain)", "struct ObjectScopeDomain");
     let (input, object_scope_domain_id) = take(input.len() as usize)(input)?;
     let (input, object_scope_item_id) = take(input.len() as usize)(input)?;
     Ok((
@@ -1145,6 +1190,7 @@ fn parse_object_scope_object_scope_domain(input: &[u8]) -> IResult<&[u8], Object
 }
 
 fn parse_object_scope_object_scope_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectScope> {
+    debug!(target: "PARSER(parse_object_scope_aa_specific)", "struct ObjectScopeAaSpecific");
     let (input, object_scope_aa_specific) = take(input.len() as usize)(input)?;
     Ok((
         input,
@@ -1155,6 +1201,7 @@ fn parse_object_scope_object_scope_aa_specific(input: &[u8]) -> IResult<&[u8], O
 }
 
 pub fn parse_object_scope(input: &[u8], _object_scope_tl_tag: u8) -> IResult<&[u8], ObjectScope> {
+    debug!(target: "PARSER(parse_object_scope)", "enum ObjectScope");
     let (input, object_scope) = match _object_scope_tl_tag.bitand(0x1f) {
         0x0 => parse_object_scope_object_scope_vmd(input),
         0x01 => parse_object_scope_object_scope_domain(input),
@@ -1168,11 +1215,13 @@ pub fn parse_object_scope(input: &[u8], _object_scope_tl_tag: u8) -> IResult<&[u
 }
 
 fn parse_object_name_object_name_vmd(input: &[u8]) -> IResult<&[u8], ObjectName> {
+    debug!(target: "PARSER(parse_object_name_vmd)", "struct ObjectNameVmd");
     let (input, object_name_vmd) = take(input.len() as usize)(input)?;
     Ok((input, ObjectName::ObjectNameVmd { object_name_vmd }))
 }
 
 fn parse_object_name_object_name_domain(input: &[u8]) -> IResult<&[u8], ObjectName> {
+    debug!(target: "PARSER(parse_object_name_domain)", "struct ObjectNameDomain");
     let (input, object_name_domain_id) = take(input.len() as usize)(input)?;
     let (input, object_name_item_id) = take(input.len() as usize)(input)?;
     Ok((
@@ -1185,6 +1234,7 @@ fn parse_object_name_object_name_domain(input: &[u8]) -> IResult<&[u8], ObjectNa
 }
 
 fn parse_object_name_object_name_aa_specific(input: &[u8]) -> IResult<&[u8], ObjectName> {
+    debug!(target: "PARSER(parse_object_name_aa_specific)", "struct ObjectNameAaSpecific");
     let (input, object_name_aa_specific) = take(input.len() as usize)(input)?;
     Ok((
         input,
@@ -1195,6 +1245,7 @@ fn parse_object_name_object_name_aa_specific(input: &[u8]) -> IResult<&[u8], Obj
 }
 
 pub fn parse_object_name(input: &[u8], _object_name_tl_tag: u8) -> IResult<&[u8], ObjectName> {
+    debug!(target: "PARSER(parse_object_name)", "enum ObjectName");
     let (input, object_name) = match _object_name_tl_tag.bitand(0x1f) {
         0x0 => parse_object_name_object_name_vmd(input),
         0x01 => parse_object_name_object_name_domain(input),
@@ -1208,12 +1259,14 @@ pub fn parse_object_name(input: &[u8], _object_name_tl_tag: u8) -> IResult<&[u8]
 }
 
 fn parse_variable_specification_name(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
+    debug!(target: "PARSER(parse_name)", "struct Name");
     let (input, _object_name_tl) = ber_tl(input)?;
     let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
     Ok((input, VariableSpecification::Name { object_name }))
 }
 
 fn parse_variable_specification_others(input: &[u8]) -> IResult<&[u8], VariableSpecification> {
+    debug!(target: "PARSER(parse_others)", "struct Others");
     let (input, _variable_specification_tl) = ber_tl(input)?;
     let (input, value) = take(_variable_specification_tl.length as usize)(input)?;
     Ok((input, VariableSpecification::Others { value }))
@@ -1223,6 +1276,7 @@ pub fn parse_variable_specification(
     input: &[u8],
     _variable_specification_tl_tag: u8,
 ) -> IResult<&[u8], VariableSpecification> {
+    debug!(target: "PARSER(parse_variable_specification)", "enum VariableSpecification");
     let (input, variable_specification) = match _variable_specification_tl_tag.bitand(0x1f) {
         0x0 => parse_variable_specification_name(input),
         0x01 => parse_variable_specification_others(input),
@@ -1237,6 +1291,7 @@ pub fn parse_variable_specification(
 pub fn parse_variable_specification_struct(
     input: &[u8],
 ) -> IResult<&[u8], VariableSpecificationStruct> {
+    debug!(target: "PARSER(parse_variable_specification_struct)", "struct VariableSpecificationStruct");
     let (input, _variable_specification_tl) = ber_tl(input)?;
     let (input, variable_specification) =
         parse_variable_specification(input, _variable_specification_tl.tag)?;
@@ -1251,6 +1306,7 @@ pub fn parse_variable_specification_struct(
 pub fn parse_list_of_variable_specification(
     input: &[u8],
 ) -> IResult<&[u8], ListOfVariableSpecification> {
+    debug!(target: "PARSER(parse_list_of_variable_specification)", "struct ListOfVariableSpecification");
     let (input, _lovs_tl) = ber_tl(input)?;
     /* LimitedLenVecLoopField Start */
     let mut lovs = Vec::new();
@@ -1267,6 +1323,7 @@ pub fn parse_list_of_variable_specification(
 }
 
 fn parse_data_access_error_object_invalidated(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_invalidated)", "struct ObjectInvalidated");
     let (input, object_invalidated) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1275,6 +1332,7 @@ fn parse_data_access_error_object_invalidated(input: &[u8]) -> IResult<&[u8], Da
 }
 
 fn parse_data_access_error_hardware_fault(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_hardware_fault)", "struct HardwareFault");
     let (input, hardware_fault) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::HardwareFault { hardware_fault }))
 }
@@ -1282,6 +1340,7 @@ fn parse_data_access_error_hardware_fault(input: &[u8]) -> IResult<&[u8], DataAc
 fn parse_data_access_error_temporarily_unavailable(
     input: &[u8],
 ) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_temporarily_unavailable)", "struct TemporarilyUnavailable");
     let (input, temporarily_unavailable) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1292,6 +1351,7 @@ fn parse_data_access_error_temporarily_unavailable(
 }
 
 fn parse_data_access_error_object_access_denied(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_access_denied)", "struct ObjectAccessDenied");
     let (input, object_access_denied) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1302,21 +1362,25 @@ fn parse_data_access_error_object_access_denied(input: &[u8]) -> IResult<&[u8], 
 }
 
 fn parse_data_access_error_object_undefined(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_undefined)", "struct ObjectUndefined");
     let (input, object_undefined) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::ObjectUndefined { object_undefined }))
 }
 
 fn parse_data_access_error_invalid_address(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_invalid_address)", "struct InvalidAddress");
     let (input, invalid_address) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::InvalidAddress { invalid_address }))
 }
 
 fn parse_data_access_error_type_unsupported(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_type_unsupported)", "struct TypeUnsupported");
     let (input, type_unsupported) = parse_simple_u8_data(input)?;
     Ok((input, DataAccessError::TypeUnsupported { type_unsupported }))
 }
 
 fn parse_data_access_error_type_inconsistent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_type_inconsistent)", "struct TypeInconsistent");
     let (input, type_inconsistent) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1327,6 +1391,7 @@ fn parse_data_access_error_type_inconsistent(input: &[u8]) -> IResult<&[u8], Dat
 fn parse_data_access_error_object_attribute_inconsistent(
     input: &[u8],
 ) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_attribute_inconsistent)", "struct ObjectAttributeInconsistent");
     let (input, object_attribute_inconsistent) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1339,6 +1404,7 @@ fn parse_data_access_error_object_attribute_inconsistent(
 fn parse_data_access_error_object_access_unsupported(
     input: &[u8],
 ) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_access_unsupported)", "struct ObjectAccessUnsupported");
     let (input, object_access_unsupported) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1349,6 +1415,7 @@ fn parse_data_access_error_object_access_unsupported(
 }
 
 fn parse_data_access_error_object_non_existent(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_non_existent)", "struct ObjectNonExistent");
     let (input, object_non_existent) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1359,6 +1426,7 @@ fn parse_data_access_error_object_non_existent(input: &[u8]) -> IResult<&[u8], D
 }
 
 fn parse_data_access_error_object_value_invalid(input: &[u8]) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_object_value_invalid)", "struct ObjectValueInvalid");
     let (input, object_value_invalid) = parse_simple_u8_data(input)?;
     Ok((
         input,
@@ -1372,6 +1440,7 @@ pub fn parse_data_access_error(
     input: &[u8],
     _data_access_error_tl_tag: u8,
 ) -> IResult<&[u8], DataAccessError> {
+    debug!(target: "PARSER(parse_data_access_error)", "enum DataAccessError");
     let (input, data_access_error) = match _data_access_error_tl_tag.bitand(0x1f) {
         0x0 => parse_data_access_error_object_invalidated(input),
         0x01 => parse_data_access_error_hardware_fault(input),
@@ -1394,6 +1463,7 @@ pub fn parse_data_access_error(
 }
 
 fn parse_access_result_access_result_failure(input: &[u8]) -> IResult<&[u8], AccessResult> {
+    debug!(target: "PARSER(parse_access_result_failure)", "struct AccessResultFailure");
     let (input, _data_access_error_tl) = ber_tl(input)?;
     let (input, data_access_error) = parse_data_access_error(input, _data_access_error_tl.tag)?;
     Ok((
@@ -1403,6 +1473,7 @@ fn parse_access_result_access_result_failure(input: &[u8]) -> IResult<&[u8], Acc
 }
 
 fn parse_access_result_access_result_success(input: &[u8]) -> IResult<&[u8], AccessResult> {
+    debug!(target: "PARSER(parse_access_result_success)", "struct AccessResultSuccess");
     let (input, data) = parse_simple_item(input)?;
     Ok((input, AccessResult::AccessResultSuccess { data }))
 }
@@ -1411,6 +1482,7 @@ pub fn parse_access_result(
     input: &[u8],
     _access_result_tl_tag: u8,
 ) -> IResult<&[u8], AccessResult> {
+    debug!(target: "PARSER(parse_access_result)", "enum AccessResult");
     let (input, access_result) = match _access_result_tl_tag.bitand(0x1f) {
         0x0 => parse_access_result_access_result_failure(input),
         0x01 => parse_access_result_access_result_success(input),
@@ -1423,12 +1495,14 @@ pub fn parse_access_result(
 }
 
 pub fn parse_access_result_struct(input: &[u8]) -> IResult<&[u8], AccessResultStruct> {
+    debug!(target: "PARSER(parse_access_result_struct)", "struct AccessResultStruct");
     let (input, _access_result_tl) = ber_tl(input)?;
     let (input, access_result) = parse_access_result(input, _access_result_tl.tag)?;
     Ok((input, AccessResultStruct { access_result }))
 }
 
 pub fn parse_list_of_access_result(input: &[u8]) -> IResult<&[u8], ListOfAccessResult> {
+    debug!(target: "PARSER(parse_list_of_access_result)", "struct ListOfAccessResult");
     let (input, _loar_tl) = ber_tl(input)?;
     /* LimitedLenVecLoopField Start */
     let mut loar = Vec::new();
@@ -1445,6 +1519,7 @@ pub fn parse_list_of_access_result(input: &[u8]) -> IResult<&[u8], ListOfAccessR
 }
 
 pub fn parse_list_of_identifier(input: &[u8]) -> IResult<&[u8], ListOfIdentifier> {
+    debug!(target: "PARSER(parse_list_of_identifier)", "struct ListOfIdentifier");
     let (input, _loar_tl) = ber_tl(input)?;
     /* LimitedLenVecLoopField Start */
     let mut loar = Vec::new();
@@ -1461,6 +1536,7 @@ pub fn parse_list_of_identifier(input: &[u8]) -> IResult<&[u8], ListOfIdentifier
 }
 
 pub fn parse_init_detail_request(input: &[u8]) -> IResult<&[u8], InitDetailRequest> {
+    debug!(target: "PARSER(parse_init_detail_request)", "struct InitDetailRequest");
     let (input, proposed_version_number) = parse_simple_item(input)?;
     let (input, proposed_parameter_cbb) = parse_simple_item(input)?;
     let (input, service_supported_calling) = parse_simple_item(input)?;
@@ -1475,6 +1551,7 @@ pub fn parse_init_detail_request(input: &[u8]) -> IResult<&[u8], InitDetailReque
 }
 
 pub fn parse_init_detail_response(input: &[u8]) -> IResult<&[u8], InitDetailResponse> {
+    debug!(target: "PARSER(parse_init_detail_response)", "struct InitDetailResponse");
     let (input, proposed_version_number) = parse_simple_item(input)?;
     let (input, proposed_parameter_cbb) = parse_simple_item(input)?;
     let (input, service_supported_called) = parse_simple_item(input)?;
@@ -1489,6 +1566,7 @@ pub fn parse_init_detail_response(input: &[u8]) -> IResult<&[u8], InitDetailResp
 }
 
 pub fn parse_invoke_id(input: &[u8]) -> IResult<&[u8], InvokeId> {
+    debug!(target: "PARSER(parse_invoke_id)", "struct InvokeId");
     let (input, invoke_id) = u8(input)?;
     Ok((input, InvokeId { invoke_id }))
 }
@@ -1496,6 +1574,7 @@ pub fn parse_invoke_id(input: &[u8]) -> IResult<&[u8], InvokeId> {
 fn parse_variable_access_specification_choice_list_of_variable(
     input: &[u8],
 ) -> IResult<&[u8], VariableAccessSpecificationChoice> {
+    debug!(target: "PARSER(parse_list_of_variable)", "struct ListOfVariable");
     let (input, res) = parse_list_of_variable_specification(input)?;
     Ok((
         input,
@@ -1506,6 +1585,7 @@ fn parse_variable_access_specification_choice_list_of_variable(
 fn parse_variable_access_specification_choice_varibale_list_name(
     input: &[u8],
 ) -> IResult<&[u8], VariableAccessSpecificationChoice> {
+    debug!(target: "PARSER(parse_varibale_list_name)", "struct VaribaleListName");
     let (input, _object_name_tl) = ber_tl(input)?;
     let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
     Ok((
@@ -1518,6 +1598,7 @@ pub fn parse_variable_access_specification_choice(
     input: &[u8],
     _variable_access_specification_choice_tl_tag: u8,
 ) -> IResult<&[u8], VariableAccessSpecificationChoice> {
+    debug!(target: "PARSER(parse_variable_access_specification_choice)", "enum VariableAccessSpecificationChoice");
     let (input, variable_access_specification_choice) =
         match _variable_access_specification_choice_tl_tag.bitand(0x1f) {
             0x0 => parse_variable_access_specification_choice_list_of_variable(input),
@@ -1533,6 +1614,7 @@ pub fn parse_variable_access_specification_choice(
 fn parse_read_request_choice_read_request_choice_default(
     input: &[u8],
 ) -> IResult<&[u8], ReadRequestChoice> {
+    debug!(target: "PARSER(parse_read_request_choice_default)", "struct ReadRequestChoiceDefault");
     let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
     let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
         input,
@@ -1549,6 +1631,7 @@ fn parse_read_request_choice_read_request_choice_default(
 fn parse_read_request_choice_read_request_choice_otherwise(
     input: &[u8],
 ) -> IResult<&[u8], ReadRequestChoice> {
+    debug!(target: "PARSER(parse_read_request_choice_otherwise)", "struct ReadRequestChoiceOtherwise");
     let (input, specification_with_result) = u8(input)?;
     let (input, _variable_access_specification_choice_struct_tl) = ber_tl(input)?;
     let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
@@ -1569,6 +1652,7 @@ pub fn parse_read_request_choice<'a>(
     input: &'a [u8],
     _read_request_choice_tl: &BerTL,
 ) -> IResult<&'a [u8], ReadRequestChoice<'a>> {
+    debug!(target: "PARSER(parse_read_request_choice)", "enum ReadRequestChoice");
     let (input, read_request_choice) = match _read_request_choice_tl.tag {
         0x81 => parse_read_request_choice_read_request_choice_default(input),
         0x80 => parse_read_request_choice_read_request_choice_otherwise(input),
@@ -1583,12 +1667,14 @@ pub fn parse_read_request_choice<'a>(
 fn parse_read_response_choice_read_response_choice_none(
     input: &[u8],
 ) -> IResult<&[u8], ReadResponseChoice> {
+    debug!(target: "PARSER(parse_read_response_choice_none)", "struct ReadResponseChoiceNone");
     Ok((input, ReadResponseChoice::ReadResponseChoiceNone {}))
 }
 
 fn parse_read_response_choice_read_response_choice_with_data(
     input: &[u8],
 ) -> IResult<&[u8], ReadResponseChoice> {
+    debug!(target: "PARSER(parse_read_response_choice_with_data)", "struct ReadResponseChoiceWithData");
     let (input, _list_of_access_result_tl) = ber_tl(input)?;
     let (input, list_of_access_result) = parse_list_of_access_result(input)?;
     Ok((
@@ -1600,6 +1686,7 @@ fn parse_read_response_choice_read_response_choice_with_data(
 }
 
 pub fn parse_read_response_choice(input: &[u8]) -> IResult<&[u8], ReadResponseChoice> {
+    debug!(target: "PARSER(parse_read_response_choice)", "enum ReadResponseChoice");
     let (input, read_response_choice) = match input.len() {
         0x0 => parse_read_response_choice_read_response_choice_none(input),
         _ => parse_read_response_choice_read_response_choice_with_data(input),
@@ -1610,6 +1697,7 @@ pub fn parse_read_response_choice(input: &[u8]) -> IResult<&[u8], ReadResponseCh
 fn parse_write_response_choice_write_response_choice_failure(
     input: &[u8],
 ) -> IResult<&[u8], WriteResponseChoice> {
+    debug!(target: "PARSER(parse_write_response_choice_failure)", "struct WriteResponseChoiceFailure");
     let (input, _data_access_error_tl) = ber_tl(input)?;
     let (input, data_access_error) = parse_data_access_error(input, _data_access_error_tl.tag)?;
     Ok((
@@ -1622,6 +1710,7 @@ fn parse_write_response_choice_write_response_choice_failure(
 fn parse_write_response_choice_write_response_choice_success(
     input: &[u8],
 ) -> IResult<&[u8], WriteResponseChoice> {
+    debug!(target: "PARSER(parse_write_response_choice_write_response_choice_success)", "empty variant of WriteResponseChoice");
     Ok((input, WriteResponseChoice::WriteResponseChoiceSuccess {}))
 }
 
@@ -1629,6 +1718,7 @@ pub fn parse_write_response_choice(
     input: &[u8],
     _write_response_choice_tl_tag: u8,
 ) -> IResult<&[u8], WriteResponseChoice> {
+    debug!(target: "PARSER(parse_write_response_choice)", "enum WriteResponseChoice");
     let (input, write_response_choice) = match _write_response_choice_tl_tag.bitand(0x1f) {
         0x0 => parse_write_response_choice_write_response_choice_failure(input),
         0x01 => parse_write_response_choice_write_response_choice_success(input),
@@ -1643,6 +1733,7 @@ pub fn parse_write_response_choice(
 fn parse_confirmed_service_request_choice_get_name_list_request(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    debug!(target: "PARSER(parse_get_name_list_request)", "struct GetNameListRequest");
     let (input, _object_class_tl) = ber_tl(input)?;
     let (input, object_class) = parse_object_class(input, _object_class_tl.tag)?;
     let (input, _object_scope_tl) = ber_tl(input)?;
@@ -1660,12 +1751,14 @@ fn parse_confirmed_service_request_choice_get_name_list_request(
 fn parse_confirmed_service_request_choice_identify_request(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    debug!(target: "PARSER(parse_confirmed_service_request_choice_identify_request)", "empty variant of ConfirmedServiceRequestChoice");
     Ok((input, ConfirmedServiceRequestChoice::IdentifyRequest {}))
 }
 
 fn parse_confirmed_service_request_choice_read_request(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    debug!(target: "PARSER(parse_read_request)", "struct ReadRequest");
     let (input, _read_request_choice_tl) = ber_tl(input)?;
     let (input, read_request_choice) = parse_read_request_choice(input, &_read_request_choice_tl)?;
     Ok((
@@ -1679,6 +1772,7 @@ fn parse_confirmed_service_request_choice_read_request(
 fn parse_confirmed_service_request_choice_write_request(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    debug!(target: "PARSER(parse_write_request)", "struct WriteRequest");
     let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
     let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
         input,
@@ -1709,6 +1803,7 @@ fn parse_confirmed_service_request_choice_write_request(
 fn parse_confirmed_service_request_choice_get_named_variable_list_attributes_request(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    debug!(target: "PARSER(parse_get_named_variable_list_attributes_request)", "struct GetNamedVariableListAttributesRequest");
     let (input, _object_name_tl) = ber_tl(input)?;
     let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
     Ok((
@@ -1721,6 +1816,7 @@ pub fn parse_confirmed_service_request_choice(
     input: &[u8],
     _service_tl_tag: u8,
 ) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
+    debug!(target: "PARSER(parse_confirmed_service_request_choice)", "enum ConfirmedServiceRequestChoice");
     let (input, confirmed_service_request_choice) = match _service_tl_tag.bitand(0x1f) {
         0x0 => parse_confirmed_service_request_choice_get_name_list_request(input),
         0x02 => parse_confirmed_service_request_choice_identify_request(input),
@@ -1740,6 +1836,7 @@ pub fn parse_confirmed_service_request_choice(
 fn parse_confirmed_service_response_choice_get_name_list_response(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    debug!(target: "PARSER(parse_get_name_list_response)", "struct GetNameListResponse");
     let (input, _list_of_identifier_tl) = ber_tl(input)?;
     let (input, list_of_identifier) = parse_list_of_identifier(input)?;
     let (input, _more_follows_tl) = ber_tl(input)?;
@@ -1756,6 +1853,7 @@ fn parse_confirmed_service_response_choice_get_name_list_response(
 fn parse_confirmed_service_response_choice_identify_response(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    debug!(target: "PARSER(parse_identify_response)", "struct IdentifyResponse");
     let (input, _vendor_name_tl) = ber_tl(input)?;
     let (input, vendor_name) = parse_simple_item(input)?;
     let (input, _model_name_tl) = ber_tl(input)?;
@@ -1775,6 +1873,7 @@ fn parse_confirmed_service_response_choice_identify_response(
 fn parse_confirmed_service_response_choice_read_response(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    debug!(target: "PARSER(parse_read_response)", "struct ReadResponse");
     let (input, _read_response_choice_tl) = ber_tl(input)?;
     let (input, read_response_choice) = parse_read_response_choice(input)?;
     Ok((
@@ -1788,6 +1887,7 @@ fn parse_confirmed_service_response_choice_read_response(
 fn parse_confirmed_service_response_choice_write_response(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    debug!(target: "PARSER(parse_write_response)", "struct WriteResponse");
     let (input, _write_response_choice_tl) = ber_tl(input)?;
     let (input, write_response_choice) =
         parse_write_response_choice(input, _write_response_choice_tl.tag)?;
@@ -1802,6 +1902,7 @@ fn parse_confirmed_service_response_choice_write_response(
 fn parse_confirmed_service_response_choice_get_named_variable_list_attributes_response(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    debug!(target: "PARSER(parse_get_named_variable_list_attributes_response)", "struct GetNamedVariableListAttributesResponse");
     let (input, _mms_deleteable_tl) = ber_tl(input)?;
     let (input, mms_deleteable) = u8(input)?;
     let (input, _list_of_variable_specification_tl) = ber_tl(input)?;
@@ -1819,6 +1920,7 @@ pub fn parse_confirmed_service_response_choice(
     input: &[u8],
     _service_tl_tag: u8,
 ) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
+    debug!(target: "PARSER(parse_confirmed_service_response_choice)", "enum ConfirmedServiceResponseChoice");
     let (input, confirmed_service_response_choice) = match _service_tl_tag.bitand(0x1f) {
         0x0 => parse_confirmed_service_response_choice_get_name_list_response(input),
         0x02 => parse_confirmed_service_response_choice_identify_response(input),
@@ -1840,6 +1942,7 @@ pub fn parse_confirmed_service_response_choice(
 fn parse_confirmed_service_response_struct_confirmed_service_response_struct_none(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
+    debug!(target: "PARSER(parse_confirmed_service_response_struct_none)", "struct ConfirmedServiceResponseStructNone");
     Ok((
         input,
         ConfirmedServiceResponseStruct::ConfirmedServiceResponseStructNone {},
@@ -1849,6 +1952,7 @@ fn parse_confirmed_service_response_struct_confirmed_service_response_struct_non
 fn parse_confirmed_service_response_struct_confirmed_service_response_struct_with_data(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
+    debug!(target: "PARSER(parse_confirmed_service_response_struct_with_data)", "struct ConfirmedServiceResponseStructWithData");
     let (input, _service_tl) = ber_tl(input)?;
     let (input, service) = parse_confirmed_service_response_choice(input, _service_tl.tag)?;
     Ok((
@@ -1860,6 +1964,7 @@ fn parse_confirmed_service_response_struct_confirmed_service_response_struct_wit
 pub fn parse_confirmed_service_response_struct(
     input: &[u8],
 ) -> IResult<&[u8], ConfirmedServiceResponseStruct> {
+    debug!(target: "PARSER(parse_confirmed_service_response_struct)", "enum ConfirmedServiceResponseStruct");
     let (input, confirmed_service_response_struct) = match input.len() {
         0x0 => {
             parse_confirmed_service_response_struct_confirmed_service_response_struct_none(input)
@@ -1872,6 +1977,7 @@ pub fn parse_confirmed_service_response_struct(
 }
 
 fn parse_un_confirmed_choice_information_report(input: &[u8]) -> IResult<&[u8], UnConfirmedChoice> {
+    debug!(target: "PARSER(parse_information_report)", "struct InformationReport");
     let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
     let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
         input,
@@ -1892,6 +1998,7 @@ pub fn parse_un_confirmed_choice(
     input: &[u8],
     _service_tl_tag: u8,
 ) -> IResult<&[u8], UnConfirmedChoice> {
+    debug!(target: "PARSER(parse_un_confirmed_choice)", "enum UnConfirmedChoice");
     let (input, un_confirmed_choice) = match _service_tl_tag.bitand(0x1f) {
         0x0 => parse_un_confirmed_choice_information_report(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
@@ -1903,6 +2010,7 @@ pub fn parse_un_confirmed_choice(
 }
 
 fn parse_mms_pdu_choice_confirmed_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_confirmed_request)", "struct ConfirmedRequest");
     let (input, _invoke_id_tl) = ber_tl(input)?;
     let (input, invoke_id) = parse_invoke_id(input)?;
     let (input, _service_tl) = ber_tl(input)?;
@@ -1911,6 +2019,7 @@ fn parse_mms_pdu_choice_confirmed_request(input: &[u8]) -> IResult<&[u8], MmsPdu
 }
 
 fn parse_mms_pdu_choice_confirmed_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_confirmed_response)", "struct ConfirmedResponse");
     let (input, _invoke_id_tl) = ber_tl(input)?;
     let (input, invoke_id) = parse_invoke_id(input)?;
     let (input, service) = parse_confirmed_service_response_struct(input)?;
@@ -1921,12 +2030,14 @@ fn parse_mms_pdu_choice_confirmed_response(input: &[u8]) -> IResult<&[u8], MmsPd
 }
 
 fn parse_mms_pdu_choice_un_confirmed(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_un_confirmed)", "struct UnConfirmed");
     let (input, _service_tl) = ber_tl(input)?;
     let (input, service) = parse_un_confirmed_choice(input, _service_tl.tag)?;
     Ok((input, MmsPduChoice::UnConfirmed { service }))
 }
 
 fn parse_mms_pdu_choice_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_initiate_request)", "struct InitiateRequest");
     let (input, local_detail_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_called) = parse_simple_item(input)?;
@@ -1946,6 +2057,7 @@ fn parse_mms_pdu_choice_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduC
 }
 
 fn parse_mms_pdu_choice_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_initiate_response)", "struct InitiateResponse");
     let (input, local_detail_called) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_calling) = parse_simple_item(input)?;
     let (input, proposed_max_serv_outstanding_called) = parse_simple_item(input)?;
@@ -1966,6 +2078,7 @@ fn parse_mms_pdu_choice_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPdu
 
 #[inline(always)]
 fn parse_mms_pdu_choice_conclude_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_mms_pdu_choice_conclude_request)", "empty variant of MmsPduChoice");
     Ok((input, MmsPduChoice::ConcludeRequest {}))
 }
 
@@ -1973,6 +2086,7 @@ pub fn parse_mms_pdu_choice(
     input: &[u8],
     _mms_pdu_choice_tl_tag: u8,
 ) -> IResult<&[u8], MmsPduChoice> {
+    debug!(target: "PARSER(parse_mms_pdu_choice)", "enum MmsPduChoice");
     let (input, mms_pdu_choice) = match _mms_pdu_choice_tl_tag.bitand(0x1f) {
         0x0 => parse_mms_pdu_choice_confirmed_request(input),
         0x01 => parse_mms_pdu_choice_confirmed_response(input),
@@ -1989,6 +2103,7 @@ pub fn parse_mms_pdu_choice(
 }
 
 pub fn parse_mms_pdu(input: &[u8]) -> IResult<&[u8], MmsPdu> {
+    debug!(target: "PARSER(parse_mms_pdu)", "struct MmsPdu");
     let (input, _mms_pdu_choice_tl) = ber_tl(input)?;
     let (input, mms_pdu_choice) = parse_mms_pdu_choice(input, _mms_pdu_choice_tl.tag)?;
     Ok((input, MmsPdu { mms_pdu_choice }))
