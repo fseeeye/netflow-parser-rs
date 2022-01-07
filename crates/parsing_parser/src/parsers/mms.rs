@@ -231,24 +231,24 @@ pub struct OsiPresPduNormalModeParametersCpa<'a> {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum OsiPresPduNormalModeParametersCpChoice<'a> {
-    NormalModeParametersCpWithProtocolVersionChoice {
+pub enum OsiPresPduNormalModeParametersCpEnum<'a> {
+    WithProtocolVersion {
         normal_mode_parameters_cp_with_protocol_version:
             NormalModeParametersCpWithProtocolVersion<'a>,
     },
-    NormalModeParametersCpChoice {
+    WithoutProtocolVersion {
         osi_pres_pdu_normal_mode_parameters_cp: OsiPresPduNormalModeParametersCp<'a>,
     },
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum OsiPresPduNormalModeParametersCpaChoice<'a> {
-    NormalModeParametersCpaWithProtocolVersionChoice {
+pub enum OsiPresPduNormalModeParametersCpaEnum<'a> {
+    WithProtocolVersion {
         normal_mode_parameters_cpa_with_protocol_version:
             NormalModeParametersCpaWithProtocolVersion<'a>,
     },
-    NormalModeParametersCpaChoice {
+    WithoutProtocolVersion {
         osi_pres_pdu_normal_mode_parameters_cpa: OsiPresPduNormalModeParametersCpa<'a>,
     },
 }
@@ -257,14 +257,14 @@ pub enum OsiPresPduNormalModeParametersCpaChoice<'a> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCp<'a> {
     pub pres_cp_mode_selector: &'a [u8],
-    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpChoice<'a>,
+    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpEnum<'a>,
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct OsiPresCpa<'a> {
     pub pres_cp_mode_selector: &'a [u8],
-    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpaChoice<'a>,
+    pub normal_mode_parameters: OsiPresPduNormalModeParametersCpaEnum<'a>,
 }
 
 #[allow(non_camel_case_types)]
@@ -468,7 +468,7 @@ pub struct InitDetailResponse<'a> {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum VariableAccessSpecificationChoice<'a> {
+pub enum VariableAccessSpecificationEnum<'a> {
     ListOfVariable {
         res: ListOfVariableSpecification<'a>,
     },
@@ -479,45 +479,36 @@ pub enum VariableAccessSpecificationChoice<'a> {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ReadRequestChoice<'a> {
-    ReadRequestChoiceDefault {
-        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
+pub enum ReadRequestEnum<'a> {
+    Default {
+        variable_access_specification_enum: VariableAccessSpecificationEnum<'a>,
     },
-    ReadRequestChoiceOtherwise {
+    Otherwise {
         specification_with_result: u8,
-        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
+        variable_access_specification_enum: VariableAccessSpecificationEnum<'a>,
     },
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ReadResponseChoice<'a> {
-    ReadResponseChoiceNone {},
-    ReadResponseChoiceWithData {
-        list_of_access_result: ListOfAccessResult<'a>,
-    },
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub enum WriteResponseChoice {
+pub enum WriteResponseEnum {
     WriteResponseChoiceFailure { data_access_error: DataAccessError },
     WriteResponseChoiceSuccess {},
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ConfirmedServiceRequestChoice<'a> {
+pub enum ConfirmedServiceRequestEnum<'a> {
     GetNameListRequest {
         object_class: ObjectClass<'a>,
         object_scope: ObjectScope<'a>,
     },
     IdentifyRequest {},
     ReadRequest {
-        read_request_choice: ReadRequestChoice<'a>,
+        read_request_enum: ReadRequestEnum<'a>,
     },
     WriteRequest {
-        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
+        variable_access_specification_enum: VariableAccessSpecificationEnum<'a>,
         lod: Vec<&'a [u8]>,
     },
     GetNamedVariableListAttributesRequest {
@@ -527,7 +518,7 @@ pub enum ConfirmedServiceRequestChoice<'a> {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ConfirmedServiceResponseChoice<'a> {
+pub enum ConfirmedServiceResponseEnum<'a> {
     GetNameListResponse {
         list_of_identifier: ListOfIdentifier<'a>,
         more_follows: u8,
@@ -538,10 +529,10 @@ pub enum ConfirmedServiceResponseChoice<'a> {
         revision: &'a [u8],
     },
     ReadResponse {
-        read_response_choice: ReadResponseChoice<'a>,
+        list_of_access_result: Vec<AccessResultStruct<'a>>,
     },
     WriteResponse {
-        write_response_choice: WriteResponseChoice,
+        write_response_enum: WriteResponseEnum,
     },
     GetNamedVariableListAttributesResponse {
         mms_deleteable: u8,
@@ -551,44 +542,44 @@ pub enum ConfirmedServiceResponseChoice<'a> {
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum ConfirmedServiceResponseEnum<'a> {
+pub enum ConfirmedServiceResponse<'a> {
     None {},
     WithData {
-        service: ConfirmedServiceResponseChoice<'a>,
-    },
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub enum UnConfirmedChoice<'a> {
-    InformationReport {
-        variable_access_specification_choice: VariableAccessSpecificationChoice<'a>,
-        list_of_access_result: ListOfAccessResult<'a>,
-    },
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub enum MmsPduChoice<'a> {
-    ConfirmedRequest {
-        invoke_id: u16,
-        service: ConfirmedServiceRequestChoice<'a>,
-    },
-    ConfirmedResponse {
-        invoke_id: u16,
         service: ConfirmedServiceResponseEnum<'a>,
     },
-    UnConfirmed {
-        service: UnConfirmedChoice<'a>,
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum UnConfirmedEnum<'a> {
+    InformationReport {
+        variable_access_specification_enum: VariableAccessSpecificationEnum<'a>,
+        list_of_access_result: Vec<AccessResultStruct<'a>>,
     },
-    InitiateRequest {
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum MmsPduEnum<'a> {
+    ConfirmedRequestPDU {
+        invoke_id: u16,
+        service: ConfirmedServiceRequestEnum<'a>,
+    },
+    ConfirmedResponsePDU {
+        invoke_id: u16,
+        service: ConfirmedServiceResponse<'a>,
+    },
+    UnConfirmedPDU {
+        service: UnConfirmedEnum<'a>,
+    },
+    InitiateRequestPDU {
         local_detail_calling: &'a [u8],
         proposed_max_serv_outstanding_calling: &'a [u8],
         proposed_max_serv_outstanding_called: &'a [u8],
         proposed_data_structure_nesting_level: &'a [u8],
         init_request_detail: InitDetailRequest<'a>,
     },
-    InitiateResponse {
+    InitiateResponsePDU {
         local_detail_called: &'a [u8],
         proposed_max_serv_outstanding_calling: &'a [u8],
         proposed_max_serv_outstanding_called: &'a [u8],
@@ -601,7 +592,7 @@ pub enum MmsPduChoice<'a> {
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MmsPdu<'a> {
-    pub mms_pdu_choice: MmsPduChoice<'a>,
+    pub mms_pdu_enum: MmsPduEnum<'a>,
 }
 
 pub fn parse_simple_u8_data(input: &[u8]) -> IResult<&[u8], SimpleU8Data> {
@@ -829,84 +820,84 @@ pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa(
     ))
 }
 
-fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cp_enum_with_protocol_version(
     input: &[u8],
-) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
-    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice)", "struct NormalModeParametersCpWithProtocolVersionChoice");
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpEnum> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_enum_with_protocol_version)", "struct WithProtocolVersion");
     let (input, normal_mode_parameters_cp_with_protocol_version) =
         parse_normal_mode_parameters_cp_with_protocol_version(input)?;
     Ok((
         input,
-        OsiPresPduNormalModeParametersCpChoice::NormalModeParametersCpWithProtocolVersionChoice {
+        OsiPresPduNormalModeParametersCpEnum::WithProtocolVersion {
             normal_mode_parameters_cp_with_protocol_version,
         },
     ))
 }
 
-fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cp_enum_without_protocol_version(
     input: &[u8],
-) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
-    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_choice)", "struct NormalModeParametersCpChoice");
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpEnum> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_enum_without_protocol_version)", "struct WithoutProtocolVersion");
     let (input, osi_pres_pdu_normal_mode_parameters_cp) =
         parse_osi_pres_pdu_normal_mode_parameters_cp(input)?;
     Ok((
         input,
-        OsiPresPduNormalModeParametersCpChoice::NormalModeParametersCpChoice {
+        OsiPresPduNormalModeParametersCpEnum::WithoutProtocolVersion {
             osi_pres_pdu_normal_mode_parameters_cp,
         },
     ))
 }
 
-pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_choice(
+pub fn parse_osi_pres_pdu_normal_mode_parameters_cp_enum(
     input: &[u8],
-) -> IResult<&[u8], OsiPresPduNormalModeParametersCpChoice> {
-    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_choice)", "enum OsiPresPduNormalModeParametersCpChoice");
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpEnum> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cp_enum)", "enum OsiPresPduNormalModeParametersCpEnum");
     let (input, _tag) = peek(u8)(input)?;
-    let (input, osi_pres_pdu_normal_mode_parameters_cp_choice) = match _tag {
-        0x80 => parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_with_protocol_version_choice(input),
-        _ => parse_osi_pres_pdu_normal_mode_parameters_cp_choice_normal_mode_parameters_cp_choice(input),
+    let (input, osi_pres_pdu_normal_mode_parameters_cp_enum) = match _tag {
+        0x80 => parse_osi_pres_pdu_normal_mode_parameters_cp_enum_with_protocol_version(input),
+        _ => parse_osi_pres_pdu_normal_mode_parameters_cp_enum_without_protocol_version(input),
     }?;
-    Ok((input, osi_pres_pdu_normal_mode_parameters_cp_choice))
+    Ok((input, osi_pres_pdu_normal_mode_parameters_cp_enum))
 }
 
-fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cpa_enum_with_protocol_version(
     input: &[u8],
-) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
-    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice)", "struct NormalModeParametersCpaWithProtocolVersionChoice");
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaEnum> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_enum_with_protocol_version)", "struct WithProtocolVersion");
     let (input, normal_mode_parameters_cpa_with_protocol_version) =
         parse_normal_mode_parameters_cpa_with_protocol_version(input)?;
     Ok((
         input,
-        OsiPresPduNormalModeParametersCpaChoice::NormalModeParametersCpaWithProtocolVersionChoice {
+        OsiPresPduNormalModeParametersCpaEnum::WithProtocolVersion {
             normal_mode_parameters_cpa_with_protocol_version,
         },
     ))
 }
 
-fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_choice(
+fn parse_osi_pres_pdu_normal_mode_parameters_cpa_enum_without_protocol_version(
     input: &[u8],
-) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
-    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_choice)", "struct NormalModeParametersCpaChoice");
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaEnum> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_enum_without_protocol_version)", "struct WithoutProtocolVersion");
     let (input, osi_pres_pdu_normal_mode_parameters_cpa) =
         parse_osi_pres_pdu_normal_mode_parameters_cpa(input)?;
     Ok((
         input,
-        OsiPresPduNormalModeParametersCpaChoice::NormalModeParametersCpaChoice {
+        OsiPresPduNormalModeParametersCpaEnum::WithoutProtocolVersion {
             osi_pres_pdu_normal_mode_parameters_cpa,
         },
     ))
 }
 
-pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(
+pub fn parse_osi_pres_pdu_normal_mode_parameters_cpa_enum(
     input: &[u8],
-) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaChoice> {
-    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_choice)", "enum OsiPresPduNormalModeParametersCpaChoice");
+) -> IResult<&[u8], OsiPresPduNormalModeParametersCpaEnum> {
+    debug!(target: "PARSER(parse_osi_pres_pdu_normal_mode_parameters_cpa_enum)", "enum OsiPresPduNormalModeParametersCpaEnum");
     let (input, _tag) = peek(u8)(input)?;
-    let (input, osi_pres_pdu_normal_mode_parameters_cpa_choice) = match _tag {
-        0x80 => parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_with_protocol_version_choice(input),
-        _ => parse_osi_pres_pdu_normal_mode_parameters_cpa_choice_normal_mode_parameters_cpa_choice(input),
+    let (input, osi_pres_pdu_normal_mode_parameters_cpa_enum) = match _tag {
+        0x80 => parse_osi_pres_pdu_normal_mode_parameters_cpa_enum_with_protocol_version(input),
+        _ => parse_osi_pres_pdu_normal_mode_parameters_cpa_enum_without_protocol_version(input),
     }?;
-    Ok((input, osi_pres_pdu_normal_mode_parameters_cpa_choice))
+    Ok((input, osi_pres_pdu_normal_mode_parameters_cpa_enum))
 }
 
 pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
@@ -915,8 +906,7 @@ pub fn parse_osi_pres_cp(input: &[u8]) -> IResult<&[u8], OsiPresCp> {
     let (input, _pres_cp_tl) = ber_tl(input)?;
     let (input, pres_cp_mode_selector) = ber_tl_v(input)?;
     let (input, _normal_mode_parameters_tl) = ber_tl(input)?;
-    let (input, normal_mode_parameters) =
-        parse_osi_pres_pdu_normal_mode_parameters_cp_choice(input)?;
+    let (input, normal_mode_parameters) = parse_osi_pres_pdu_normal_mode_parameters_cp_enum(input)?;
     Ok((
         input,
         OsiPresCp {
@@ -933,7 +923,7 @@ pub fn parse_osi_pres_cpa(input: &[u8]) -> IResult<&[u8], OsiPresCpa> {
     let (input, pres_cp_mode_selector) = ber_tl_v(input)?;
     let (input, _normal_mode_parameters_tl) = ber_tl(input)?;
     let (input, normal_mode_parameters) =
-        parse_osi_pres_pdu_normal_mode_parameters_cpa_choice(input)?;
+        parse_osi_pres_pdu_normal_mode_parameters_cpa_enum(input)?;
     Ok((
         input,
         OsiPresCpa {
@@ -1572,176 +1562,138 @@ pub fn parse_init_detail_response(input: &[u8]) -> IResult<&[u8], InitDetailResp
     ))
 }
 
-fn parse_variable_access_specification_choice_list_of_variable(
+fn parse_variable_access_specification_enum_list_of_variable(
     input: &[u8],
-) -> IResult<&[u8], VariableAccessSpecificationChoice> {
-    debug!(target: "PARSER(parse_variable_access_specification_choice_list_of_variable)", "struct ListOfVariable");
+) -> IResult<&[u8], VariableAccessSpecificationEnum> {
+    debug!(target: "PARSER(parse_variable_access_specification_enum_list_of_variable)", "struct ListOfVariable");
     let (input, res) = parse_list_of_variable_specification(input)?;
     Ok((
         input,
-        VariableAccessSpecificationChoice::ListOfVariable { res },
+        VariableAccessSpecificationEnum::ListOfVariable { res },
     ))
 }
 
-fn parse_variable_access_specification_choice_varibale_list_name(
+fn parse_variable_access_specification_enum_varibale_list_name(
     input: &[u8],
-) -> IResult<&[u8], VariableAccessSpecificationChoice> {
-    debug!(target: "PARSER(parse_variable_access_specification_choice_varibale_list_name)", "struct VaribaleListName");
+) -> IResult<&[u8], VariableAccessSpecificationEnum> {
+    debug!(target: "PARSER(parse_variable_access_specification_enum_varibale_list_name)", "struct VaribaleListName");
     let (input, _object_name_tl) = ber_tl(input)?;
     let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
     Ok((
         input,
-        VariableAccessSpecificationChoice::VaribaleListName { object_name },
+        VariableAccessSpecificationEnum::VaribaleListName { object_name },
     ))
 }
 
-pub fn parse_variable_access_specification_choice(
+pub fn parse_variable_access_specification_enum(
     input: &[u8],
-    _variable_access_specification_choice_tl_tag: u8,
-) -> IResult<&[u8], VariableAccessSpecificationChoice> {
-    debug!(target: "PARSER(parse_variable_access_specification_choice)", "enum VariableAccessSpecificationChoice");
-    let (input, variable_access_specification_choice) =
-        match _variable_access_specification_choice_tl_tag.bitand(0x1f) {
-            0x0 => parse_variable_access_specification_choice_list_of_variable(input),
-            0x01 => parse_variable_access_specification_choice_varibale_list_name(input),
+    _variable_access_specification_tl_tag: u8,
+) -> IResult<&[u8], VariableAccessSpecificationEnum> {
+    debug!(target: "PARSER(parse_variable_access_specification_enum)", "enum VariableAccessSpecificationEnum");
+    let (input, variable_access_specification_enum) =
+        match _variable_access_specification_tl_tag.bitand(0x1f) {
+            0x0 => parse_variable_access_specification_enum_list_of_variable(input),
+            0x01 => parse_variable_access_specification_enum_varibale_list_name(input),
             _ => Err(nom::Err::Error(nom::error::Error::new(
                 input,
                 nom::error::ErrorKind::Verify,
             ))),
         }?;
-    Ok((input, variable_access_specification_choice))
+    Ok((input, variable_access_specification_enum))
 }
 
-fn parse_read_request_choice_read_request_choice_default(
-    input: &[u8],
-) -> IResult<&[u8], ReadRequestChoice> {
-    debug!(target: "PARSER(parse_read_request_choice_read_request_choice_default)", "struct ReadRequestChoiceDefault");
-    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
-    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
-        input,
-        _variable_access_specification_choice_tl.tag,
-    )?;
+fn parse_read_request_enum_default(input: &[u8]) -> IResult<&[u8], ReadRequestEnum> {
+    debug!(target: "PARSER(parse_read_request_enum_default)", "struct Default");
+    let (input, _variable_access_specification_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_enum) =
+        parse_variable_access_specification_enum(input, _variable_access_specification_tl.tag)?;
     Ok((
         input,
-        ReadRequestChoice::ReadRequestChoiceDefault {
-            variable_access_specification_choice,
+        ReadRequestEnum::Default {
+            variable_access_specification_enum,
         },
     ))
 }
 
-fn parse_read_request_choice_read_request_choice_otherwise(
-    input: &[u8],
-) -> IResult<&[u8], ReadRequestChoice> {
-    debug!(target: "PARSER(parse_read_request_choice_read_request_choice_otherwise)", "struct ReadRequestChoiceOtherwise");
+fn parse_read_request_enum_otherwise(input: &[u8]) -> IResult<&[u8], ReadRequestEnum> {
+    debug!(target: "PARSER(parse_read_request_enum_otherwise)", "struct Otherwise");
     let (input, specification_with_result) = u8(input)?;
     let (input, _variable_access_specification_choice_struct_tl) = ber_tl(input)?;
-    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
-    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
-        input,
-        _variable_access_specification_choice_tl.tag,
-    )?;
+    let (input, _variable_access_specification_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_enum) =
+        parse_variable_access_specification_enum(input, _variable_access_specification_tl.tag)?;
     Ok((
         input,
-        ReadRequestChoice::ReadRequestChoiceOtherwise {
+        ReadRequestEnum::Otherwise {
             specification_with_result,
-            variable_access_specification_choice,
+            variable_access_specification_enum,
         },
     ))
 }
 
-pub fn parse_read_request_choice<'a>(
-    input: &'a [u8],
-    _read_request_choice_tl: &BerTL,
-) -> IResult<&'a [u8], ReadRequestChoice<'a>> {
-    debug!(target: "PARSER(parse_read_request_choice)", "enum ReadRequestChoice");
-    let (input, read_request_choice) = match _read_request_choice_tl.tag {
-        0x81 => parse_read_request_choice_read_request_choice_default(input),
-        0x80 => parse_read_request_choice_read_request_choice_otherwise(input),
+pub fn parse_read_request_enum(
+    input: &[u8],
+    _read_request_tl_tag: u8,
+) -> IResult<&[u8], ReadRequestEnum> {
+    debug!(target: "PARSER(parse_read_request_enum)", "enum ReadRequestEnum");
+    let (input, read_request_enum) = match _read_request_tl_tag.bitand(0x1f) {
+        0x01 => parse_read_request_enum_default(input),
+        0x0 => parse_read_request_enum_otherwise(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
         ))),
     }?;
-    Ok((input, read_request_choice))
+    Ok((input, read_request_enum))
 }
 
-fn parse_read_response_choice_read_response_choice_none(
+fn parse_write_response_enum_write_response_choice_failure(
     input: &[u8],
-) -> IResult<&[u8], ReadResponseChoice> {
-    debug!(target: "PARSER(parse_read_response_choice_read_response_choice_none)", "struct ReadResponseChoiceNone");
-    Ok((input, ReadResponseChoice::ReadResponseChoiceNone {}))
-}
-
-fn parse_read_response_choice_read_response_choice_with_data(
-    input: &[u8],
-) -> IResult<&[u8], ReadResponseChoice> {
-    debug!(target: "PARSER(parse_read_response_choice_read_response_choice_with_data)", "struct ReadResponseChoiceWithData");
-    let (input, _list_of_access_result_tl) = ber_tl(input)?;
-    let (input, list_of_access_result) = parse_list_of_access_result(input)?;
-    Ok((
-        input,
-        ReadResponseChoice::ReadResponseChoiceWithData {
-            list_of_access_result,
-        },
-    ))
-}
-
-pub fn parse_read_response_choice(input: &[u8]) -> IResult<&[u8], ReadResponseChoice> {
-    debug!(target: "PARSER(parse_read_response_choice)", "enum ReadResponseChoice");
-    let (input, read_response_choice) = match input.len() {
-        0x0 => parse_read_response_choice_read_response_choice_none(input),
-        _ => parse_read_response_choice_read_response_choice_with_data(input),
-    }?;
-    Ok((input, read_response_choice))
-}
-
-fn parse_write_response_choice_write_response_choice_failure(
-    input: &[u8],
-) -> IResult<&[u8], WriteResponseChoice> {
-    debug!(target: "PARSER(parse_write_response_choice_write_response_choice_failure)", "struct WriteResponseChoiceFailure");
+) -> IResult<&[u8], WriteResponseEnum> {
+    debug!(target: "PARSER(parse_write_response_enum_write_response_choice_failure)", "struct WriteResponseChoiceFailure");
     let (input, _data_access_error_tl) = ber_tl(input)?;
     let (input, data_access_error) = parse_data_access_error(input, _data_access_error_tl.tag)?;
     Ok((
         input,
-        WriteResponseChoice::WriteResponseChoiceFailure { data_access_error },
+        WriteResponseEnum::WriteResponseChoiceFailure { data_access_error },
     ))
 }
 
 #[inline(always)]
-fn parse_write_response_choice_write_response_choice_success(
+fn parse_write_response_enum_write_response_choice_success(
     input: &[u8],
-) -> IResult<&[u8], WriteResponseChoice> {
-    debug!(target: "PARSER(parse_write_response_choice_write_response_choice_success)", "empty variant of WriteResponseChoice");
-    Ok((input, WriteResponseChoice::WriteResponseChoiceSuccess {}))
+) -> IResult<&[u8], WriteResponseEnum> {
+    debug!(target: "PARSER(parse_write_response_enum_write_response_choice_success)", "empty variant of WriteResponseEnum");
+    Ok((input, WriteResponseEnum::WriteResponseChoiceSuccess {}))
 }
 
-pub fn parse_write_response_choice(
+pub fn parse_write_response_enum(
     input: &[u8],
-    _write_response_choice_tl_tag: u8,
-) -> IResult<&[u8], WriteResponseChoice> {
-    debug!(target: "PARSER(parse_write_response_choice)", "enum WriteResponseChoice");
-    let (input, write_response_choice) = match _write_response_choice_tl_tag.bitand(0x1f) {
-        0x0 => parse_write_response_choice_write_response_choice_failure(input),
-        0x01 => parse_write_response_choice_write_response_choice_success(input),
+    _write_response_tl_tag: u8,
+) -> IResult<&[u8], WriteResponseEnum> {
+    debug!(target: "PARSER(parse_write_response_enum)", "enum WriteResponseEnum");
+    let (input, write_response_enum) = match _write_response_tl_tag.bitand(0x1f) {
+        0x0 => parse_write_response_enum_write_response_choice_failure(input),
+        0x01 => parse_write_response_enum_write_response_choice_success(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
         ))),
     }?;
-    Ok((input, write_response_choice))
+    Ok((input, write_response_enum))
 }
 
-fn parse_confirmed_service_request_choice_get_name_list_request(
+fn parse_confirmed_service_request_enum_get_name_list_request(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_request_choice_get_name_list_request)", "struct GetNameListRequest");
+) -> IResult<&[u8], ConfirmedServiceRequestEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_request_enum_get_name_list_request)", "struct GetNameListRequest");
     let (input, _object_class_tl) = ber_tl(input)?;
     let (input, object_class) = parse_object_class(input, _object_class_tl.tag)?;
     let (input, _object_scope_tl) = ber_tl(input)?;
     let (input, object_scope) = parse_object_scope(input, _object_scope_tl.tag)?;
     Ok((
         input,
-        ConfirmedServiceRequestChoice::GetNameListRequest {
+        ConfirmedServiceRequestEnum::GetNameListRequest {
             object_class,
             object_scope,
         },
@@ -1749,36 +1701,32 @@ fn parse_confirmed_service_request_choice_get_name_list_request(
 }
 
 #[inline(always)]
-fn parse_confirmed_service_request_choice_identify_request(
+fn parse_confirmed_service_request_enum_identify_request(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_request_choice_identify_request)", "empty variant of ConfirmedServiceRequestChoice");
-    Ok((input, ConfirmedServiceRequestChoice::IdentifyRequest {}))
+) -> IResult<&[u8], ConfirmedServiceRequestEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_request_enum_identify_request)", "empty variant of ConfirmedServiceRequestEnum");
+    Ok((input, ConfirmedServiceRequestEnum::IdentifyRequest {}))
 }
 
-fn parse_confirmed_service_request_choice_read_request(
+fn parse_confirmed_service_request_enum_read_request(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_request_choice_read_request)", "struct ReadRequest");
-    let (input, _read_request_choice_tl) = ber_tl(input)?;
-    let (input, read_request_choice) = parse_read_request_choice(input, &_read_request_choice_tl)?;
+) -> IResult<&[u8], ConfirmedServiceRequestEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_request_enum_read_request)", "struct ReadRequest");
+    let (input, _read_request_tl) = ber_tl(input)?;
+    let (input, read_request_enum) = parse_read_request_enum(input, _read_request_tl.tag)?;
     Ok((
         input,
-        ConfirmedServiceRequestChoice::ReadRequest {
-            read_request_choice,
-        },
+        ConfirmedServiceRequestEnum::ReadRequest { read_request_enum },
     ))
 }
 
-fn parse_confirmed_service_request_choice_write_request(
+fn parse_confirmed_service_request_enum_write_request(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_request_choice_write_request)", "struct WriteRequest");
-    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
-    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
-        input,
-        _variable_access_specification_choice_tl.tag,
-    )?;
+) -> IResult<&[u8], ConfirmedServiceRequestEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_request_enum_write_request)", "struct WriteRequest");
+    let (input, _variable_access_specification_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_enum) =
+        parse_variable_access_specification_enum(input, _variable_access_specification_tl.tag)?;
     let (input, _list_of_data_tl) = ber_tl(input)?;
     let (input, _lod_tl) = ber_tl(input)?;
     /* LimitedLenVecLoopField Start */
@@ -1794,76 +1742,73 @@ fn parse_confirmed_service_request_choice_write_request(
     /* LimitedLenVecLoopField End. */
     Ok((
         input,
-        ConfirmedServiceRequestChoice::WriteRequest {
-            variable_access_specification_choice,
+        ConfirmedServiceRequestEnum::WriteRequest {
+            variable_access_specification_enum,
             lod,
         },
     ))
 }
 
-fn parse_confirmed_service_request_choice_get_named_variable_list_attributes_request(
+fn parse_confirmed_service_request_enum_get_named_variable_list_attributes_request(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_request_choice_get_named_variable_list_attributes_request)", "struct GetNamedVariableListAttributesRequest");
+) -> IResult<&[u8], ConfirmedServiceRequestEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_request_enum_get_named_variable_list_attributes_request)", "struct GetNamedVariableListAttributesRequest");
     let (input, _object_name_tl) = ber_tl(input)?;
     let (input, object_name) = parse_object_name(input, _object_name_tl.tag)?;
     Ok((
         input,
-        ConfirmedServiceRequestChoice::GetNamedVariableListAttributesRequest { object_name },
+        ConfirmedServiceRequestEnum::GetNamedVariableListAttributesRequest { object_name },
     ))
 }
 
-pub fn parse_confirmed_service_request_choice(
+pub fn parse_confirmed_service_request_enum(
     input: &[u8],
     _service_tl_tag: u8,
-) -> IResult<&[u8], ConfirmedServiceRequestChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_request_choice)", "enum ConfirmedServiceRequestChoice");
-    let (input, confirmed_service_request_choice) = match _service_tl_tag.bitand(0x1f) {
-        0x0 => parse_confirmed_service_request_choice_get_name_list_request(input),
-        0x02 => parse_confirmed_service_request_choice_identify_request(input),
-        0x04 => parse_confirmed_service_request_choice_read_request(input),
-        0x05 => parse_confirmed_service_request_choice_write_request(input),
+) -> IResult<&[u8], ConfirmedServiceRequestEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_request_enum)", "enum ConfirmedServiceRequestEnum");
+    let (input, confirmed_service_request_enum) = match _service_tl_tag.bitand(0x1f) {
+        0x0 => parse_confirmed_service_request_enum_get_name_list_request(input),
+        0x02 => parse_confirmed_service_request_enum_identify_request(input),
+        0x04 => parse_confirmed_service_request_enum_read_request(input),
+        0x05 => parse_confirmed_service_request_enum_write_request(input),
         0x0c => {
-            parse_confirmed_service_request_choice_get_named_variable_list_attributes_request(input)
+            parse_confirmed_service_request_enum_get_named_variable_list_attributes_request(input)
         }
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
         ))),
     }?;
-    Ok((input, confirmed_service_request_choice))
+    Ok((input, confirmed_service_request_enum))
 }
 
-fn parse_confirmed_service_response_choice_get_name_list_response(
+fn parse_confirmed_service_response_enum_get_name_list_response(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_response_choice_get_name_list_response)", "struct GetNameListResponse");
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_get_name_list_response)", "struct GetNameListResponse");
     let (input, _list_of_identifier_tl) = ber_tl(input)?;
     let (input, list_of_identifier) = parse_list_of_identifier(input)?;
     let (input, _more_follows_tl) = ber_tl(input)?;
     let (input, more_follows) = u8(input)?;
     Ok((
         input,
-        ConfirmedServiceResponseChoice::GetNameListResponse {
+        ConfirmedServiceResponseEnum::GetNameListResponse {
             list_of_identifier,
             more_follows,
         },
     ))
 }
 
-fn parse_confirmed_service_response_choice_identify_response(
+fn parse_confirmed_service_response_enum_identify_response(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_response_choice_identify_response)", "struct IdentifyResponse");
-    let (input, _vendor_name_tl) = ber_tl(input)?;
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_identify_response)", "struct IdentifyResponse");
     let (input, vendor_name) = ber_tl_v(input)?;
-    let (input, _model_name_tl) = ber_tl(input)?;
     let (input, model_name) = ber_tl_v(input)?;
-    let (input, _revision_tl) = ber_tl(input)?;
     let (input, revision) = ber_tl_v(input)?;
     Ok((
         input,
-        ConfirmedServiceResponseChoice::IdentifyResponse {
+        ConfirmedServiceResponseEnum::IdentifyResponse {
             vendor_name,
             model_name,
             revision,
@@ -1871,137 +1816,157 @@ fn parse_confirmed_service_response_choice_identify_response(
     ))
 }
 
-fn parse_confirmed_service_response_choice_read_response(
+fn parse_confirmed_service_response_enum_read_response(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_response_choice_read_response)", "struct ReadResponse");
-    let (input, _read_response_choice_tl) = ber_tl(input)?;
-    let (input, read_response_choice) = parse_read_response_choice(input)?;
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_read_response)", "struct ReadResponse");
+    let (input, _read_response_tl) = ber_tl(input)?;
+    if _read_response_tl.length == 0 {
+        return Ok((
+            input,
+            ConfirmedServiceResponseEnum::ReadResponse {
+                list_of_access_result: vec![],
+            },
+        ));
+    }
+    let (input, _list_of_access_result_tl) = ber_tl(input)?;
+    /* LimitedLenVecLoopField Start */
+    let mut list_of_access_result = Vec::new();
+    let mut _list_of_access_result: AccessResultStruct;
+    let mut input = input;
+    let len_flag = input.len() - _list_of_access_result_tl.length as usize;
+    while input.len() > len_flag {
+        (input, _list_of_access_result) = parse_access_result_struct(input)?;
+        list_of_access_result.push(_list_of_access_result);
+    }
+    let input = input;
+    /* LimitedLenVecLoopField End. */
     Ok((
         input,
-        ConfirmedServiceResponseChoice::ReadResponse {
-            read_response_choice,
+        ConfirmedServiceResponseEnum::ReadResponse {
+            list_of_access_result,
         },
     ))
 }
 
-fn parse_confirmed_service_response_choice_write_response(
+fn parse_confirmed_service_response_enum_write_response(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_response_choice_write_response)", "struct WriteResponse");
-    let (input, _write_response_choice_tl) = ber_tl(input)?;
-    let (input, write_response_choice) =
-        parse_write_response_choice(input, _write_response_choice_tl.tag)?;
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_write_response)", "struct WriteResponse");
+    let (input, _write_response_tl) = ber_tl(input)?;
+    let (input, write_response_enum) = parse_write_response_enum(input, _write_response_tl.tag)?;
     Ok((
         input,
-        ConfirmedServiceResponseChoice::WriteResponse {
-            write_response_choice,
+        ConfirmedServiceResponseEnum::WriteResponse {
+            write_response_enum,
         },
     ))
 }
 
-fn parse_confirmed_service_response_choice_get_named_variable_list_attributes_response(
+fn parse_confirmed_service_response_enum_get_named_variable_list_attributes_response(
     input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_response_choice_get_named_variable_list_attributes_response)", "struct GetNamedVariableListAttributesResponse");
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum_get_named_variable_list_attributes_response)", "struct GetNamedVariableListAttributesResponse");
     let (input, _mms_deleteable_tl) = ber_tl(input)?;
     let (input, mms_deleteable) = u8(input)?;
     let (input, _list_of_variable_specification_tl) = ber_tl(input)?;
     let (input, list_of_variable_specification) = parse_list_of_variable_specification(input)?;
     Ok((
         input,
-        ConfirmedServiceResponseChoice::GetNamedVariableListAttributesResponse {
+        ConfirmedServiceResponseEnum::GetNamedVariableListAttributesResponse {
             mms_deleteable,
             list_of_variable_specification,
         },
     ))
 }
 
-pub fn parse_confirmed_service_response_choice(
+pub fn parse_confirmed_service_response_enum(
     input: &[u8],
     _service_tl_tag: u8,
-) -> IResult<&[u8], ConfirmedServiceResponseChoice> {
-    debug!(target: "PARSER(parse_confirmed_service_response_choice)", "enum ConfirmedServiceResponseChoice");
-    let (input, confirmed_service_response_choice) = match _service_tl_tag.bitand(0x1f) {
-        0x0 => parse_confirmed_service_response_choice_get_name_list_response(input),
-        0x02 => parse_confirmed_service_response_choice_identify_response(input),
-        0x04 => parse_confirmed_service_response_choice_read_response(input),
-        0x05 => parse_confirmed_service_response_choice_write_response(input),
+) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
+    debug!(target: "PARSER(parse_confirmed_service_response_enum)", "enum ConfirmedServiceResponseEnum");
+    let (input, confirmed_service_response_enum) = match _service_tl_tag.bitand(0x1f) {
+        0x0 => parse_confirmed_service_response_enum_get_name_list_response(input),
+        0x02 => parse_confirmed_service_response_enum_identify_response(input),
+        0x04 => parse_confirmed_service_response_enum_read_response(input),
+        0x05 => parse_confirmed_service_response_enum_write_response(input),
         0x0c => {
-            parse_confirmed_service_response_choice_get_named_variable_list_attributes_response(
-                input,
-            )
+            parse_confirmed_service_response_enum_get_named_variable_list_attributes_response(input)
         }
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
         ))),
     }?;
-    Ok((input, confirmed_service_response_choice))
-}
-
-fn parse_confirmed_service_response_enum_none(
-    input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
-    debug!(target: "PARSER(parse_confirmed_service_response_enum_none)", "struct None");
-    Ok((input, ConfirmedServiceResponseEnum::None {}))
-}
-
-fn parse_confirmed_service_response_enum_with_data(
-    input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
-    debug!(target: "PARSER(parse_confirmed_service_response_enum_with_data)", "struct WithData");
-    let (input, _service_tl) = ber_tl(input)?;
-    let (input, service) = parse_confirmed_service_response_choice(input, _service_tl.tag)?;
-    Ok((input, ConfirmedServiceResponseEnum::WithData { service }))
-}
-
-pub fn parse_confirmed_service_response_enum(
-    input: &[u8],
-) -> IResult<&[u8], ConfirmedServiceResponseEnum> {
-    debug!(target: "PARSER(parse_confirmed_service_response_enum)", "enum ConfirmedServiceResponseEnum");
-    let (input, confirmed_service_response_enum) = match input.len() {
-        0x0 => parse_confirmed_service_response_enum_none(input),
-        _ => parse_confirmed_service_response_enum_with_data(input),
-    }?;
     Ok((input, confirmed_service_response_enum))
 }
 
-fn parse_un_confirmed_choice_information_report(input: &[u8]) -> IResult<&[u8], UnConfirmedChoice> {
-    debug!(target: "PARSER(parse_un_confirmed_choice_information_report)", "struct InformationReport");
-    let (input, _variable_access_specification_choice_tl) = ber_tl(input)?;
-    let (input, variable_access_specification_choice) = parse_variable_access_specification_choice(
-        input,
-        _variable_access_specification_choice_tl.tag,
-    )?;
+fn parse_confirmed_service_response_none(input: &[u8]) -> IResult<&[u8], ConfirmedServiceResponse> {
+    debug!(target: "PARSER(parse_confirmed_service_response_none)", "struct None");
+    Ok((input, ConfirmedServiceResponse::None {}))
+}
+
+fn parse_confirmed_service_response_with_data(
+    input: &[u8],
+) -> IResult<&[u8], ConfirmedServiceResponse> {
+    debug!(target: "PARSER(parse_confirmed_service_response_with_data)", "struct WithData");
+    let (input, _service_tl) = ber_tl(input)?;
+    let (input, service) = parse_confirmed_service_response_enum(input, _service_tl.tag)?;
+    Ok((input, ConfirmedServiceResponse::WithData { service }))
+}
+
+pub fn parse_confirmed_service_response(input: &[u8]) -> IResult<&[u8], ConfirmedServiceResponse> {
+    debug!(target: "PARSER(parse_confirmed_service_response)", "enum ConfirmedServiceResponse");
+    let (input, confirmed_service_response) = match input.len() {
+        0x0 => parse_confirmed_service_response_none(input),
+        _ => parse_confirmed_service_response_with_data(input),
+    }?;
+    Ok((input, confirmed_service_response))
+}
+
+fn parse_un_confirmed_enum_information_report(input: &[u8]) -> IResult<&[u8], UnConfirmedEnum> {
+    debug!(target: "PARSER(parse_un_confirmed_enum_information_report)", "struct InformationReport");
+    let (input, _variable_access_specification_tl) = ber_tl(input)?;
+    let (input, variable_access_specification_enum) =
+        parse_variable_access_specification_enum(input, _variable_access_specification_tl.tag)?;
     let (input, _list_of_access_result_tl) = ber_tl(input)?;
-    let (input, list_of_access_result) = parse_list_of_access_result(input)?;
+    /* LimitedLenVecLoopField Start */
+    let mut list_of_access_result = Vec::new();
+    let mut _list_of_access_result: AccessResultStruct;
+    let mut input = input;
+    let len_flag = input.len() - _list_of_access_result_tl.length as usize;
+    while input.len() > len_flag {
+        (input, _list_of_access_result) = parse_access_result_struct(input)?;
+        list_of_access_result.push(_list_of_access_result);
+    }
+    let input = input;
+    /* LimitedLenVecLoopField End. */
     Ok((
         input,
-        UnConfirmedChoice::InformationReport {
-            variable_access_specification_choice,
+        UnConfirmedEnum::InformationReport {
+            variable_access_specification_enum,
             list_of_access_result,
         },
     ))
 }
 
-pub fn parse_un_confirmed_choice(
+pub fn parse_un_confirmed_enum(
     input: &[u8],
     _service_tl_tag: u8,
-) -> IResult<&[u8], UnConfirmedChoice> {
-    debug!(target: "PARSER(parse_un_confirmed_choice)", "enum UnConfirmedChoice");
-    let (input, un_confirmed_choice) = match _service_tl_tag.bitand(0x1f) {
-        0x0 => parse_un_confirmed_choice_information_report(input),
+) -> IResult<&[u8], UnConfirmedEnum> {
+    debug!(target: "PARSER(parse_un_confirmed_enum)", "enum UnConfirmedEnum");
+    let (input, un_confirmed_enum) = match _service_tl_tag.bitand(0x1f) {
+        0x0 => parse_un_confirmed_enum_information_report(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
         ))),
     }?;
-    Ok((input, un_confirmed_choice))
+    Ok((input, un_confirmed_enum))
 }
 
-fn parse_mms_pdu_choice_confirmed_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice_confirmed_request)", "struct ConfirmedRequest");
+fn parse_mms_pdu_enum_confirmed_request_pdu(input: &[u8]) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum_confirmed_request_pdu)", "struct ConfirmedRequestPDU");
     let (input, _invoke_id_tl) = ber_tl(input)?;
     let invoke_id: u16;
     let _invoke_id_u8: u8;
@@ -2018,43 +1983,46 @@ fn parse_mms_pdu_choice_confirmed_request(input: &[u8]) -> IResult<&[u8], MmsPdu
         )));
     }
     let (input, _service_tl) = ber_tl(input)?;
-    let (input, service) = parse_confirmed_service_request_choice(input, _service_tl.tag)?;
-    Ok((input, MmsPduChoice::ConfirmedRequest { invoke_id, service }))
-}
-
-fn parse_mms_pdu_choice_confirmed_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice_confirmed_response)", "struct ConfirmedResponse");
-    let (input, _invoke_id_tl) = ber_tl(input)?;
-    let invoke_id: u16;
-    let _invoke_id_u8: u8;
-    let mut input = input;
-    if _invoke_id_tl.length == 1 {
-        (input, _invoke_id_u8) = u8(input)?;
-        invoke_id = _invoke_id_u8 as u16;
-    } else if _invoke_id_tl.length == 2 {
-        (input, invoke_id) = be_u16(input)?;
-    } else {
-        return Err(nom::Err::Error(nom::error::Error::new(
-            input,
-            nom::error::ErrorKind::Verify,
-        )));
-    }
-    let (input, service) = parse_confirmed_service_response_enum(input)?;
+    let (input, service) = parse_confirmed_service_request_enum(input, _service_tl.tag)?;
     Ok((
         input,
-        MmsPduChoice::ConfirmedResponse { invoke_id, service },
+        MmsPduEnum::ConfirmedRequestPDU { invoke_id, service },
     ))
 }
 
-fn parse_mms_pdu_choice_un_confirmed(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice_un_confirmed)", "struct UnConfirmed");
-    let (input, _service_tl) = ber_tl(input)?;
-    let (input, service) = parse_un_confirmed_choice(input, _service_tl.tag)?;
-    Ok((input, MmsPduChoice::UnConfirmed { service }))
+fn parse_mms_pdu_enum_confirmed_response_pdu(input: &[u8]) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum_confirmed_response_pdu)", "struct ConfirmedResponsePDU");
+    let (input, _invoke_id_tl) = ber_tl(input)?;
+    let invoke_id: u16;
+    let _invoke_id_u8: u8;
+    let mut input = input;
+    if _invoke_id_tl.length == 1 {
+        (input, _invoke_id_u8) = u8(input)?;
+        invoke_id = _invoke_id_u8 as u16;
+    } else if _invoke_id_tl.length == 2 {
+        (input, invoke_id) = be_u16(input)?;
+    } else {
+        return Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        )));
+    }
+    let (input, service) = parse_confirmed_service_response(input)?;
+    Ok((
+        input,
+        MmsPduEnum::ConfirmedResponsePDU { invoke_id, service },
+    ))
 }
 
-fn parse_mms_pdu_choice_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice_initiate_request)", "struct InitiateRequest");
+fn parse_mms_pdu_enum_un_confirmed_pdu(input: &[u8]) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum_un_confirmed_pdu)", "struct UnConfirmedPDU");
+    let (input, _service_tl) = ber_tl(input)?;
+    let (input, service) = parse_un_confirmed_enum(input, _service_tl.tag)?;
+    Ok((input, MmsPduEnum::UnConfirmedPDU { service }))
+}
+
+fn parse_mms_pdu_enum_initiate_request_pdu(input: &[u8]) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum_initiate_request_pdu)", "struct InitiateRequestPDU");
     let (input, local_detail_calling) = ber_tl_v(input)?;
     let (input, proposed_max_serv_outstanding_calling) = ber_tl_v(input)?;
     let (input, proposed_max_serv_outstanding_called) = ber_tl_v(input)?;
@@ -2063,7 +2031,7 @@ fn parse_mms_pdu_choice_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduC
     let (input, init_request_detail) = parse_init_detail_request(input)?;
     Ok((
         input,
-        MmsPduChoice::InitiateRequest {
+        MmsPduEnum::InitiateRequestPDU {
             local_detail_calling,
             proposed_max_serv_outstanding_calling,
             proposed_max_serv_outstanding_called,
@@ -2073,8 +2041,8 @@ fn parse_mms_pdu_choice_initiate_request(input: &[u8]) -> IResult<&[u8], MmsPduC
     ))
 }
 
-fn parse_mms_pdu_choice_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice_initiate_response)", "struct InitiateResponse");
+fn parse_mms_pdu_enum_initiate_response_pdu(input: &[u8]) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum_initiate_response_pdu)", "struct InitiateResponsePDU");
     let (input, local_detail_called) = ber_tl_v(input)?;
     let (input, proposed_max_serv_outstanding_calling) = ber_tl_v(input)?;
     let (input, proposed_max_serv_outstanding_called) = ber_tl_v(input)?;
@@ -2083,7 +2051,7 @@ fn parse_mms_pdu_choice_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPdu
     let (input, init_response_detail) = parse_init_detail_response(input)?;
     Ok((
         input,
-        MmsPduChoice::InitiateResponse {
+        MmsPduEnum::InitiateResponsePDU {
             local_detail_called,
             proposed_max_serv_outstanding_calling,
             proposed_max_serv_outstanding_called,
@@ -2094,34 +2062,31 @@ fn parse_mms_pdu_choice_initiate_response(input: &[u8]) -> IResult<&[u8], MmsPdu
 }
 
 #[inline(always)]
-fn parse_mms_pdu_choice_conclude_request(input: &[u8]) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice_conclude_request)", "empty variant of MmsPduChoice");
-    Ok((input, MmsPduChoice::ConcludeRequest {}))
+fn parse_mms_pdu_enum_conclude_request(input: &[u8]) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum_conclude_request)", "empty variant of MmsPduEnum");
+    Ok((input, MmsPduEnum::ConcludeRequest {}))
 }
 
-pub fn parse_mms_pdu_choice(
-    input: &[u8],
-    _mms_pdu_choice_tl_tag: u8,
-) -> IResult<&[u8], MmsPduChoice> {
-    debug!(target: "PARSER(parse_mms_pdu_choice)", "enum MmsPduChoice");
-    let (input, mms_pdu_choice) = match _mms_pdu_choice_tl_tag.bitand(0x1f) {
-        0x0 => parse_mms_pdu_choice_confirmed_request(input),
-        0x01 => parse_mms_pdu_choice_confirmed_response(input),
-        0x03 => parse_mms_pdu_choice_un_confirmed(input),
-        0x08 => parse_mms_pdu_choice_initiate_request(input),
-        0x09 => parse_mms_pdu_choice_initiate_response(input),
-        0x0b => parse_mms_pdu_choice_conclude_request(input),
+pub fn parse_mms_pdu_enum(input: &[u8], _mms_pdu_tl_tag: u8) -> IResult<&[u8], MmsPduEnum> {
+    debug!(target: "PARSER(parse_mms_pdu_enum)", "enum MmsPduEnum");
+    let (input, mms_pdu_enum) = match _mms_pdu_tl_tag.bitand(0x1f) {
+        0x0 => parse_mms_pdu_enum_confirmed_request_pdu(input),
+        0x01 => parse_mms_pdu_enum_confirmed_response_pdu(input),
+        0x03 => parse_mms_pdu_enum_un_confirmed_pdu(input),
+        0x08 => parse_mms_pdu_enum_initiate_request_pdu(input),
+        0x09 => parse_mms_pdu_enum_initiate_response_pdu(input),
+        0x0b => parse_mms_pdu_enum_conclude_request(input),
         _ => Err(nom::Err::Error(nom::error::Error::new(
             input,
             nom::error::ErrorKind::Verify,
         ))),
     }?;
-    Ok((input, mms_pdu_choice))
+    Ok((input, mms_pdu_enum))
 }
 
 pub fn parse_mms_pdu(input: &[u8]) -> IResult<&[u8], MmsPdu> {
     debug!(target: "PARSER(parse_mms_pdu)", "struct MmsPdu");
-    let (input, _mms_pdu_choice_tl) = ber_tl(input)?;
-    let (input, mms_pdu_choice) = parse_mms_pdu_choice(input, _mms_pdu_choice_tl.tag)?;
-    Ok((input, MmsPdu { mms_pdu_choice }))
+    let (input, _mms_pdu_tl) = ber_tl(input)?;
+    let (input, mms_pdu_enum) = parse_mms_pdu_enum(input, _mms_pdu_tl.tag)?;
+    Ok((input, MmsPdu { mms_pdu_enum }))
 }
