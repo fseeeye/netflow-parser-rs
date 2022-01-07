@@ -3,6 +3,8 @@ pub use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, u8};
 use serde::{Deserialize, Serialize};
+use tracing::debug;
+
 use std::convert::TryFrom;
 use std::ops::BitAnd;
 
@@ -125,8 +127,7 @@ pub struct BerTL {
     pub length: u16,
 }
 
-#[inline(always)]
-#[allow(dead_code)]
+#[inline]
 pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
     let (input, tag) = u8(input_raw)?;
     if tag.bitand(0x1f) > 0x1e {
@@ -138,6 +139,7 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
     let (input, length) = u8(input)?;
     if length < 128 {
         //短形式
+        debug!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {}", tag, length);
         Ok((
             input,
             BerTL {
@@ -155,6 +157,7 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
             (input, tmp) = be_u16(input)?;
             loop {
                 if tmp == 0 {
+                    debug!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {}", tag, length);
                     return Ok((input, BerTL { tag, length }));
                 } else {
                     length += tmp;
@@ -168,6 +171,7 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
             for i in slice {
                 length += *i
             }
+            debug!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {}", tag, length);
             Ok((
                 input,
                 BerTL {
@@ -177,6 +181,13 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
             ))
         }
     }
+}
+
+#[inline(always)]
+pub fn ber_tl_v(input_raw: &[u8]) -> nom::IResult<&[u8], &[u8]> {
+    debug!(target: "PARSER(ber_tl_v)", "");
+    let (input, _ber_tl) = ber_tl(input_raw)?;
+    return Ok(take(_ber_tl.length as usize)(input)?);
 }
 
 #[cfg(test)]
