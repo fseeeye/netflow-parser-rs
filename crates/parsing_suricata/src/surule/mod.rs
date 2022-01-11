@@ -37,9 +37,13 @@ pub struct TcpSurule {
     pub dst_addr: elements::IpAddressList,
     pub dst_port: elements::PortList,
     // optional
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub meta_options: Vec<SuruleMetaOption>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub payload_options: Vec<SurulePayloadOption>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub flow_options: Vec<SuruleFlowOption>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub tcp_options: Vec<SuruleTcpOption>,
 }
 
@@ -54,9 +58,13 @@ pub struct UdpSurule {
     pub dst_addr: elements::IpAddressList,
     pub dst_port: elements::PortList,
     // optional
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub meta_options: Vec<SuruleMetaOption>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub payload_options: Vec<SurulePayloadOption>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub flow_options: Vec<SuruleFlowOption>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub udp_options: Vec<SuruleUdpOption>,
 }
 

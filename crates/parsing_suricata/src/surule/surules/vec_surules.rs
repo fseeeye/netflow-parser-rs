@@ -102,9 +102,10 @@ mod tests {
                         SuruleMetaOption::Classtype("attempted-dos".to_string()),
                         SuruleMetaOption::Sid(2003236),
                         SuruleMetaOption::Rev(4),
-                        SuruleMetaOption::Metadata(
-                            "created_at 2010_07_30, updated_at 2010_07_30".to_string()
-                        )
+                        SuruleMetaOption::Metadata(vec![
+                            "created_at 2010_07_30".to_string(), 
+                            "updated_at 2010_07_30".to_string()
+                        ])
                     ],
                     payload_options: vec![
                         SurulePayloadOption::Content(Content {

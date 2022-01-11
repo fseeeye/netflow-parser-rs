@@ -180,6 +180,7 @@ pub enum Direction {
     Bi,
 }
 
+
 /*
  *  Suricata Body (Option) Element types
  */

@@ -93,6 +93,16 @@ impl FromStr for Port {
     }
 }
 
+/// 由字符串解析 Metadata
+pub(crate) fn parse_metadata(input: &str) -> Result<Vec<String>, nom::Err<SuruleParseError>> {
+    let metadata = input
+    .split(",")
+    .map(|p| p.trim().to_string())
+    .collect();
+
+    Ok(metadata)
+}
+
 /// 由字符串解析 FlowbitCommand
 impl FromStr for FlowbitCommand {
     type Err = nom::Err<SuruleParseError>;
@@ -118,12 +128,13 @@ impl FromStr for Flow {
     type Err = nom::Err<SuruleParseError>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let values = s.split(",");
-        let mut flow_commands = vec![];
-        for value in values {
-            flow_commands.push(FlowMatcher::from_str(value.trim())?);
-        }
-        Ok(Flow(flow_commands))
+        // ref: https://stackoverflow.com/questions/26368288/how-do-i-stop-iteration-and-return-an-error-when-iteratormap-returns-a-result
+        let flow_commands: Result<Vec<_>, _> = s
+            .split(",")
+            .map(|p| FlowMatcher::from_str(p.trim()))
+            .collect();
+        
+        Ok(Flow(flow_commands?))
     }
 }
 
@@ -478,6 +489,22 @@ mod tests {
             Flow::from_str("foo, foo2"),
             Err(SuruleParseError::UnknownFlowOption("foo".to_string()).into())
         )
+    }
+
+    #[test]
+    fn test_metadata() {
+        assert_eq!(
+            parse_metadata("first str"),
+            Ok(vec!["first str".to_string()])
+        );
+
+        assert_eq!(
+            parse_metadata(" first str , second str "),
+            Ok(vec![
+                "first str".to_string(),
+                "second str".to_string()
+            ])
+        );
     }
 
     #[test]

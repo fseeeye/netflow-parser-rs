@@ -126,7 +126,7 @@ pub(crate) fn parse_option_from_stream(
             "isdataat" => {
                 SuruleOption::Payload(SuruleNaivePayloadOption::IsDataAt(value_str.to_string()))
             }
-            "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(value_str.to_string())),
+            "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(elements::parse_metadata(value_str)?)),
             "msg" => SuruleOption::Meta(SuruleMetaOption::Message(utils::strip_quotes(value_str))),
             "offset" => SuruleOption::Payload(SuruleNaivePayloadOption::Offset(
                 elements::parse_usize(value_str)?,

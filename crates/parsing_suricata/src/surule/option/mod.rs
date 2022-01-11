@@ -43,7 +43,7 @@ pub enum SuruleMetaOption {
     // Value, Meta Keyword
     Message(String),
     // Value, Meta Keyword
-    Metadata(String),
+    Metadata(Vec<String>),
     // Value, Meta Keyword
     Reference(String),
     // Value, Meta Keyword
