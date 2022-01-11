@@ -11,7 +11,7 @@ use crate::surule::{
 
 use super::{
     SuruleFlowOption, SuruleHttpOption, SuruleMetaOption, SuruleNaivePayloadOption,
-    SuruleOtherOption,
+    SuruleOtherOption, SuruleFtpOption,
 };
 
 /// 从字符流中取出 含值可选元素 的值字符串
@@ -80,7 +80,7 @@ impl From<&str> for SuruleOption {
             "endswith" => Self::Payload(SuruleNaivePayloadOption::EndsWith),
             "fast_pattern" => Self::Payload(SuruleNaivePayloadOption::FastPattern),
             "file_data" => Self::HTTP(SuruleHttpOption::FileData(elements::FileData)),
-            "ftpbounce" => Self::Other(SuruleOtherOption::FtpBounce),
+            "ftpbounce" => Self::FTP(SuruleFtpOption::FtpBounce),
             "noalert" => Self::Other(SuruleOtherOption::NoAlert),
             "nocase" => Self::Payload(SuruleNaivePayloadOption::NoCase),
             "rawbytes" => Self::Payload(SuruleNaivePayloadOption::RawBytes),
@@ -110,7 +110,7 @@ pub(crate) fn parse_option_from_stream(
             "byte_jump" => {
                 SuruleOption::Payload(SuruleNaivePayloadOption::ByteJump(value_str.parse()?))
             }
-            "classtype" => SuruleOption::Meta(SuruleMetaOption::Classtype(value_str.to_owned())),
+            "classtype" => SuruleOption::Meta(SuruleMetaOption::Classtype(value_str.to_string())),
             "content" => SuruleOption::Payload(SuruleNaivePayloadOption::Content(
                 utils::strip_quotes(value_str).parse()?,
             )),
@@ -120,19 +120,19 @@ pub(crate) fn parse_option_from_stream(
             "distance" => SuruleOption::Payload(SuruleNaivePayloadOption::Distance(
                 elements::parse_isize(value_str)?,
             )),
-            "dsize" => SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_owned())),
+            "dsize" => SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_string())),
             "flow" => SuruleOption::Flow(SuruleFlowOption::Flow(value_str.parse()?)),
             "flowbits" => SuruleOption::Flow(SuruleFlowOption::Flowbits(value_str.parse()?)),
             "isdataat" => {
-                SuruleOption::Payload(SuruleNaivePayloadOption::IsDataAt(value_str.to_owned()))
+                SuruleOption::Payload(SuruleNaivePayloadOption::IsDataAt(value_str.to_string()))
             }
-            "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(value_str.to_owned())),
+            "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(value_str.to_string())),
             "msg" => SuruleOption::Meta(SuruleMetaOption::Message(utils::strip_quotes(value_str))),
             "offset" => SuruleOption::Payload(SuruleNaivePayloadOption::Offset(
                 elements::parse_usize(value_str)?,
             )),
-            "pcre" => SuruleOption::Payload(SuruleNaivePayloadOption::Pcre(value_str.to_owned())),
-            "reference" => SuruleOption::Meta(SuruleMetaOption::Reference(value_str.to_owned())),
+            "pcre" => SuruleOption::Payload(SuruleNaivePayloadOption::Pcre(value_str.to_string())),
+            "reference" => SuruleOption::Meta(SuruleMetaOption::Reference(value_str.to_string())),
             "rev" => SuruleOption::Meta(SuruleMetaOption::Rev(elements::parse_u64(value_str)?)),
             "sid" => SuruleOption::Meta(SuruleMetaOption::Sid(elements::parse_u64(value_str)?)),
             "within" => SuruleOption::Payload(SuruleNaivePayloadOption::Within(

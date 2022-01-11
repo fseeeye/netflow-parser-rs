@@ -315,6 +315,7 @@ pub enum FlowMatcher {
 }
 
 impl FlowMatcher {
+    #[allow(dead_code)]
     pub fn as_str(&self) -> &str {
         match self {
             Self::ToClient => "to_client",
@@ -372,6 +373,20 @@ impl Display for FlowbitCommand {
         };
         write!(f, "{}", label)
     }
+}
+
+/// Xbits Type
+pub type XbitCommand = FlowbitCommand;
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, PartialEq)]
+#[repr(C)]
+pub struct XBits {
+    pub command: XbitCommand,
+    pub name: String,
+    pub track: String,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
+    pub expire: Option<u64>
 }
 
 /*

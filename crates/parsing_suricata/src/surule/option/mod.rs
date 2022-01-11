@@ -24,6 +24,7 @@ pub enum SuruleOption {
     HTTP(SuruleHttpOption),
     TCP(SuruleTcpOption),
     UDP(SuruleUdpOption),
+    FTP(SuruleFtpOption),
 
     /* Unknow Option Element */
     Generic(elements::GenericOption),
@@ -166,9 +167,22 @@ pub enum SuruleUdpOption {
 )]
 #[derive(Clone, Debug, PartialEq)]
 // #[repr(u16)]
-pub enum SuruleOtherOption {
+pub enum SuruleFtpOption {
     // Bool, FTP Keyword
     FtpBounce,
+    // TODO
+}
+
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(rename_all = "snake_case")
+)]
+#[derive(Clone, Debug, PartialEq)]
+// #[repr(u16)]
+pub enum SuruleOtherOption {
+    // Value, Xbits Keyword
+    Xbits(elements::XBits),
     // Bool,  Unknow
     NoAlert,
 }

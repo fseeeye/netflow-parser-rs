@@ -7,9 +7,8 @@ use std::net::Ipv4Addr;
 use std::ops::BitXorAssign;
 use std::str::FromStr;
 
-use super::types::{FlowbitCommand, IpAddress, Port};
+use super::types::*;
 use super::util_parsers::{handle_value, take_until_whitespace};
-use super::{ByteJump, Content, CountOrName, Endian, Flow, FlowMatcher, Flowbits};
 use crate::surule::SuruleParseError;
 
 #[inline(always)]
@@ -249,13 +248,13 @@ impl FromStr for ByteJump {
         let input = handle_value(input)?;
         // step1: 逗号分割字符串
         let (_, values) = nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
-            nom::bytes::complete::tag(","),
-            nom::sequence::preceded(
-                nom::character::complete::multispace0,
-                nom::bytes::complete::is_not(","),
-            ),
-        )(input)
-        .map_err(|_| make_err(format!("invalid input: {}", input)))?;
+                nom::bytes::complete::tag(","),
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0,
+                    nom::bytes::complete::is_not(","),
+                ),
+            )(input)
+            .map_err(|_| make_err(format!("invalid input: {}", input)))?;
         if values.len() < 2 {
             return Err(make_err("no enough arguments".into()));
         }
@@ -355,6 +354,78 @@ impl FromStr for CountOrName {
         } else {
             Ok(CountOrName::Var(input.to_string()))
         }
+    }
+}
+
+/// 由字符串解析 Xbits
+impl FromStr for XBits {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let mut parse_comma = nom::sequence::preceded(
+            nom::character::complete::multispace0, 
+            nom::bytes::complete::tag(",")    
+        );
+        // 内部工具函数：创建解析错误
+        let make_err = |reason| SuruleParseError::InvalidByteJump(reason).into();
+
+        // parse command
+        let input = handle_value(input)?;
+        let (input, command_str) = nom::character::complete::alphanumeric1(input)?;
+        let command = XbitCommand::from_str(command_str)?;
+
+        let (input, _) = parse_comma(input)?;
+
+        // parse name
+        let input = handle_value(input)?;
+        let (input, name) = nom::bytes::complete::is_not(",")(input)?;
+
+        let (input, _) = parse_comma(input)?;
+
+        // parse track
+        let input = handle_value(input)?;
+        let (input, (_track_tag, _comma, track)) = nom::sequence::tuple((
+            nom::bytes::complete::tag("track"), 
+            nom::character::complete::multispace0,
+            nom::bytes::complete::is_not(","),
+        ))(input)?;
+
+        // parse expire
+        let parse_expire_empty = nom::combinator::eof;
+        let parse_expire_exist = |input| {
+            let (input, (_comma, _expire_tag, expire_str)) = nom::sequence::tuple((
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0,
+                    nom::bytes::complete::tag(",")
+                ), 
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0,
+                    nom::bytes::complete::tag("expire")
+                ),
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0,
+                    nom::character::complete::alphanumeric1
+                )
+            ))(input)?;
+            Ok((input, expire_str))
+        };
+
+        let (_input, expire_str) = nom::branch::alt((parse_expire_empty, parse_expire_exist))(input)?;
+        let expire = if expire_str.is_empty() {
+            None
+        } else {
+            let expire: u64 = expire_str
+                .parse()
+                .map_err(|_| make_err(format!("can't convert expire str to u64: {}", expire_str)))?;
+            Some(expire)
+        };
+
+        Ok(XBits {
+            command,
+            name: name.trim().to_string(),
+            track: track.trim().to_string(),
+            expire
+        })
     }
 }
 
@@ -467,5 +538,35 @@ mod tests {
             CountOrName::from_str(""),
             Err(SuruleParseError::EmptyStr.into())
         );
+    }
+
+    #[test]
+    fn test_xbits() {
+        // Ok: no expire
+        assert_eq!(
+            "isset, badssh, track ip_src".parse(),
+            Ok(XBits {
+                command: XbitCommand::IsSet,
+                name: "badssh".to_string(),
+                track: "ip_src".to_string(),
+                expire: None
+            })
+        );
+
+        // Ok: with expire
+        assert_eq!(
+            "set,ET.dropsite, track ip_src  ,expire 5000  ".parse(),
+            Ok(XBits {
+                command: XbitCommand::Set,
+                name: "ET.dropsite".to_string(),
+                track: "ip_src".to_string(),
+                expire: Some(5000)
+            })
+        );
+
+        // Err
+        assert!(XBits::from_str("isset, badssh, track ip_src,").is_err());
+        assert!(XBits::from_str("isset, badssh, track ip_src, xxx").is_err());
+        assert!(XBits::from_str("isset, badssh, track ,expire 5000").is_err());
     }
 }
