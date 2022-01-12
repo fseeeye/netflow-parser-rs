@@ -240,6 +240,19 @@ impl Default for Endian {
     }
 }
 
+/// Pcre Type (Suricata Body Element)
+/// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#pcre-perl-compatible-regular-expressions
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, PartialEq, Debug)]
+#[repr(C)]
+pub struct Pcre {
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub negate: bool,
+    pub pattern: String,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "String::is_empty"))]
+    pub modifiers: String,
+}
+
 /// Content type (Suricata Body Element)
 /// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html?highlight=content#content
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

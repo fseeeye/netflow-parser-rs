@@ -50,6 +50,8 @@ pub enum SuruleParseError {
     InvalidDirection(String),
     #[error("byte jump parsing error: '{0}'")]
     InvalidByteJump(String),
+    #[error("pcre parsing error: '{0}'")]
+    InvalidPcre(String),
     #[error("x-bits parsing error: '{0}'")]
     InvalidXBits(String),
     #[error("integer parsing error: '{0}'")]

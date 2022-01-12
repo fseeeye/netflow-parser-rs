@@ -131,7 +131,7 @@ pub(crate) fn parse_option_from_stream(
             "offset" => SuruleOption::Payload(SuruleNaivePayloadOption::Offset(
                 elements::parse_usize(value_str)?,
             )),
-            "pcre" => SuruleOption::Payload(SuruleNaivePayloadOption::Pcre(value_str.to_string())),
+            "pcre" => SuruleOption::Payload(SuruleNaivePayloadOption::Pcre(value_str.parse()?)),
             "reference" => SuruleOption::Meta(SuruleMetaOption::Reference(value_str.to_string())),
             "rev" => SuruleOption::Meta(SuruleMetaOption::Rev(elements::parse_u64(value_str)?)),
             "sid" => SuruleOption::Meta(SuruleMetaOption::Sid(elements::parse_u64(value_str)?)),

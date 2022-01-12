@@ -353,6 +353,50 @@ impl FromStr for ByteJump {
     }
 }
 
+/// 由字符串解析 Pcre
+impl FromStr for Pcre {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let make_err = |reason| SuruleParseError::InvalidPcre(reason).into();
+        let input = handle_value(input)?;
+
+        // parsing nagate pattern
+        let (input, negate) = nom::combinator::opt(nom::bytes::complete::tag("!"))(input)?;
+        let (input, _open_quote) = nom::bytes::complete::tag("\"")(input)?;
+        let (input, _open_pcre_flag) = nom::bytes::complete::tag("/")(input)?;
+        let pattern_end = input
+            .rfind('/')
+            .ok_or_else(|| make_err("no terminating pcre flag `/`".to_string()))?;
+        let pattern = input[0..pattern_end].trim();
+        let input = input[pattern_end..].trim_start();
+        let (input, _close_pcre_flag) = nom::bytes::complete::tag("/")(input)?;
+
+        // parsing modifiers when it exist
+        if let Ok((_, _)) = nom::bytes::complete::tag::<_,_,SuruleParseError>("\"")(input.trim_start()) {
+            return Ok(
+                Pcre {
+                    negate: negate.is_some(),
+                    pattern: pattern.to_string(),
+                    modifiers: "".to_string()
+                }
+            );
+        };
+        let (input, modifiers) = nom::character::complete::alphanumeric1(input)?;
+
+        let (_input, _close_quote) = nom::bytes::complete::tag::<_,_,SuruleParseError>("\"")(input)
+            .map_err(|_| make_err("no terminating quote `\"`".to_string()).into())?;
+
+        Ok(
+            Pcre {
+                negate: negate.is_some(),
+                pattern: pattern.to_string(),
+                modifiers: modifiers.to_string()
+            }
+        )
+    }
+}
+
 /// 由字符串解析 CountOrName
 impl FromStr for CountOrName {
     type Err = nom::Err<SuruleParseError>;
@@ -551,6 +595,36 @@ mod tests {
         assert_eq!(
             ByteJump::from_str("4,12,multiplier"),
             Err(SuruleParseError::InvalidByteJump("invalid multiplier: \"\"".into()).into())
+        );
+    }
+
+    #[test]
+    fn test_pcre() {
+        assert_eq!(
+            r#""/[0-9a-zA-Z]/""#.parse(),
+            Ok(Pcre {
+                negate: false,
+                pattern: r#"[0-9a-zA-Z]"#.to_string(),
+                modifiers: "".to_string()
+            })
+        );
+
+        assert_eq!(
+            r#"!"/\/winhost(?:32|64)\.(exe|pack)$/i""#.parse(),
+            Ok(Pcre {
+                negate: true,
+                pattern: r#"\/winhost(?:32|64)\.(exe|pack)$"#.to_string(),
+                modifiers: "i".to_string()
+            })
+        );
+
+        assert_eq!(
+            r#""/<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20/si""#.parse(),
+            Ok(Pcre {
+                negate: false,
+                pattern: r#"<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20"#.to_string(),
+                modifiers: "si".to_string()
+            })
         );
     }
 

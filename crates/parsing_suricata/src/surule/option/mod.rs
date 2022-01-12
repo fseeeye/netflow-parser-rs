@@ -79,7 +79,7 @@ pub enum SuruleNaivePayloadOption {
     // Value, Payload Keyword
     Offset(usize),
     // Value, Payload Keyword
-    Pcre(String),
+    Pcre(elements::Pcre),
     // Bool,  Payload Keyword
     RawBytes,
     // Bool,  Payload Keyword
@@ -107,7 +107,7 @@ pub enum SurulePayloadOption {
     // Value, Payload Keyword
     IsDataAt(String),
     // Value, Payload Keyword
-    Pcre(String),
+    Pcre(elements::Pcre),
     // Bool,  Payload Keyword
     RawBytes,
 }

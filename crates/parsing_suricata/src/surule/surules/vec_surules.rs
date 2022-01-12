@@ -158,6 +158,13 @@ mod tests {
                                 distance: Some(12)
                             }
                         }),
+                        SurulePayloadOption::Pcre(
+                            Pcre {
+                                negate: false,
+                                pattern: r#"<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20"#.to_string(),
+                                modifiers: "si".to_string()
+                            }
+                        )
                     ],
                     flow_options: vec![SuruleFlowOption::Flow(Flow(vec![
                         FlowMatcher::Established,
