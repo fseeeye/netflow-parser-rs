@@ -182,7 +182,7 @@ pub enum SuruleFtpOption {
 // #[repr(u16)]
 pub enum SuruleOtherOption {
     // Value, Xbits Keyword
-    Xbits(elements::XBits),
+    XBits(elements::XBits),
     // Bool,  Unknow
     NoAlert,
 }

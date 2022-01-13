@@ -137,7 +137,7 @@ mod tests {
                     SuruleMetaOption::Sid(2003236),
                     SuruleMetaOption::Rev(4),
                     SuruleMetaOption::Metadata(vec![
-                        "created_at 2010_07_30".to_string(), 
+                        "created_at 2010_07_30".to_string(),
                         "updated_at 2010_07_30".to_string()
                     ])
                 ],

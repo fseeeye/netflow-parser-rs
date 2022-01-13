@@ -10,8 +10,8 @@ use crate::surule::{
 };
 
 use super::{
-    SuruleFlowOption, SuruleHttpOption, SuruleMetaOption, SuruleNaivePayloadOption,
-    SuruleOtherOption, SuruleFtpOption,
+    SuruleFlowOption, SuruleFtpOption, SuruleHttpOption, SuruleMetaOption,
+    SuruleNaivePayloadOption, SuruleOtherOption,
 };
 
 /// 从字符流中取出 含值可选元素 的值字符串
@@ -120,13 +120,17 @@ pub(crate) fn parse_option_from_stream(
             "distance" => SuruleOption::Payload(SuruleNaivePayloadOption::Distance(
                 elements::parse_isize(value_str)?,
             )),
-            "dsize" => SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_string())),
+            "dsize" => {
+                SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_string()))
+            }
             "flow" => SuruleOption::Flow(SuruleFlowOption::Flow(value_str.parse()?)),
             "flowbits" => SuruleOption::Flow(SuruleFlowOption::Flowbits(value_str.parse()?)),
             "isdataat" => {
                 SuruleOption::Payload(SuruleNaivePayloadOption::IsDataAt(value_str.to_string()))
             }
-            "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(elements::parse_metadata(value_str)?)),
+            "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(elements::parse_metadata(
+                value_str,
+            )?)),
             "msg" => SuruleOption::Meta(SuruleMetaOption::Message(utils::strip_quotes(value_str))),
             "offset" => SuruleOption::Payload(SuruleNaivePayloadOption::Offset(
                 elements::parse_usize(value_str)?,

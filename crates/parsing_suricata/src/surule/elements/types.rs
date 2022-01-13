@@ -180,7 +180,6 @@ pub enum Direction {
     Bi,
 }
 
-
 /*
  *  Suricata Body (Option) Element types
  */
@@ -400,7 +399,7 @@ pub struct XBits {
     pub name: String,
     pub track: String,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
-    pub expire: Option<u64>
+    pub expire: Option<u64>,
 }
 
 /*
