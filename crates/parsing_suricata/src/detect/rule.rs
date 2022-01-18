@@ -67,14 +67,22 @@ impl SuruleDetector for TcpSurule {
 
     // TODO
     fn detect_option<'a>(&self, payload: Self::Proto<'a>) -> bool {
-        let mut last_pos = 0;
+        let mut detect_ptr = 0;
         for payload_option in &self.payload_options {
             match payload_option {
                 SurulePayloadOption::Content(c) => {
                     debug!(target: "SURICATA(TcpSurule::detect_option)", ?payload);
                     debug!(target: "SURICATA(TcpSurule::detect_option)", content = ?c);
-                    if let Some(p) = c.check(payload, last_pos) {
-                        last_pos = p;
+                    if let Some(p) = c.check(payload, detect_ptr) {
+                        detect_ptr = p;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                }
+                SurulePayloadOption::ByteJump(bj) => {
+                    if let Some(p) = bj.jump(payload, detect_ptr) {
+                        detect_ptr = p;
                         continue;
                     } else {
                         return false;
@@ -156,17 +164,25 @@ impl SuruleDetector for UdpSurule {
 
     // TODO
     fn detect_option<'a>(&self, payload: Self::Proto<'a>) -> bool {
-        let mut last_pos = 0;
+        let mut detect_ptr = 0;
         for payload_option in &self.payload_options {
             match payload_option {
                 SurulePayloadOption::Content(c) => {
-                    if let Some(p) = c.check(payload, last_pos) {
-                        last_pos = p;
+                    if let Some(p) = c.check(payload, detect_ptr) {
+                        detect_ptr = p;
                         continue;
                     } else {
                         return false;
                     }
-                }
+                },
+                SurulePayloadOption::ByteJump(bj) => {
+                    if let Some(p) = bj.jump(payload, detect_ptr) {
+                        detect_ptr = p;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                },
                 _ => {}
             }
         }

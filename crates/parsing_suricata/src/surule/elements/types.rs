@@ -189,51 +189,74 @@ pub enum Direction {
 #[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
 pub struct ByteJump {
-    pub count: usize,
-    pub offset: i64,
+    pub count: u8,
+    pub offset: isize,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub relative: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub multiplier: usize,
+    pub multiplier: Option<usize>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub endian: Endian,
+    pub endian: Option<ByteJumpEndian>,
 
-    // These can be bundled into an enum.
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub string: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub hex: bool,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub dec: bool,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub oct: bool,
+    pub num_type: Option<ByteJumpNumType>,
 
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub align: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub from_beginning: bool,
+    pub from: Option<ByteJumpFrom>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub from_end: bool,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub post_offset: i64,
+    pub post_offset: Option<isize>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub dce: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub bitmask: u64,
+    pub bitmask: Option<usize>,
 }
 
-// Endian 表示大小端序，用于 Byte Jump 内部
+// 表示 converted bytes 以字符串解析时的数字类型
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Debug)]
 #[repr(C)]
-pub enum Endian {
+pub enum ByteJumpNumType {
+    #[cfg_attr(feature = "serde", serde(rename = "hex"))]
+    HEX,
+    #[cfg_attr(feature = "serde", serde(rename = "dec"))]
+    DEC,
+    #[cfg_attr(feature = "serde", serde(rename = "oct"))]
+    OCT,
+}
+
+impl Default for ByteJumpNumType {
+    fn default() -> Self {
+        Self::DEC
+    }
+}
+
+// 表示 jump 起始位置
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, PartialEq, Debug)]
+#[repr(C)]
+pub enum ByteJumpFrom {
+    #[cfg_attr(feature = "serde", serde(rename = "hex"))]
+    BEGIN,
+    #[cfg_attr(feature = "serde", serde(rename = "dec"))]
+    END,
+}
+
+// 表示大小端序
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, PartialEq, Debug)]
+#[repr(C)]
+pub enum ByteJumpEndian {
     #[cfg_attr(feature = "serde", serde(rename = "big"))]
     Big,
     #[cfg_attr(feature = "serde", serde(rename = "little"))]
     Little,
 }
 
-impl Default for Endian {
+impl Default for ByteJumpEndian {
     fn default() -> Self {
         Self::Big
     }

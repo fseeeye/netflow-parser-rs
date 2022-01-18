@@ -1,4 +1,7 @@
-use crate::surule::elements::{Content, ContentPosKey};
+use crate::{
+    surule::elements::{Content, ContentPosKey}, 
+    detect::utils::*
+};
 
 impl Content {
     #[inline]
@@ -18,26 +21,17 @@ impl Content {
         match self.pos_key {
             ContentPosKey::NotSet => find_subsequence(payload_slice, pattern_slice),
             ContentPosKey::StartsWith => {
-                if pattern_slice.len() > payload_slice.len() {
-                    None
+                if payload_slice.get(..pattern_slice.len())? == pattern_slice {
+                    Some(pattern_slice.len())
                 } else {
-                    if &payload_slice[..pattern_slice.len()] == pattern_slice {
-                        Some(pattern_slice.len())
-                    } else {
-                        None
-                    }
+                    None
                 }
             }
             ContentPosKey::EndsWith => {
-                if pattern_slice.len() > payload_slice.len() {
-                    None
+                if payload_slice.get(payload_slice.len() - pattern_slice.len()..)? == pattern_slice {
+                    Some(payload_slice.len())
                 } else {
-                    if &payload_slice[payload_slice.len() - pattern_slice.len()..] == pattern_slice
-                    {
-                        Some(payload_slice.len())
-                    } else {
-                        None
-                    }
+                    None
                 }
             }
             ContentPosKey::Absolute {
@@ -63,7 +57,7 @@ impl Content {
                 } else {
                     max = payload_len;
                 }
-                let payload_slice_new = &payload_slice[min..max];
+                let payload_slice_new = payload_slice.get(min..max)?;
 
                 find_subsequence(payload_slice_new, pattern_slice).map(|p| p + min)
             }
@@ -73,16 +67,7 @@ impl Content {
             } => {
                 let offset: usize;
                 if let Some(distance) = distance_op {
-                    if distance < 0 {
-                        let distance_abs = distance.wrapping_abs() as usize;
-                        if distance_abs > last_pos {
-                            offset = 0;
-                        } else {
-                            offset = last_pos - distance_abs;
-                        }
-                    } else {
-                        offset = last_pos + (distance as usize);
-                    }
+                    offset = uisize_add(last_pos, distance)?;
                 } else {
                     offset = last_pos;
                 }
@@ -202,6 +187,7 @@ mod tests {
 
         let payload: &[u8] = b"aBcdEfGH";
         assert_eq!(content_nocase.check(payload, 0), Some(7));
+
         let payload: Vec<u8> = vec![
             72, 69, 76, 70, 79, 0, 0, 0, 0, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 160, 15, 0, 0,
             0, 0, 0, 0, 47, 0, 0, 0, 111, 112, 99, 46, 116, 99, 112, 58, 47, 47, 118, 109, 45, 120,

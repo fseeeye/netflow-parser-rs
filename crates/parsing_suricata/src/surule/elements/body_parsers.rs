@@ -268,16 +268,22 @@ impl FromStr for ByteJump {
         }
 
         // step2: 从 Vec 中依次解析 ByteJump 各字段
+        let count = values[0]
+            .trim()
+            .parse()
+            // wrap nom error
+            .map_err(|_| make_err(format!("invalid count: {}", values[0])))?;
+        if count > 8 {
+            // u64 can't store bytes len bigger than 8
+            return Err(make_err(format!("invalid count(too big): {}", values[0])));
+        }
+        let offset = values[1]
+            .trim()
+            .parse()
+            .map_err(|_| make_err(format!("invalid offset: {}", values[1])))?;
         let mut byte_jump = ByteJump {
-            count: values[0]
-                .trim()
-                .parse()
-                // wrap nom error
-                .map_err(|_| make_err(format!("invalid count: {}", values[0])))?,
-            offset: values[1]
-                .trim()
-                .parse()
-                .map_err(|_| make_err(format!("invalid offset: {}", values[1])))?,
+            count,
+            offset,
             ..Default::default()
         };
 
@@ -288,57 +294,118 @@ impl FromStr for ByteJump {
             match name {
                 "relative" => byte_jump.relative = true,
                 "little" => {
-                    byte_jump.endian = Endian::Little;
+                    if byte_jump.endian.is_some() {
+                        return Err(make_err("duplicated endian".to_string()));
+                    }
+
+                    byte_jump.endian = Some(ByteJumpEndian::Little);
                 }
                 "big" => {
-                    byte_jump.endian = Endian::Big;
+                    if byte_jump.endian.is_some() {
+                        return Err(make_err("duplicated endian".to_string()));
+                    }
+
+                    byte_jump.endian = Some(ByteJumpEndian::Big);
                 }
                 "align" => {
+                    if byte_jump.align == true {
+                        return Err(make_err("duplicated align".to_string()))
+                    }
+
                     byte_jump.align = true;
                 }
                 "from_beginning" => {
-                    byte_jump.from_beginning = true;
+                    if byte_jump.from.is_some() {
+                        return Err(make_err("duplicated from_beginning or from_end".to_string()));
+                    }
+
+                    byte_jump.from = Some(ByteJumpFrom::BEGIN);
                 }
                 "from_end" => {
-                    byte_jump.from_end = true;
+                    if byte_jump.from.is_some() {
+                        return Err(make_err("duplicated from_beginning or from_end".to_string()));
+                    }
+
+                    byte_jump.from = Some(ByteJumpFrom::END);
                 }
                 "dce" => {
+                    if byte_jump.dce == true {
+                        return Err(make_err("duplicated dce".to_string()))
+                    }
+
                     byte_jump.dce = true;
                 }
                 "string" => {
+                    if byte_jump.string == true {
+                        return Err(make_err("duplicated string".to_string()))
+                    }
+
                     byte_jump.string = true;
                 }
                 "hex" => {
-                    byte_jump.hex = true;
+                    if byte_jump.string == false {
+                        return Err(make_err("no `string` before `hex`".to_string()));
+                    }
+                    if byte_jump.num_type.is_some() {
+                        return Err(make_err("duplicated num type".to_string()))
+                    }
+
+                    byte_jump.num_type = Some(ByteJumpNumType::HEX);
                 }
                 "dec" => {
-                    byte_jump.dec = true;
+                    if byte_jump.string == false {
+                        return Err(make_err("no `string` before `dec`".to_string()));
+                    }
+                    if byte_jump.num_type.is_some() {
+                        return Err(make_err("duplicated num type".to_string()))
+                    }
+
+                    byte_jump.num_type = Some(ByteJumpNumType::DEC);
                 }
                 "oct" => {
-                    byte_jump.oct = true;
+                    if byte_jump.string == false {
+                        return Err(make_err("no `string` before `oct`".to_string()));
+                    }
+                    if byte_jump.num_type.is_some() {
+                        return Err(make_err("duplicated num type".to_string()))
+                    }
+
+                    byte_jump.num_type = Some(ByteJumpNumType::OCT);
                 }
                 "multiplier" => {
-                    byte_jump.multiplier = value
+                    if byte_jump.multiplier.is_some() {
+                        return Err(make_err("duplicated multiplier".to_string()))
+                    }
+
+                    byte_jump.multiplier = Some(value
                         .trim()
                         .parse::<usize>()
-                        .map_err(|_| make_err(format!("invalid multiplier: \"{}\"", value)))?;
+                        .map_err(|_| make_err(format!("invalid multiplier: \"{}\"", value)))?);
                 }
                 "post_offset" => {
-                    byte_jump.post_offset = value
+                    if byte_jump.post_offset.is_some() {
+                        return Err(make_err("duplicated post offset".to_string()))
+                    }
+
+                    byte_jump.post_offset = Some(value
                         .trim()
-                        .parse::<i64>()
-                        .map_err(|_| make_err(format!("invalid post_offset: \"{}\"", value)))?;
+                        .parse::<isize>()
+                        .map_err(|_| make_err(format!("invalid post_offset: \"{}\"", value)))?);
                 }
                 "bitmask" => {
+                    if byte_jump.bitmask.is_some() {
+                        return Err(make_err("duplicated bitmask".to_string()))
+                    }
+
                     let value = value.trim();
                     let trimmed = if value.starts_with("0x") || value.starts_with("0X") {
                         &value[2..]
                     } else {
                         value
                     };
-                    let value = u64::from_str_radix(trimmed, 16)
+                    let value = usize::from_str_radix(trimmed, 16)
                         .map_err(|_| make_err(format!("invalid bitmask: \"{}\"", value)))?;
-                    byte_jump.bitmask = value;
+                    byte_jump.bitmask = Some(value);
                 }
                 _ => {
                     return Err(make_err(format!("unknown parameter: \"{}\"", name)));
@@ -574,6 +641,23 @@ mod tests {
             Ok(ByteJump {
                 count: 4,
                 offset: 12,
+                ..Default::default()
+            })
+        );
+        assert_eq!(
+            "4, 12, relative, multiplier 2, big, string, dec, align, from_beginning, post_offset -8, bitmask 1".parse(),
+            Ok(ByteJump {
+                count: 4,
+                offset: 12,
+                relative: true,
+                multiplier: Some(2),
+                endian: Some(ByteJumpEndian::Big),
+                string: true,
+                num_type: Some(ByteJumpNumType::DEC),
+                align: true,
+                from: Some(ByteJumpFrom::BEGIN),
+                post_offset: Some(-8),
+                bitmask: Some(1),
                 ..Default::default()
             })
         );
