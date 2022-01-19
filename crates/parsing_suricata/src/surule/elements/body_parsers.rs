@@ -255,7 +255,7 @@ impl FromStr for ByteJump {
 
         let input = handle_value(input)?;
         // step1: 逗号分割字符串
-        let (_, values) = nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
+        let (_, values): (_, Vec<&str>) = nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
             nom::bytes::complete::tag(","),
             nom::sequence::preceded(
                 nom::character::complete::multispace0,
@@ -263,12 +263,10 @@ impl FromStr for ByteJump {
             ),
         )(input)
         .map_err(|_| make_err(format!("invalid input: {}", input)))?;
-        if values.len() < 2 {
-            return Err(make_err("no enough arguments".into()));
-        }
 
-        // step2: 从 Vec 中依次解析 ByteJump 各字段
-        let count = values[0]
+        // step2: 从 Vec 中依次解析 ByteJump 各必选字段
+        let count = values.get(0)
+            .ok_or(make_err("no required arg: `num of bytes`".to_string()))?
             .trim()
             .parse()
             // wrap nom error
@@ -277,8 +275,8 @@ impl FromStr for ByteJump {
             // u64 can't store bytes len bigger than 8
             return Err(make_err(format!("invalid count(too big): {}", values[0])));
         }
-        let offset = values[1]
-            .trim()
+        let offset = values.get(1)
+            .ok_or(make_err("no required arg: `offset`".to_string()))?
             .parse()
             .map_err(|_| make_err(format!("invalid offset: {}", values[1])))?;
         let mut byte_jump = ByteJump {
@@ -287,25 +285,36 @@ impl FromStr for ByteJump {
             ..Default::default()
         };
 
-        // 解析可选字段
-        for value in values[2..].iter() {
-            let (value, name) = take_until_whitespace(value)
+        // step3: 解析可选字段
+        let option_values = values.get(2..).unwrap_or(&[]);
+        let mut prev_is_string = false;
+        for value in option_values {
+            let (value, name) = take_until_whitespace(value.trim())
                 .map_err(|_| make_err(format!("invalid value: {}", value)))?;
             match name {
-                "relative" => byte_jump.relative = true,
+                "relative" => {
+                    if byte_jump.relative == true {
+                        return Err(make_err("duplicated relative".to_string()))
+                    }
+
+                    byte_jump.relative = true;
+                    prev_is_string = false;
+                },
                 "little" => {
                     if byte_jump.endian.is_some() {
                         return Err(make_err("duplicated endian".to_string()));
                     }
 
-                    byte_jump.endian = Some(ByteJumpEndian::Little);
+                    byte_jump.endian = Some(Endian::Little);
+                    prev_is_string = false;
                 }
                 "big" => {
                     if byte_jump.endian.is_some() {
                         return Err(make_err("duplicated endian".to_string()));
                     }
 
-                    byte_jump.endian = Some(ByteJumpEndian::Big);
+                    byte_jump.endian = Some(Endian::Big);
+                    prev_is_string = false;
                 }
                 "align" => {
                     if byte_jump.align == true {
@@ -313,6 +322,7 @@ impl FromStr for ByteJump {
                     }
 
                     byte_jump.align = true;
+                    prev_is_string = false;
                 }
                 "from_beginning" => {
                     if byte_jump.from.is_some() {
@@ -320,6 +330,7 @@ impl FromStr for ByteJump {
                     }
 
                     byte_jump.from = Some(ByteJumpFrom::BEGIN);
+                    prev_is_string = false;
                 }
                 "from_end" => {
                     if byte_jump.from.is_some() {
@@ -327,6 +338,7 @@ impl FromStr for ByteJump {
                     }
 
                     byte_jump.from = Some(ByteJumpFrom::END);
+                    prev_is_string = false;
                 }
                 "dce" => {
                     if byte_jump.dce == true {
@@ -334,6 +346,7 @@ impl FromStr for ByteJump {
                     }
 
                     byte_jump.dce = true;
+                    prev_is_string = false;
                 }
                 "string" => {
                     if byte_jump.string == true {
@@ -341,36 +354,37 @@ impl FromStr for ByteJump {
                     }
 
                     byte_jump.string = true;
+                    prev_is_string = true;
                 }
                 "hex" => {
-                    if byte_jump.string == false {
-                        return Err(make_err("no `string` before `hex`".to_string()));
+                    if !prev_is_string {
+                        return Err(make_err("`hex` is not after `string`".to_string()));
                     }
                     if byte_jump.num_type.is_some() {
                         return Err(make_err("duplicated num type".to_string()))
                     }
 
-                    byte_jump.num_type = Some(ByteJumpNumType::HEX);
+                    byte_jump.num_type = Some(NumType::HEX);
                 }
                 "dec" => {
-                    if byte_jump.string == false {
-                        return Err(make_err("no `string` before `dec`".to_string()));
+                    if !prev_is_string {
+                        return Err(make_err("`dec` is not after `string`".to_string()));
                     }
                     if byte_jump.num_type.is_some() {
                         return Err(make_err("duplicated num type".to_string()))
                     }
 
-                    byte_jump.num_type = Some(ByteJumpNumType::DEC);
+                    byte_jump.num_type = Some(NumType::DEC);
                 }
                 "oct" => {
-                    if byte_jump.string == false {
-                        return Err(make_err("no `string` before `oct`".to_string()));
+                    if !prev_is_string {
+                        return Err(make_err("`oct` is not after `string`".to_string()));
                     }
                     if byte_jump.num_type.is_some() {
                         return Err(make_err("duplicated num type".to_string()))
                     }
 
-                    byte_jump.num_type = Some(ByteJumpNumType::OCT);
+                    byte_jump.num_type = Some(NumType::OCT);
                 }
                 "multiplier" => {
                     if byte_jump.multiplier.is_some() {
@@ -381,6 +395,7 @@ impl FromStr for ByteJump {
                         .trim()
                         .parse::<usize>()
                         .map_err(|_| make_err(format!("invalid multiplier: \"{}\"", value)))?);
+                    prev_is_string = false;
                 }
                 "post_offset" => {
                     if byte_jump.post_offset.is_some() {
@@ -391,6 +406,7 @@ impl FromStr for ByteJump {
                         .trim()
                         .parse::<isize>()
                         .map_err(|_| make_err(format!("invalid post_offset: \"{}\"", value)))?);
+                    prev_is_string = false;
                 }
                 "bitmask" => {
                     if byte_jump.bitmask.is_some() {
@@ -406,6 +422,7 @@ impl FromStr for ByteJump {
                     let value = usize::from_str_radix(trimmed, 16)
                         .map_err(|_| make_err(format!("invalid bitmask: \"{}\"", value)))?;
                     byte_jump.bitmask = Some(value);
+                    prev_is_string = false;
                 }
                 _ => {
                     return Err(make_err(format!("unknown parameter: \"{}\"", name)));
@@ -414,6 +431,204 @@ impl FromStr for ByteJump {
         }
 
         Ok(byte_jump)
+    }
+}
+
+/// 由字符串解析 ByteTest
+impl FromStr for ByteTest {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        // 内部工具函数：创建解析错误
+        let make_err = |reason| SuruleParseError::InvalidByteTest(reason).into();
+
+        let input = handle_value(input)?;
+        
+        // step1: 逗号分割字符串
+        let (_, values): (_, Vec<&str>) = nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
+            nom::bytes::complete::tag(","),
+            nom::sequence::preceded(
+                nom::character::complete::multispace0,
+                nom::bytes::complete::is_not(","),
+            ),
+        )(input)
+        .map_err(|_| make_err(format!("invalid input: {}", input)))?;
+
+        // step2: 从 Vec 中依次解析 ByteTest 各必选字段
+        // num of bytes
+        let count = values.get(0)
+            .ok_or(make_err("no required arg: `num of bytes`".to_string()))?
+            .trim()
+            .parse()
+            .map_err(|_| make_err(format!("invalid count: {}", values[0])))?;
+        if count > 8 {
+            // u64 can't store bytes len bigger than 8
+            return Err(make_err(format!("invalid count(too big): {}", values[0])));
+        }
+        // operator & its negation
+        let operator;
+        let mut op_nagation = false;
+        let operator_str = values.get(1)
+            .ok_or(make_err("no required arg: `operator`".to_string()))?
+            .trim();
+        if operator_str.starts_with('!') {
+            operator = operator_str
+                .trim_start_matches('!')
+                .parse()
+                .map_err(|_| make_err(format!("invalid count: {}", values[0])))?;
+            op_nagation = true;
+        } else {
+            operator = operator_str
+                .parse()
+                .map_err(|_| make_err(format!("invalid count: {}", values[0])))?;
+        }
+        // test value
+        let test_value_str = values.get(2)
+            .ok_or(make_err("no required arg: `operator`".to_string()))?
+            .trim();
+        let test_value = if test_value_str.starts_with("0x") {
+            u64::from_str_radix(test_value_str.trim_start_matches("0x"), 16)
+                .map_err(|_| make_err(format!("invalid value(hex): {}", test_value_str)))?
+        } else {
+            u64::from_str(test_value_str)
+                .map_err(|_| make_err(format!("invalid value(dec): {}", test_value_str)))?
+        };
+        // offset
+        let offset = values.get(3)
+            .ok_or(make_err("no required arg: `offset`".to_string()))?
+            .trim()
+            .parse()
+            .map_err(|_| make_err(format!("invalid offset: {}", values[1])))?;
+
+        let mut byte_test = ByteTest {
+            count,
+            op_nagation,
+            operator,
+            test_value,
+            offset,
+            ..Default::default()
+        };
+
+        // step3: 解析可选字段
+        let option_values = values.get(4..).unwrap_or(&[]);
+        let mut prev_is_string = false;
+        for option_value in option_values {
+            let (value_str, name) = take_until_whitespace(option_value.trim())
+                .map_err(|_| make_err(format!("invalid value: {}", option_value)))?;
+            let value_str = value_str.trim();
+            match name {
+                "relative" => {
+                    if byte_test.relative == true {
+                        return Err(make_err("duplicated relative".to_string()))
+                    }
+
+                    byte_test.relative = true;
+                    prev_is_string = false;
+                },
+                "little" => {
+                    if byte_test.endian.is_some() {
+                        return Err(make_err("duplicated endian".to_string()));
+                    }
+
+                    byte_test.endian = Some(Endian::Little);
+                    prev_is_string = false;
+                },
+                "big" => {
+                    if byte_test.endian.is_some() {
+                        return Err(make_err("duplicated endian".to_string()));
+                    }
+
+                    byte_test.endian = Some(Endian::Big);
+                    prev_is_string = false;
+                },
+                "string" => {
+                    if byte_test.string == true {
+                        return Err(make_err("duplicated string".to_string()))
+                    }
+
+                    byte_test.string = true;
+                    prev_is_string = true;
+                },
+                "hex" => {
+                    if prev_is_string == false {
+                        return Err(make_err("`hex` is not after `string`".to_string()));
+                    }
+                    if byte_test.num_type.is_some() {
+                        return Err(make_err("duplicated num type".to_string()))
+                    }
+
+                    byte_test.num_type = Some(NumType::HEX);
+                },
+                "dec" => {
+                    if !prev_is_string {
+                        return Err(make_err("`dec` is not after `string`".to_string()));
+                    }
+                    if byte_test.num_type.is_some() {
+                        return Err(make_err("duplicated num type".to_string()))
+                    }
+
+                    byte_test.num_type = Some(NumType::DEC);
+                },
+                "oct" => {
+                    if !prev_is_string {
+                        return Err(make_err("`oct` is not after `string`".to_string()));
+                    }
+                    if byte_test.num_type.is_some() {
+                        return Err(make_err("duplicated num type".to_string()))
+                    }
+
+                    byte_test.num_type = Some(NumType::OCT);
+                },
+                "dce" => {
+                    if byte_test.dce == true {
+                        return Err(make_err("duplicated dce".to_string()))
+                    }
+
+                    byte_test.dce = true;
+                    prev_is_string = false;
+                },
+                "bitmask" => {
+                    if byte_test.bitmask.is_some() {
+                        return Err(make_err("duplicated bitmask".to_string()))
+                    }
+
+                    let bitmask_value = if value_str.starts_with("0x") {
+                        u64::from_str_radix(value_str.trim_start_matches("0x"), 16)
+                            .map_err(|_| make_err(format!("invalid hex value: {}", value_str)))?
+                    } else {
+                        u64::from_str(value_str)
+                            .map_err(|_| make_err(format!("invalid dec value: {}", value_str)))?
+                    };
+                    byte_test.bitmask = Some(bitmask_value);
+                    prev_is_string = false;
+                },
+                _ => return Err(make_err(format!("unknown parameter: \"{}\"", name))),
+            }
+        }
+
+        Ok(byte_test)
+    }
+}
+
+/// 由字符串解析 ByteTestOperator
+impl FromStr for ByteTestOp {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let input = handle_value(input)?;
+
+        let op = match input {
+            "<" => ByteTestOp::Less,
+            ">" => ByteTestOp::Greater,
+            "=" => ByteTestOp::Equal,
+            "<=" => ByteTestOp::LessEqual,
+            ">=" => ByteTestOp::GreaterEquanl,
+            "&" => ByteTestOp::And,
+            "^" => ByteTestOp::Or,
+            _ => return Err(SuruleParseError::InvalidByteTest(format!("invalid bytejump operator `{}`", input)).into()),
+        };
+
+        Ok(op)
     }
 }
 
@@ -651,9 +866,9 @@ mod tests {
                 offset: 12,
                 relative: true,
                 multiplier: Some(2),
-                endian: Some(ByteJumpEndian::Big),
+                endian: Some(Endian::Big),
                 string: true,
-                num_type: Some(ByteJumpNumType::DEC),
+                num_type: Some(NumType::DEC),
                 align: true,
                 from: Some(ByteJumpFrom::BEGIN),
                 post_offset: Some(-8),
@@ -668,11 +883,58 @@ mod tests {
         );
         assert_eq!(
             ByteJump::from_str("4"),
-            Err(SuruleParseError::InvalidByteJump("no enough arguments".into()).into())
+            Err(SuruleParseError::InvalidByteJump("no required arg: `offset`".into()).into())
         );
         assert_eq!(
             ByteJump::from_str("4,12,multiplier"),
             Err(SuruleParseError::InvalidByteJump("invalid multiplier: \"\"".into()).into())
+        );
+    }
+
+    #[test]
+    fn test_bytetest() {
+        // OK
+        assert_eq!(
+            " 1, !& ,128,6 ".parse(),
+            Ok(ByteTest {
+                count: 1,
+                op_nagation: true,
+                operator: ByteTestOp::And,
+                test_value: 128,
+                offset: 6,
+                ..Default::default()
+            })
+        );
+
+        assert_eq!(
+            " 1,!&,0x10,6, relative, little, string, hex, dce, bitmask 128 ".parse(),
+            Ok(ByteTest {
+                count: 1,
+                op_nagation: true,
+                operator: ByteTestOp::And,
+                test_value: 16,
+                offset: 6,
+                relative: true,
+                endian: Some(Endian::Little),
+                string: true,
+                num_type: Some(NumType::HEX),
+                dce: true,
+                bitmask: Some(128)
+            })
+        );
+
+        // Err
+        assert_eq!(
+            ByteTest::from_str(""),
+            Err(SuruleParseError::EmptyStr.into())
+        );
+        assert_eq!(
+            ByteTest::from_str("1,!&,128,6,hex,string"),
+            Err(SuruleParseError::InvalidByteTest("`hex` is not after `string`".to_string()).into())
+        );
+        assert_eq!(
+            ByteTest::from_str("1,!&,128,6,foo"),
+            Err(SuruleParseError::InvalidByteTest("unknown parameter: \"foo\"".to_string()).into())
         );
     }
 

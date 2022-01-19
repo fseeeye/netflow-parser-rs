@@ -1,6 +1,9 @@
 use std::str::FromStr;
 
-use crate::{surule::elements::{ByteJump, ByteJumpNumType, ByteJumpEndian, ByteJumpFrom}, detect::utils::uisize_add};
+use crate::{
+    surule::elements::{ByteJump, NumType, Endian, ByteJumpFrom}, 
+    detect::utils::uisize_add
+};
 
 
 impl ByteJump {
@@ -22,52 +25,28 @@ impl ByteJump {
         let mut num: u64  = if self.string {
             let num_string = std::str::from_utf8(payload_slice.get(num_pos..num_pos+(self.count as usize))?).ok()?;
             match self.num_type {
-                Some(ByteJumpNumType::HEX) => {
+                Some(NumType::HEX) => {
                     // u64::from_str_radix(num_string, 16).ok()?
                     let num_bytes = hex::decode(num_string).ok()?;
-                    let mut out = 0;
-                    if self.endian == Some(ByteJumpEndian::Little) {
-                        for &i in num_bytes.iter().rev() {
-                            out = out << 8 | i as u64;
-                        }
-                    } else {
-                        // Default: BigEndian
-                        for &i in num_bytes.iter() {
-                            out = out << 8 | i as u64;
-                        }
-                    }
-                    out
+                    self.bytes_to_u64(&num_bytes)?
                 },
-                Some(ByteJumpNumType::DEC) => {
+                Some(NumType::DEC) => {
                     // Warning: won't impl endian
                     u64::from_str(num_string).ok()?
                 },
-                Some(ByteJumpNumType::OCT) => {
+                Some(NumType::OCT) => {
                     // Warning: won't impl endian
                     u64::from_str_radix(num_string, 8).ok()?
                 },
                 None => {
-                    // Default: DEC
-                    // Warning: won't impl endian
-                    u64::from_str(num_string).ok()?
+                    // Default: HEX
+                    let num_bytes = hex::decode(num_string).ok()?;
+                    self.bytes_to_u64(&num_bytes)?
                 },
             }
         } else {
             let num_bytes = payload_slice.get(num_pos..num_pos+(self.count as usize))?;
-            let mut out = 0;
- 
-            if self.endian == Some(ByteJumpEndian::Little) {
-                for &i in num_bytes.iter().rev() {
-                    out = out << 8 | i as u64;
-                }
-            } else {
-                // Default: BigEndian
-                for &i in num_bytes.iter() {
-                    out = out << 8 | i as u64;
-                }
-            }
-
-            out
+            self.bytes_to_u64(&num_bytes)?
         };
         // multiplier
         if let Some(multiplier_inner) = self.multiplier {
@@ -103,6 +82,22 @@ impl ByteJump {
 
         if new_pos < payload_len { Some(new_pos) } else { None }
     }
+
+    #[inline]
+    fn bytes_to_u64(&self, num_bytes: &[u8]) -> Option<u64> {
+        let mut out: u64 = 0;
+        if self.endian == Some(Endian::Little) {
+            for &i in num_bytes.iter().rev() {
+                out = out.checked_shl(8)? | i as u64;
+            }
+        } else {
+            // Default: BigEndian
+            for &i in num_bytes.iter() {
+                out = out.checked_shl(8)? | i as u64;
+            }
+        }
+        Some(out)
+    }
 }
 
 #[cfg(test)]
@@ -111,9 +106,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_bytejump() {
-        tracing_subscriber::fmt::init();
-
+    fn check_bytejump() {
         // Common Example
         let bytejump_common = ByteJump {
             count: 2,
@@ -138,7 +131,7 @@ mod tests {
             count: 2,
             offset: 0,
             string: true,
-            num_type: Some(ByteJumpNumType::HEX),
+            num_type: Some(NumType::HEX),
             ..Default::default()
         };
         let payload: &[u8] = &[0x30, 0x31, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -169,7 +162,7 @@ mod tests {
             count: 2,
             offset: 2,
             relative: true,
-            endian: Some(ByteJumpEndian::Little),
+            endian: Some(Endian::Little),
             multiplier: Some(2),
             from: Some(ByteJumpFrom::BEGIN),
             post_offset: Some(-1),

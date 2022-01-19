@@ -137,7 +137,7 @@ mod tests {
                             offset: 12,
                             relative: true,
                             multiplier: Some(2),
-                            endian: Some(ByteJumpEndian::Little),
+                            endian: Some(Endian::Little),
                             string: false,
                             num_type: None,
                             align: false,
@@ -154,6 +154,15 @@ mod tests {
                                 within: Some(8),
                                 distance: Some(12)
                             }
+                        }),
+                        SurulePayloadOption::ByteTest(ByteTest { 
+                            count: 4,
+                            op_nagation: false,
+                            operator: ByteTestOp::Greater,
+                            test_value: 2,
+                            offset: 0,
+                            relative: true,
+                            ..Default::default()
                         }),
                         SurulePayloadOption::Pcre(
                             Pcre {

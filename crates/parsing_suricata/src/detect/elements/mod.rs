@@ -3,6 +3,7 @@ mod portlist;
 
 mod content;
 mod byte_jump;
+mod byte_test;
 
 mod flowbits;
 

@@ -63,6 +63,8 @@ pub enum SuruleNaivePayloadOption {
     // Value, Payload Keyword
     ByteJump(elements::ByteJump),
     // Value, Payload Keyword
+    ByteTest(elements::ByteTest),
+    // Value, Payload Keyword
     Content(elements::Content),
     // Value, Payload Keyword
     Depth(usize),
@@ -100,6 +102,8 @@ pub enum SuruleNaivePayloadOption {
 pub enum SurulePayloadOption {
     // Value, Payload Keyword
     ByteJump(elements::ByteJump),
+    // Value, Payload Keyword
+    ByteTest(elements::ByteTest),
     // Value, Payload Keyword
     Content(elements::Content),
     // Value, Payload Keyword
@@ -384,12 +388,19 @@ pub(crate) fn impl_content_modifiers(
                 }
             }
             /* Other Payload Keywords */
-            SuruleNaivePayloadOption::ByteJump(b) => {
+            SuruleNaivePayloadOption::ByteJump(bj) => {
                 if let Some(cc) = current_content {
                     modified_payload_options.push(SurulePayloadOption::Content(cc));
                     current_content = None;
                 }
-                modified_payload_options.push(SurulePayloadOption::ByteJump(b))
+                modified_payload_options.push(SurulePayloadOption::ByteJump(bj))
+            }
+            SuruleNaivePayloadOption::ByteTest(bt) => {
+                if let Some(cc) = current_content {
+                    modified_payload_options.push(SurulePayloadOption::Content(cc));
+                    current_content = None;
+                }
+                modified_payload_options.push(SurulePayloadOption::ByteTest(bt))
             }
             SuruleNaivePayloadOption::Dsize(d) => {
                 if let Some(cc) = current_content {

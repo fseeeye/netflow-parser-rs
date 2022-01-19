@@ -136,7 +136,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_check_flowbits() {
+    fn check_flowbits() {
         let flowbits_set = Flowbits {
             command: FlowbitCommand::Set,
             names: vec!["pop3_login".to_string()],

@@ -73,7 +73,7 @@ fn take_option_name(input: &str) -> IResult<&str, (&str, char), SuruleParseError
     ))
 }
 
-// 解析 bool option 字段，可以通过 &str 直接转换为 SuruleElement
+// 解析不含值得 option 字段(bool)，可以通过 &str 直接转换为 SuruleElement
 impl From<&str> for SuruleOption {
     fn from(name_str: &str) -> Self {
         match name_str {
@@ -109,7 +109,10 @@ pub(crate) fn parse_option_from_stream(
         let surule_element = match name_str {
             "byte_jump" => {
                 SuruleOption::Payload(SuruleNaivePayloadOption::ByteJump(value_str.parse()?))
-            }
+            },
+            "byte_test" => {
+                SuruleOption::Payload(SuruleNaivePayloadOption::ByteTest(value_str.parse()?))
+            },
             "classtype" => SuruleOption::Meta(SuruleMetaOption::Classtype(value_str.to_string())),
             "content" => SuruleOption::Payload(SuruleNaivePayloadOption::Content(
                 utils::strip_quotes(value_str).parse()?,

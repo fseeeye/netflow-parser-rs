@@ -55,7 +55,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_check_portlist() {
+    fn check_portlist() {
         let port = 3389;
         let list_all = PortList {
             accept: None,

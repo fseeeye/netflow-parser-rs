@@ -79,7 +79,7 @@ impl SuruleDetector for TcpSurule {
                     } else {
                         return false;
                     }
-                }
+                },
                 SurulePayloadOption::ByteJump(bj) => {
                     if let Some(p) = bj.jump(payload, detect_ptr) {
                         detect_ptr = p;
@@ -87,7 +87,7 @@ impl SuruleDetector for TcpSurule {
                     } else {
                         return false;
                     }
-                }
+                },
                 _ => {}
             }
         }

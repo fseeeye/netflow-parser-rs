@@ -196,12 +196,12 @@ pub struct ByteJump {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub multiplier: Option<usize>,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub endian: Option<ByteJumpEndian>,
+    pub endian: Option<Endian>,
 
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub string: bool,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
-    pub num_type: Option<ByteJumpNumType>,
+    pub num_type: Option<NumType>,
 
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub align: bool,
@@ -219,7 +219,7 @@ pub struct ByteJump {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Debug)]
 #[repr(C)]
-pub enum ByteJumpNumType {
+pub enum NumType {
     #[cfg_attr(feature = "serde", serde(rename = "hex"))]
     HEX,
     #[cfg_attr(feature = "serde", serde(rename = "dec"))]
@@ -228,7 +228,7 @@ pub enum ByteJumpNumType {
     OCT,
 }
 
-impl Default for ByteJumpNumType {
+impl Default for NumType {
     fn default() -> Self {
         Self::DEC
     }
@@ -249,16 +249,54 @@ pub enum ByteJumpFrom {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Debug)]
 #[repr(C)]
-pub enum ByteJumpEndian {
+pub enum Endian {
     #[cfg_attr(feature = "serde", serde(rename = "big"))]
     Big,
     #[cfg_attr(feature = "serde", serde(rename = "little"))]
     Little,
 }
 
-impl Default for ByteJumpEndian {
+impl Default for Endian {
     fn default() -> Self {
         Self::Big
+    }
+}
+
+/// Byte Test type (Suricata Body Element)
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, Default, PartialEq)]
+#[repr(C)]
+pub struct ByteTest {
+    pub count: u8,
+    pub op_nagation: bool,
+    pub operator: ByteTestOp,
+    pub test_value: u64,
+    pub offset: isize,
+
+    pub relative: bool,
+    pub endian: Option<Endian>,
+    pub string: bool,
+    pub num_type: Option<NumType>,
+    pub dce: bool,
+    pub bitmask: Option<u64>,
+}
+
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+#[repr(C)]
+pub enum ByteTestOp {
+    Less,
+    Greater,
+    Equal,
+    LessEqual,
+    GreaterEquanl,
+    And,
+    Or
+}
+
+impl Default for ByteTestOp {
+    fn default() -> Self {
+        ByteTestOp::Less
     }
 }
 

@@ -172,7 +172,7 @@ mod tests {
     }
 
     #[test]
-    fn test_content() {
+    fn check_content() {
         let content_nocase = Content {
             pattern: b"fg".to_vec(),
             nocase: true,

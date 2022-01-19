@@ -58,7 +58,7 @@ mod tests {
     use crate::surule::elements::IpAddress;
 
     #[test]
-    fn test_check_iplist() {
+    fn check_iplist() {
         let ipv4_addr = Ipv4Addr::from_str("192.168.1.1").unwrap();
         let list_all = IpAddressList {
             accept: None,
