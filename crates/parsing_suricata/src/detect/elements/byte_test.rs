@@ -7,6 +7,7 @@ use std::str::FromStr;
 
 
 impl ByteTest {
+    // TODO: return bool
     pub fn check(&self, payload_slice: &[u8], last_pos: usize) -> Option<usize> {
         let payload_len = payload_slice.len();
         if payload_len == 0 { return None }

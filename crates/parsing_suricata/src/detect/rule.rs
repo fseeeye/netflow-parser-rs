@@ -88,6 +88,19 @@ impl SuruleDetector for TcpSurule {
                         return false;
                     }
                 },
+                SurulePayloadOption::ByteTest(bt) => {
+                    if let Some(p) = bt.check(payload, detect_ptr) {
+                        detect_ptr = p;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                },
+                SurulePayloadOption::Dsize(ds) => {
+                    if ds.check(payload) == false {
+                        return false;
+                    }
+                },
                 _ => {}
             }
         }
@@ -180,6 +193,19 @@ impl SuruleDetector for UdpSurule {
                         detect_ptr = p;
                         continue;
                     } else {
+                        return false;
+                    }
+                },
+                SurulePayloadOption::ByteTest(bt) => {
+                    if let Some(p) = bt.check(payload, detect_ptr) {
+                        detect_ptr = p;
+                        continue;
+                    } else {
+                        return false;
+                    }
+                },
+                SurulePayloadOption::Dsize(ds) => {
+                    if ds.check(payload) == false {
                         return false;
                     }
                 },

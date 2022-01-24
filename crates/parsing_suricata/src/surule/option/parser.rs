@@ -123,9 +123,7 @@ pub(crate) fn parse_option_from_stream(
             "distance" => SuruleOption::Payload(SuruleNaivePayloadOption::Distance(
                 elements::parse_isize(value_str)?,
             )),
-            "dsize" => {
-                SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.to_string()))
-            }
+            "dsize" => SuruleOption::Payload(SuruleNaivePayloadOption::Dsize(value_str.parse()?)),
             "flow" => SuruleOption::Flow(SuruleFlowOption::Flow(value_str.parse()?)),
             "flowbits" => SuruleOption::Flow(SuruleFlowOption::Flowbits(value_str.parse()?)),
             "isdataat" => {

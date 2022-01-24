@@ -300,6 +300,19 @@ impl Default for ByteTestOp {
     }
 }
 
+/// Dsize Type (Suricata Body Element)
+/// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#pcre-perl-compatible-regular-expressions
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq)]
+#[repr(C)]
+pub enum Dsize {
+    Equal(usize),
+    NotEqual(usize),
+    Less(usize),
+    Greater(usize),
+    Range(usize, usize)
+}
+
 /// Pcre Type (Suricata Body Element)
 /// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#pcre-perl-compatible-regular-expressions
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

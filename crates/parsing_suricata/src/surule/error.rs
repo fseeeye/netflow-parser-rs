@@ -52,6 +52,8 @@ pub enum SuruleParseError {
     InvalidByteJump(String),
     #[error("byte test parsing error: '{0}'")]
     InvalidByteTest(String),
+    #[error("dsize parsing error: '{0}'")]
+    InvalidDsize(String),
     #[error("pcre parsing error: '{0}'")]
     InvalidPcre(String),
     #[error("x-bits parsing error: '{0}'")]

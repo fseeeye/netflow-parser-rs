@@ -610,7 +610,7 @@ impl FromStr for ByteTest {
     }
 }
 
-/// 由字符串解析 ByteTestOperator
+// 由字符串解析 ByteTestOperator
 impl FromStr for ByteTestOp {
     type Err = nom::Err<SuruleParseError>;
 
@@ -629,6 +629,73 @@ impl FromStr for ByteTestOp {
         };
 
         Ok(op)
+    }
+}
+
+/// 由字符串解析 Dsize
+impl FromStr for Dsize {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(raw_input: &str) -> Result<Self, Self::Err> {
+        let make_err = |reason| SuruleParseError::InvalidDsize(reason).into();
+
+        let input = handle_value(raw_input)?;
+
+        if let Ok((input, op_string)) = nom::branch::alt::<_,_,SuruleParseError,_>((
+            nom::bytes::complete::tag("!"),
+            nom::branch::alt((nom::bytes::complete::tag(">"), nom::bytes::complete::tag("<")))
+        ))(input) {
+            // parse operator "!number" / ">number" / "<number"
+            let (_, size_num_string) = nom::sequence::terminated::<_,_,_,nom::error::Error<&str>,_,_>(
+                    nom::character::complete::digit1, 
+                    nom::combinator::eof
+                )(input)
+                .map_err(|_| make_err(format!("invalid size num string: \"{input}\"")))?;
+            let size_num = usize::from_str(size_num_string)
+                .map_err(|_| make_err(format!("can't convert size string to num: \"{size_num_string}\"")))?;
+            match op_string {
+                "!" => {
+                    Ok(Dsize::NotEqual(size_num))
+                },
+                ">" => {
+                    Ok(Dsize::Greater(size_num))
+                },
+                "<" => {
+                    Ok(Dsize::Less(size_num))
+                }
+                _ => {
+                    Err(make_err(format!("unknow nom rst (please contact developer): {raw_input}")))
+                }
+            }
+        } else {
+            // parse "number" / "number1<>number2"
+            let (input, size_num_string) = nom::character::complete::digit1::<_,nom::error::Error<&str>>(input)
+                .map_err(|_| make_err(format!("invalid size num string: \"{input}\"")))?;
+            let size_num = usize::from_str(size_num_string)
+                .map_err(|_| make_err(format!("can't convert size string to num: \"{size_num_string}\"")))?;
+
+            if nom::combinator::eof::<_,nom::error::Error<&str>>(input).is_ok() {
+                Ok(Dsize::Equal(size_num))
+            } else {
+                if let Ok((input, Some(_))) = nom::combinator::opt::<_,_,nom::error::Error<&str>,_>(nom::bytes::complete::tag("<>"))(input) {
+                    let (_, size_num_string_max) = nom::sequence::terminated::<_,_,_,nom::error::Error<&str>,_,_>(
+                            nom::character::complete::digit1, 
+                            nom::combinator::eof
+                        )(input)
+                        .map_err(|_| make_err(format!("invalid size num string2: \"{input}\"")))?;
+                    let size_num_max = usize::from_str(size_num_string_max)
+                        .map_err(|_| make_err(format!("can't convert size string2 to num: \"{size_num_string_max}\"")))?;
+                    
+                    if size_num >= (size_num_max-1) {
+                        return Err(make_err(format!("min({size_num}) must less than max({size_num_max})-1")));
+                    }
+                    
+                    Ok(Dsize::Range(size_num, size_num_max))
+                } else {
+                    Err(make_err(format!("not terminated: {raw_input}")))
+                }
+            }
+        }
     }
 }
 
@@ -935,6 +1002,34 @@ mod tests {
         assert_eq!(
             ByteTest::from_str("1,!&,128,6,foo"),
             Err(SuruleParseError::InvalidByteTest("unknown parameter: \"foo\"".to_string()).into())
+        );
+    }
+
+    #[test]
+    fn test_dsize() {
+        assert_eq!(
+            "!123".parse(),
+            Ok(Dsize::NotEqual(123))
+        );
+
+        assert_eq!(
+            "123".parse(),
+            Ok(Dsize::Equal(123))
+        );
+
+        assert_eq!(
+            ">123".parse(),
+            Ok(Dsize::Greater(123))
+        );
+
+        assert_eq!(
+            "<123".parse(),
+            Ok(Dsize::Less(123))
+        );
+
+        assert_eq!(
+            "123<>1234".parse(),
+            Ok(Dsize::Range(123, 1234))
         );
     }
 

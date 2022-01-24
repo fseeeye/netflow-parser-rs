@@ -69,7 +69,7 @@ pub enum SuruleNaivePayloadOption {
     // Value, Payload Keyword
     Depth(usize),
     // Value, Payload Keyword
-    Dsize(String),
+    Dsize(elements::Dsize),
     // Value, Payload Keyword
     Distance(isize),
     // Bool, Payload Keyword
@@ -107,7 +107,7 @@ pub enum SurulePayloadOption {
     // Value, Payload Keyword
     Content(elements::Content),
     // Value, Payload Keyword
-    Dsize(String),
+    Dsize(elements::Dsize),
     // Value, Payload Keyword
     IsDataAt(String),
     // Value, Payload Keyword
