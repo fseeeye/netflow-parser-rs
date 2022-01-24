@@ -1,6 +1,6 @@
 use crate::{
-    surule::elements::{Content, ContentPosKey}, 
-    detect::utils::*
+    detect::utils::*,
+    surule::elements::{Content, ContentPosKey},
 };
 
 impl Content {
@@ -28,7 +28,8 @@ impl Content {
                 }
             }
             ContentPosKey::EndsWith => {
-                if payload_slice.get(payload_slice.len() - pattern_slice.len()..)? == pattern_slice {
+                if payload_slice.get(payload_slice.len() - pattern_slice.len()..)? == pattern_slice
+                {
                     Some(payload_slice.len())
                 } else {
                     None

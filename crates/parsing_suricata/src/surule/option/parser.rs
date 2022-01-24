@@ -109,10 +109,10 @@ pub(crate) fn parse_option_from_stream(
         let surule_element = match name_str {
             "byte_jump" => {
                 SuruleOption::Payload(SuruleNaivePayloadOption::ByteJump(value_str.parse()?))
-            },
+            }
             "byte_test" => {
                 SuruleOption::Payload(SuruleNaivePayloadOption::ByteTest(value_str.parse()?))
-            },
+            }
             "classtype" => SuruleOption::Meta(SuruleMetaOption::Classtype(value_str.to_string())),
             "content" => SuruleOption::Payload(SuruleNaivePayloadOption::Content(
                 utils::strip_quotes(value_str).parse()?,

@@ -155,7 +155,7 @@ mod tests {
                                 distance: Some(12)
                             }
                         }),
-                        SurulePayloadOption::ByteTest(ByteTest { 
+                        SurulePayloadOption::ByteTest(ByteTest {
                             count: 4,
                             op_nagation: false,
                             operator: ByteTestOp::Greater,

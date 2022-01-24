@@ -1,51 +1,58 @@
 use std::str::FromStr;
 
 use crate::{
-    surule::elements::{ByteJump, NumType, Endian, ByteJumpFrom}, 
-    detect::utils::uisize_add
+    detect::utils::uisize_add,
+    surule::elements::{ByteJump, ByteJumpFrom, Endian, NumType},
 };
-
 
 impl ByteJump {
     pub fn jump(&self, payload_slice: &[u8], last_pos: usize) -> Option<usize> {
         let payload_len = payload_slice.len();
-        if payload_len == 0 { return None }
-        
+        if payload_len == 0 {
+            return None;
+        }
+
         // Step1: Get Bytes start position
         // relative & offset
         let num_pos;
         if self.relative {
             num_pos = uisize_add(last_pos, self.offset)?;
         } else {
-            num_pos = if self.offset.is_negative() { return None } else { self.offset as usize };
+            num_pos = if self.offset.is_negative() {
+                return None;
+            } else {
+                self.offset as usize
+            };
         }
-        
-        // Step2: Get Jump Num 
+
+        // Step2: Get Jump Num
         // num_of_bytes(count) & endian & string + num_type
-        let mut num: u64  = if self.string {
-            let num_string = std::str::from_utf8(payload_slice.get(num_pos..num_pos+(self.count as usize))?).ok()?;
+        let mut num: u64 = if self.string {
+            let num_string =
+                std::str::from_utf8(payload_slice.get(num_pos..num_pos + (self.count as usize))?)
+                    .ok()?;
             match self.num_type {
                 Some(NumType::HEX) => {
                     // u64::from_str_radix(num_string, 16).ok()?
                     let num_bytes = hex::decode(num_string).ok()?;
                     self.bytes_to_u64(&num_bytes)?
-                },
+                }
                 Some(NumType::DEC) => {
                     // Warning: won't impl endian
                     u64::from_str(num_string).ok()?
-                },
+                }
                 Some(NumType::OCT) => {
                     // Warning: won't impl endian
                     u64::from_str_radix(num_string, 8).ok()?
-                },
+                }
                 None => {
                     // Default: HEX
                     let num_bytes = hex::decode(num_string).ok()?;
                     self.bytes_to_u64(&num_bytes)?
-                },
+                }
             }
         } else {
-            let num_bytes = payload_slice.get(num_pos..num_pos+(self.count as usize))?;
+            let num_bytes = payload_slice.get(num_pos..num_pos + (self.count as usize))?;
             self.bytes_to_u64(&num_bytes)?
         };
         // multiplier
@@ -69,18 +76,26 @@ impl ByteJump {
         match self.from {
             Some(ByteJumpFrom::BEGIN) => {
                 new_pos = num.try_into().ok()?;
-            },
+            }
             Some(ByteJumpFrom::END) => {
-                new_pos = num.checked_add((payload_len - 1)as u64)?.try_into().ok()?;
-            },
+                new_pos = num.checked_add((payload_len - 1) as u64)?.try_into().ok()?;
+            }
             None => {
-                new_pos = num.checked_add(num_pos as u64)?.checked_add(self.count as u64)?.try_into().ok()?;
+                new_pos = num
+                    .checked_add(num_pos as u64)?
+                    .checked_add(self.count as u64)?
+                    .try_into()
+                    .ok()?;
             }
         }
         // post_offset
         new_pos = uisize_add(new_pos, self.post_offset.unwrap_or(0))?;
 
-        if new_pos < payload_len { Some(new_pos) } else { None }
+        if new_pos < payload_len {
+            Some(new_pos)
+        } else {
+            None
+        }
     }
 
     #[inline]
@@ -115,7 +130,7 @@ mod tests {
         };
         let payload: &[u8] = &[0, 0x00, 0x02, 3, 4, 5, 6, 7, 8, 9];
         assert_eq!(bytejump_common.jump(payload, 99), Some(5));
-        
+
         // ByteJump Keyword: relative
         let bytejump_relative = ByteJump {
             count: 2,

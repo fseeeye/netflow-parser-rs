@@ -255,17 +255,19 @@ impl FromStr for ByteJump {
 
         let input = handle_value(input)?;
         // step1: 逗号分割字符串
-        let (_, values): (_, Vec<&str>) = nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
-            nom::bytes::complete::tag(","),
-            nom::sequence::preceded(
-                nom::character::complete::multispace0,
-                nom::bytes::complete::is_not(","),
-            ),
-        )(input)
-        .map_err(|_| make_err(format!("invalid input: {}", input)))?;
+        let (_, values): (_, Vec<&str>) =
+            nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
+                nom::bytes::complete::tag(","),
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0,
+                    nom::bytes::complete::is_not(","),
+                ),
+            )(input)
+            .map_err(|_| make_err(format!("invalid input: {}", input)))?;
 
         // step2: 从 Vec 中依次解析 ByteJump 各必选字段
-        let count = values.get(0)
+        let count = values
+            .get(0)
             .ok_or(make_err("no required arg: `num of bytes`".to_string()))?
             .trim()
             .parse()
@@ -275,7 +277,8 @@ impl FromStr for ByteJump {
             // u64 can't store bytes len bigger than 8
             return Err(make_err(format!("invalid count(too big): {}", values[0])));
         }
-        let offset = values.get(1)
+        let offset = values
+            .get(1)
             .ok_or(make_err("no required arg: `offset`".to_string()))?
             .parse()
             .map_err(|_| make_err(format!("invalid offset: {}", values[1])))?;
@@ -294,12 +297,12 @@ impl FromStr for ByteJump {
             match name {
                 "relative" => {
                     if byte_jump.relative == true {
-                        return Err(make_err("duplicated relative".to_string()))
+                        return Err(make_err("duplicated relative".to_string()));
                     }
 
                     byte_jump.relative = true;
                     prev_is_string = false;
-                },
+                }
                 "little" => {
                     if byte_jump.endian.is_some() {
                         return Err(make_err("duplicated endian".to_string()));
@@ -318,7 +321,7 @@ impl FromStr for ByteJump {
                 }
                 "align" => {
                     if byte_jump.align == true {
-                        return Err(make_err("duplicated align".to_string()))
+                        return Err(make_err("duplicated align".to_string()));
                     }
 
                     byte_jump.align = true;
@@ -326,7 +329,9 @@ impl FromStr for ByteJump {
                 }
                 "from_beginning" => {
                     if byte_jump.from.is_some() {
-                        return Err(make_err("duplicated from_beginning or from_end".to_string()));
+                        return Err(make_err(
+                            "duplicated from_beginning or from_end".to_string(),
+                        ));
                     }
 
                     byte_jump.from = Some(ByteJumpFrom::BEGIN);
@@ -334,7 +339,9 @@ impl FromStr for ByteJump {
                 }
                 "from_end" => {
                     if byte_jump.from.is_some() {
-                        return Err(make_err("duplicated from_beginning or from_end".to_string()));
+                        return Err(make_err(
+                            "duplicated from_beginning or from_end".to_string(),
+                        ));
                     }
 
                     byte_jump.from = Some(ByteJumpFrom::END);
@@ -342,7 +349,7 @@ impl FromStr for ByteJump {
                 }
                 "dce" => {
                     if byte_jump.dce == true {
-                        return Err(make_err("duplicated dce".to_string()))
+                        return Err(make_err("duplicated dce".to_string()));
                     }
 
                     byte_jump.dce = true;
@@ -350,7 +357,7 @@ impl FromStr for ByteJump {
                 }
                 "string" => {
                     if byte_jump.string == true {
-                        return Err(make_err("duplicated string".to_string()))
+                        return Err(make_err("duplicated string".to_string()));
                     }
 
                     byte_jump.string = true;
@@ -361,7 +368,7 @@ impl FromStr for ByteJump {
                         return Err(make_err("`hex` is not after `string`".to_string()));
                     }
                     if byte_jump.num_type.is_some() {
-                        return Err(make_err("duplicated num type".to_string()))
+                        return Err(make_err("duplicated num type".to_string()));
                     }
 
                     byte_jump.num_type = Some(NumType::HEX);
@@ -371,7 +378,7 @@ impl FromStr for ByteJump {
                         return Err(make_err("`dec` is not after `string`".to_string()));
                     }
                     if byte_jump.num_type.is_some() {
-                        return Err(make_err("duplicated num type".to_string()))
+                        return Err(make_err("duplicated num type".to_string()));
                     }
 
                     byte_jump.num_type = Some(NumType::DEC);
@@ -381,36 +388,38 @@ impl FromStr for ByteJump {
                         return Err(make_err("`oct` is not after `string`".to_string()));
                     }
                     if byte_jump.num_type.is_some() {
-                        return Err(make_err("duplicated num type".to_string()))
+                        return Err(make_err("duplicated num type".to_string()));
                     }
 
                     byte_jump.num_type = Some(NumType::OCT);
                 }
                 "multiplier" => {
                     if byte_jump.multiplier.is_some() {
-                        return Err(make_err("duplicated multiplier".to_string()))
+                        return Err(make_err("duplicated multiplier".to_string()));
                     }
 
-                    byte_jump.multiplier = Some(value
-                        .trim()
-                        .parse::<usize>()
-                        .map_err(|_| make_err(format!("invalid multiplier: \"{}\"", value)))?);
+                    byte_jump.multiplier = Some(
+                        value
+                            .trim()
+                            .parse::<usize>()
+                            .map_err(|_| make_err(format!("invalid multiplier: \"{}\"", value)))?,
+                    );
                     prev_is_string = false;
                 }
                 "post_offset" => {
                     if byte_jump.post_offset.is_some() {
-                        return Err(make_err("duplicated post offset".to_string()))
+                        return Err(make_err("duplicated post offset".to_string()));
                     }
 
-                    byte_jump.post_offset = Some(value
-                        .trim()
-                        .parse::<isize>()
-                        .map_err(|_| make_err(format!("invalid post_offset: \"{}\"", value)))?);
+                    byte_jump.post_offset =
+                        Some(value.trim().parse::<isize>().map_err(|_| {
+                            make_err(format!("invalid post_offset: \"{}\"", value))
+                        })?);
                     prev_is_string = false;
                 }
                 "bitmask" => {
                     if byte_jump.bitmask.is_some() {
-                        return Err(make_err("duplicated bitmask".to_string()))
+                        return Err(make_err("duplicated bitmask".to_string()));
                     }
 
                     let value = value.trim();
@@ -443,20 +452,22 @@ impl FromStr for ByteTest {
         let make_err = |reason| SuruleParseError::InvalidByteTest(reason).into();
 
         let input = handle_value(input)?;
-        
+
         // step1: 逗号分割字符串
-        let (_, values): (_, Vec<&str>) = nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
-            nom::bytes::complete::tag(","),
-            nom::sequence::preceded(
-                nom::character::complete::multispace0,
-                nom::bytes::complete::is_not(","),
-            ),
-        )(input)
-        .map_err(|_| make_err(format!("invalid input: {}", input)))?;
+        let (_, values): (_, Vec<&str>) =
+            nom::multi::separated_list1::<_, _, _, nom::error::Error<&str>, _, _>(
+                nom::bytes::complete::tag(","),
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0,
+                    nom::bytes::complete::is_not(","),
+                ),
+            )(input)
+            .map_err(|_| make_err(format!("invalid input: {}", input)))?;
 
         // step2: 从 Vec 中依次解析 ByteTest 各必选字段
         // num of bytes
-        let count = values.get(0)
+        let count = values
+            .get(0)
             .ok_or(make_err("no required arg: `num of bytes`".to_string()))?
             .trim()
             .parse()
@@ -468,7 +479,8 @@ impl FromStr for ByteTest {
         // operator & its negation
         let operator;
         let mut op_nagation = false;
-        let operator_str = values.get(1)
+        let operator_str = values
+            .get(1)
             .ok_or(make_err("no required arg: `operator`".to_string()))?
             .trim();
         if operator_str.starts_with('!') {
@@ -483,7 +495,8 @@ impl FromStr for ByteTest {
                 .map_err(|_| make_err(format!("invalid count: {}", values[0])))?;
         }
         // test value
-        let test_value_str = values.get(2)
+        let test_value_str = values
+            .get(2)
             .ok_or(make_err("no required arg: `operator`".to_string()))?
             .trim();
         let test_value = if test_value_str.starts_with("0x") {
@@ -494,7 +507,8 @@ impl FromStr for ByteTest {
                 .map_err(|_| make_err(format!("invalid value(dec): {}", test_value_str)))?
         };
         // offset
-        let offset = values.get(3)
+        let offset = values
+            .get(3)
             .ok_or(make_err("no required arg: `offset`".to_string()))?
             .trim()
             .parse()
@@ -519,12 +533,12 @@ impl FromStr for ByteTest {
             match name {
                 "relative" => {
                     if byte_test.relative == true {
-                        return Err(make_err("duplicated relative".to_string()))
+                        return Err(make_err("duplicated relative".to_string()));
                     }
 
                     byte_test.relative = true;
                     prev_is_string = false;
-                },
+                }
                 "little" => {
                     if byte_test.endian.is_some() {
                         return Err(make_err("duplicated endian".to_string()));
@@ -532,7 +546,7 @@ impl FromStr for ByteTest {
 
                     byte_test.endian = Some(Endian::Little);
                     prev_is_string = false;
-                },
+                }
                 "big" => {
                     if byte_test.endian.is_some() {
                         return Err(make_err("duplicated endian".to_string()));
@@ -540,56 +554,56 @@ impl FromStr for ByteTest {
 
                     byte_test.endian = Some(Endian::Big);
                     prev_is_string = false;
-                },
+                }
                 "string" => {
                     if byte_test.string == true {
-                        return Err(make_err("duplicated string".to_string()))
+                        return Err(make_err("duplicated string".to_string()));
                     }
 
                     byte_test.string = true;
                     prev_is_string = true;
-                },
+                }
                 "hex" => {
                     if prev_is_string == false {
                         return Err(make_err("`hex` is not after `string`".to_string()));
                     }
                     if byte_test.num_type.is_some() {
-                        return Err(make_err("duplicated num type".to_string()))
+                        return Err(make_err("duplicated num type".to_string()));
                     }
 
                     byte_test.num_type = Some(NumType::HEX);
-                },
+                }
                 "dec" => {
                     if !prev_is_string {
                         return Err(make_err("`dec` is not after `string`".to_string()));
                     }
                     if byte_test.num_type.is_some() {
-                        return Err(make_err("duplicated num type".to_string()))
+                        return Err(make_err("duplicated num type".to_string()));
                     }
 
                     byte_test.num_type = Some(NumType::DEC);
-                },
+                }
                 "oct" => {
                     if !prev_is_string {
                         return Err(make_err("`oct` is not after `string`".to_string()));
                     }
                     if byte_test.num_type.is_some() {
-                        return Err(make_err("duplicated num type".to_string()))
+                        return Err(make_err("duplicated num type".to_string()));
                     }
 
                     byte_test.num_type = Some(NumType::OCT);
-                },
+                }
                 "dce" => {
                     if byte_test.dce == true {
-                        return Err(make_err("duplicated dce".to_string()))
+                        return Err(make_err("duplicated dce".to_string()));
                     }
 
                     byte_test.dce = true;
                     prev_is_string = false;
-                },
+                }
                 "bitmask" => {
                     if byte_test.bitmask.is_some() {
-                        return Err(make_err("duplicated bitmask".to_string()))
+                        return Err(make_err("duplicated bitmask".to_string()));
                     }
 
                     let bitmask_value = if value_str.starts_with("0x") {
@@ -601,7 +615,7 @@ impl FromStr for ByteTest {
                     };
                     byte_test.bitmask = Some(bitmask_value);
                     prev_is_string = false;
-                },
+                }
                 _ => return Err(make_err(format!("unknown parameter: \"{}\"", name))),
             }
         }
@@ -625,7 +639,13 @@ impl FromStr for ByteTestOp {
             ">=" => ByteTestOp::GreaterEquanl,
             "&" => ByteTestOp::And,
             "^" => ByteTestOp::Or,
-            _ => return Err(SuruleParseError::InvalidByteTest(format!("invalid bytejump operator `{}`", input)).into()),
+            _ => {
+                return Err(SuruleParseError::InvalidByteTest(format!(
+                    "invalid bytejump operator `{}`",
+                    input
+                ))
+                .into())
+            }
         };
 
         Ok(op)
@@ -641,55 +661,70 @@ impl FromStr for Dsize {
 
         let input = handle_value(raw_input)?;
 
-        if let Ok((input, op_string)) = nom::branch::alt::<_,_,SuruleParseError,_>((
+        if let Ok((input, op_string)) = nom::branch::alt::<_, _, SuruleParseError, _>((
             nom::bytes::complete::tag("!"),
-            nom::branch::alt((nom::bytes::complete::tag(">"), nom::bytes::complete::tag("<")))
-        ))(input) {
+            nom::branch::alt((
+                nom::bytes::complete::tag(">"),
+                nom::bytes::complete::tag("<"),
+            )),
+        ))(input)
+        {
             // parse operator "!number" / ">number" / "<number"
-            let (_, size_num_string) = nom::sequence::terminated::<_,_,_,nom::error::Error<&str>,_,_>(
-                    nom::character::complete::digit1, 
-                    nom::combinator::eof
+            let (_, size_num_string) =
+                nom::sequence::terminated::<_, _, _, nom::error::Error<&str>, _, _>(
+                    nom::character::complete::digit1,
+                    nom::combinator::eof,
                 )(input)
                 .map_err(|_| make_err(format!("invalid size num string: \"{input}\"")))?;
-            let size_num = usize::from_str(size_num_string)
-                .map_err(|_| make_err(format!("can't convert size string to num: \"{size_num_string}\"")))?;
+            let size_num = usize::from_str(size_num_string).map_err(|_| {
+                make_err(format!(
+                    "can't convert size string to num: \"{size_num_string}\""
+                ))
+            })?;
             match op_string {
-                "!" => {
-                    Ok(Dsize::NotEqual(size_num))
-                },
-                ">" => {
-                    Ok(Dsize::Greater(size_num))
-                },
-                "<" => {
-                    Ok(Dsize::Less(size_num))
-                }
-                _ => {
-                    Err(make_err(format!("unknow nom rst (please contact developer): {raw_input}")))
-                }
+                "!" => Ok(Dsize::NotEqual(size_num)),
+                ">" => Ok(Dsize::Greater(size_num)),
+                "<" => Ok(Dsize::Less(size_num)),
+                _ => Err(make_err(format!(
+                    "unknow nom rst (please contact developer): {raw_input}"
+                ))),
             }
         } else {
             // parse "number" / "number1<>number2"
-            let (input, size_num_string) = nom::character::complete::digit1::<_,nom::error::Error<&str>>(input)
-                .map_err(|_| make_err(format!("invalid size num string: \"{input}\"")))?;
-            let size_num = usize::from_str(size_num_string)
-                .map_err(|_| make_err(format!("can't convert size string to num: \"{size_num_string}\"")))?;
+            let (input, size_num_string) =
+                nom::character::complete::digit1::<_, nom::error::Error<&str>>(input)
+                    .map_err(|_| make_err(format!("invalid size num string: \"{input}\"")))?;
+            let size_num = usize::from_str(size_num_string).map_err(|_| {
+                make_err(format!(
+                    "can't convert size string to num: \"{size_num_string}\""
+                ))
+            })?;
 
-            if nom::combinator::eof::<_,nom::error::Error<&str>>(input).is_ok() {
+            if nom::combinator::eof::<_, nom::error::Error<&str>>(input).is_ok() {
                 Ok(Dsize::Equal(size_num))
             } else {
-                if let Ok((input, Some(_))) = nom::combinator::opt::<_,_,nom::error::Error<&str>,_>(nom::bytes::complete::tag("<>"))(input) {
-                    let (_, size_num_string_max) = nom::sequence::terminated::<_,_,_,nom::error::Error<&str>,_,_>(
-                            nom::character::complete::digit1, 
-                            nom::combinator::eof
+                if let Ok((input, Some(_))) = nom::combinator::opt::<_, _, nom::error::Error<&str>, _>(
+                    nom::bytes::complete::tag("<>"),
+                )(input)
+                {
+                    let (_, size_num_string_max) =
+                        nom::sequence::terminated::<_, _, _, nom::error::Error<&str>, _, _>(
+                            nom::character::complete::digit1,
+                            nom::combinator::eof,
                         )(input)
                         .map_err(|_| make_err(format!("invalid size num string2: \"{input}\"")))?;
-                    let size_num_max = usize::from_str(size_num_string_max)
-                        .map_err(|_| make_err(format!("can't convert size string2 to num: \"{size_num_string_max}\"")))?;
-                    
-                    if size_num >= (size_num_max-1) {
-                        return Err(make_err(format!("min({size_num}) must less than max({size_num_max})-1")));
+                    let size_num_max = usize::from_str(size_num_string_max).map_err(|_| {
+                        make_err(format!(
+                            "can't convert size string2 to num: \"{size_num_string_max}\""
+                        ))
+                    })?;
+
+                    if size_num >= (size_num_max - 1) {
+                        return Err(make_err(format!(
+                            "min({size_num}) must less than max({size_num_max})-1"
+                        )));
                     }
-                    
+
                     Ok(Dsize::Range(size_num, size_num_max))
                 } else {
                     Err(make_err(format!("not terminated: {raw_input}")))
@@ -997,7 +1032,9 @@ mod tests {
         );
         assert_eq!(
             ByteTest::from_str("1,!&,128,6,hex,string"),
-            Err(SuruleParseError::InvalidByteTest("`hex` is not after `string`".to_string()).into())
+            Err(
+                SuruleParseError::InvalidByteTest("`hex` is not after `string`".to_string()).into()
+            )
         );
         assert_eq!(
             ByteTest::from_str("1,!&,128,6,foo"),
@@ -1007,30 +1044,15 @@ mod tests {
 
     #[test]
     fn test_dsize() {
-        assert_eq!(
-            "!123".parse(),
-            Ok(Dsize::NotEqual(123))
-        );
+        assert_eq!("!123".parse(), Ok(Dsize::NotEqual(123)));
 
-        assert_eq!(
-            "123".parse(),
-            Ok(Dsize::Equal(123))
-        );
+        assert_eq!("123".parse(), Ok(Dsize::Equal(123)));
 
-        assert_eq!(
-            ">123".parse(),
-            Ok(Dsize::Greater(123))
-        );
+        assert_eq!(">123".parse(), Ok(Dsize::Greater(123)));
 
-        assert_eq!(
-            "<123".parse(),
-            Ok(Dsize::Less(123))
-        );
+        assert_eq!("<123".parse(), Ok(Dsize::Less(123)));
 
-        assert_eq!(
-            "123<>1234".parse(),
-            Ok(Dsize::Range(123, 1234))
-        );
+        assert_eq!("123<>1234".parse(), Ok(Dsize::Range(123, 1234)));
     }
 
     #[test]

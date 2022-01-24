@@ -79,7 +79,7 @@ impl SuruleDetector for TcpSurule {
                     } else {
                         return false;
                     }
-                },
+                }
                 SurulePayloadOption::ByteJump(bj) => {
                     if let Some(p) = bj.jump(payload, detect_ptr) {
                         detect_ptr = p;
@@ -87,7 +87,7 @@ impl SuruleDetector for TcpSurule {
                     } else {
                         return false;
                     }
-                },
+                }
                 SurulePayloadOption::ByteTest(bt) => {
                     if let Some(p) = bt.check(payload, detect_ptr) {
                         detect_ptr = p;
@@ -95,12 +95,12 @@ impl SuruleDetector for TcpSurule {
                     } else {
                         return false;
                     }
-                },
+                }
                 SurulePayloadOption::Dsize(ds) => {
                     if ds.check(payload) == false {
                         return false;
                     }
-                },
+                }
                 _ => {}
             }
         }
@@ -187,7 +187,7 @@ impl SuruleDetector for UdpSurule {
                     } else {
                         return false;
                     }
-                },
+                }
                 SurulePayloadOption::ByteJump(bj) => {
                     if let Some(p) = bj.jump(payload, detect_ptr) {
                         detect_ptr = p;
@@ -195,7 +195,7 @@ impl SuruleDetector for UdpSurule {
                     } else {
                         return false;
                     }
-                },
+                }
                 SurulePayloadOption::ByteTest(bt) => {
                     if let Some(p) = bt.check(payload, detect_ptr) {
                         detect_ptr = p;
@@ -203,12 +203,12 @@ impl SuruleDetector for UdpSurule {
                     } else {
                         return false;
                     }
-                },
+                }
                 SurulePayloadOption::Dsize(ds) => {
                     if ds.check(payload) == false {
                         return false;
                     }
-                },
+                }
                 _ => {}
             }
         }

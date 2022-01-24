@@ -291,7 +291,7 @@ pub enum ByteTestOp {
     LessEqual,
     GreaterEquanl,
     And,
-    Or
+    Or,
 }
 
 impl Default for ByteTestOp {
@@ -310,7 +310,7 @@ pub enum Dsize {
     NotEqual(usize),
     Less(usize),
     Greater(usize),
-    Range(usize, usize)
+    Range(usize, usize),
 }
 
 /// Pcre Type (Suricata Body Element)
