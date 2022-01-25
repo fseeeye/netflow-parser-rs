@@ -1,11 +1,15 @@
+// detect basis
 mod iplist;
 mod portlist;
 
+// detect payload keywords
 mod byte_jump;
 mod byte_test;
 mod content;
 mod dsize;
+mod pcre;
 
+// detect flow keywords
 mod flowbits;
 
 // pub trait SuruleElementDetector {

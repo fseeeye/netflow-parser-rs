@@ -316,14 +316,23 @@ pub enum Dsize {
 /// Pcre Type (Suricata Body Element)
 /// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#pcre-perl-compatible-regular-expressions
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Default)]
 #[repr(C)]
 pub struct Pcre {
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub negate: bool,
     pub pattern: String,
-    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "String::is_empty"))]
-    pub modifiers: String,
+    // Warning: only support patical modifiers
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub modifier_i: bool, // caseless
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub modifier_m: bool, // multi line
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub modifier_s: bool, // dotall
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub modifier_x: bool, // extended
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub modifier_u: bool, // utf-8
 }
 
 /// Content type (Suricata Body Element)

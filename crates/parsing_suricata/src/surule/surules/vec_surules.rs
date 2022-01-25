@@ -168,7 +168,9 @@ mod tests {
                             Pcre {
                                 negate: false,
                                 pattern: r#"<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20"#.to_string(),
-                                modifiers: "si".to_string()
+                                modifier_s: true,
+                                modifier_i: true,
+                                ..Default::default()
                             }
                         )
                     ],

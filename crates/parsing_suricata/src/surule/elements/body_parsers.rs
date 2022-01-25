@@ -738,9 +738,9 @@ impl FromStr for Dsize {
 impl FromStr for Pcre {
     type Err = nom::Err<SuruleParseError>;
 
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
+    fn from_str(raw_input: &str) -> Result<Self, Self::Err> {
         let make_err = |reason| SuruleParseError::InvalidPcre(reason).into();
-        let input = handle_value(input)?;
+        let input = handle_value(raw_input)?;
 
         // parsing nagate pattern
         let (input, negate) = nom::combinator::opt(nom::bytes::complete::tag("!"))(input)?;
@@ -754,26 +754,55 @@ impl FromStr for Pcre {
         let (input, _close_pcre_flag) = nom::bytes::complete::tag("/")(input)?;
 
         // parsing modifiers when it exist
+        let mut pcre = Pcre {
+            negate: negate.is_some(),
+            pattern: pattern.to_string(),
+            ..Default::default()
+        };
         if let Ok((_, _)) =
             nom::bytes::complete::tag::<_, _, SuruleParseError>("\"")(input.trim_start())
         {
-            return Ok(Pcre {
-                negate: negate.is_some(),
-                pattern: pattern.to_string(),
-                modifiers: "".to_string(),
-            });
+            return Ok(pcre);
         };
         let (input, modifiers) = nom::character::complete::alphanumeric1(input)?;
+        
+        let mut _pcre_builder = pcre2::bytes::RegexBuilder::new();
+        _pcre_builder.jit(true);
+        for c in modifiers.chars() {
+            match c {
+                'i' => {
+                    pcre.modifier_i = true;
+                    _pcre_builder.caseless(true);
+                },
+                'm' => {
+                    pcre.modifier_m = true;
+                    _pcre_builder.multi_line(true);
+                },
+                's' => {
+                    pcre.modifier_s = true;
+                    _pcre_builder.dotall(true);
+                },
+                'x' => {
+                    pcre.modifier_x = true;
+                    _pcre_builder.extended(true);
+                },
+                'u' => {
+                    pcre.modifier_u = true;
+                    _pcre_builder.utf(true);
+                },
+                _ => {
+                    tracing::debug!(target: "Suricata(Pcre::from_str)", "unknow modifier `{}`", c);
+                }
+            }
+        }
+        _pcre_builder.build("foo")
+            .map_err(|_| make_err(format!("regex build failed: {:?}", _pcre_builder)))?; // try build pcre regex
 
         let (_input, _close_quote) =
             nom::bytes::complete::tag::<_, _, SuruleParseError>("\"")(input)
-                .map_err(|_| make_err("no terminating quote `\"`".to_string()).into())?;
+                .map_err(|_| make_err("no terminating quote `\"`".to_string()))?;
 
-        Ok(Pcre {
-            negate: negate.is_some(),
-            pattern: pattern.to_string(),
-            modifiers: modifiers.to_string(),
-        })
+        Ok(pcre)
     }
 }
 
@@ -1061,8 +1090,8 @@ mod tests {
             r#""/[0-9a-zA-Z]/""#.parse(),
             Ok(Pcre {
                 negate: false,
-                pattern: r#"[0-9a-zA-Z]"#.to_string(),
-                modifiers: "".to_string()
+                pattern: r"[0-9a-zA-Z]".to_string(),
+                ..Default::default()
             })
         );
 
@@ -1070,8 +1099,9 @@ mod tests {
             r#"!"/\/winhost(?:32|64)\.(exe|pack)$/i""#.parse(),
             Ok(Pcre {
                 negate: true,
-                pattern: r#"\/winhost(?:32|64)\.(exe|pack)$"#.to_string(),
-                modifiers: "i".to_string()
+                pattern: r"\/winhost(?:32|64)\.(exe|pack)$".to_string(),
+                modifier_i: true,
+                ..Default::default()
             })
         );
 
@@ -1079,8 +1109,21 @@ mod tests {
             r#""/<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20/si""#.parse(),
             Ok(Pcre {
                 negate: false,
-                pattern: r#"<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20"#.to_string(),
-                modifiers: "si".to_string()
+                pattern: r"<OBJECT\s+[^>]*classid\s*=\s*[\x22\x27]?\s*clsid\s*\x3a\s*\x7B?\s*BD9E5104-2F20".to_string(),
+                modifier_i: true,
+                modifier_s: true,
+                ..Default::default()
+            })
+        );
+
+        // unsupport modifiers will be ignore
+        assert_eq!(
+            r#""/lingua\\x3d.+?(SELECT|UPDATE|DELETE).+?FROM/Pi""#.parse(),
+            Ok(Pcre {
+                negate: false,
+                pattern: r"lingua\\x3d.+?(SELECT|UPDATE|DELETE).+?FROM".to_string(),
+                modifier_i: true,
+                ..Default::default()
             })
         );
     }
