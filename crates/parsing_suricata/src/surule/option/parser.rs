@@ -127,7 +127,7 @@ pub(crate) fn parse_option_from_stream(
             "flow" => SuruleOption::Flow(SuruleFlowOption::Flow(value_str.parse()?)),
             "flowbits" => SuruleOption::Flow(SuruleFlowOption::Flowbits(value_str.parse()?)),
             "isdataat" => {
-                SuruleOption::Payload(SuruleNaivePayloadOption::IsDataAt(value_str.to_string()))
+                SuruleOption::Payload(SuruleNaivePayloadOption::IsDataAt(value_str.parse()?))
             }
             "metadata" => SuruleOption::Meta(SuruleMetaOption::Metadata(elements::parse_metadata(
                 value_str,

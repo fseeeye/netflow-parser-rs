@@ -653,6 +653,56 @@ impl FromStr for ByteTestOp {
 }
 
 /// 由字符串解析 Dsize
+impl FromStr for IsDataAt {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(raw_input: &str) -> Result<Self, Self::Err> {
+        let make_err = |reason| SuruleParseError::InvalidIsDataAt(reason).into();
+        let input = handle_value(raw_input)?;
+
+        // negate
+        let (input, negate_op) = nom::combinator::opt(nom::bytes::complete::tag("!"))(input)?;
+        let negate = negate_op.is_some();
+        // pos
+        let (input, pos_str) = nom::character::complete::digit1::<_, nom::error::Error<&str>>(input.trim_start())
+            .map_err(|_| make_err(format!("no position number: {}", raw_input)))?;
+        let pos = usize::from_str(pos_str)
+            .map_err(|_| make_err(format!("error position number str: {}", pos_str)))?;
+        // relative (optional)
+        let (input, relative_op) = nom::combinator::opt(
+            nom::sequence::preceded(
+                nom::bytes::complete::tag(","),
+                nom::sequence::preceded(
+                    nom::character::complete::multispace0, 
+                    nom::combinator::rest
+                ),
+            )
+        )(input.trim_start())?;
+
+        if let Some(relative_str) = relative_op {
+            if relative_str.trim() == "relative" {
+                Ok(IsDataAt {
+                    pos,
+                    negate,
+                    relative: true
+                })
+            } else {
+                Err(make_err(format!("unknow optional modifier: {}", relative_str)))
+            }
+        } else {
+            let (_input, _eof) = nom::combinator::eof::<_, nom::error::Error<&str>>(input)
+                .map_err(|_| make_err(format!("unterminated: {}", raw_input)))?;
+
+            Ok(IsDataAt {
+                pos,
+                negate,
+                relative: false
+            })
+        }
+    }
+}
+
+/// 由字符串解析 Dsize
 impl FromStr for Dsize {
     type Err = nom::Err<SuruleParseError>;
 
@@ -1068,6 +1118,44 @@ mod tests {
         assert_eq!(
             ByteTest::from_str("1,!&,128,6,foo"),
             Err(SuruleParseError::InvalidByteTest("unknown parameter: \"foo\"".to_string()).into())
+        );
+    }
+
+    #[test]
+    fn test_isdataat() {
+        assert_eq!(
+            "10".parse(),
+            Ok(IsDataAt {
+                pos: 10,
+                ..Default::default()
+            })
+        );
+
+        assert_eq!(
+            "10, relative".parse(),
+            Ok(IsDataAt {
+                pos: 10,
+                relative: true,
+                ..Default::default()
+            })
+        );
+
+        assert_eq!(
+            "!10".parse(),
+            Ok(IsDataAt {
+                pos: 10,
+                negate: true,
+                ..Default::default()
+            })
+        );
+
+        assert_eq!(
+            " !10 , relative ".parse(),
+            Ok(IsDataAt {
+                pos: 10,
+                negate: true,
+                relative: true
+            })
         );
     }
 

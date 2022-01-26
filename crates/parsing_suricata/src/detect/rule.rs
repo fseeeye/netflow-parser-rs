@@ -30,7 +30,7 @@ impl SuruleDetector for TcpSurule {
                     if !self.dst_addr.check(dst_ipv4) {
                         return false;
                     }
-                };
+                }
                 if let IpAddr::V4(src_ipv4) = src_ip {
                     if !self.src_addr.check(src_ipv4) {
                         return false;
@@ -48,7 +48,7 @@ impl SuruleDetector for TcpSurule {
                     if !self.dst_addr.check(dst_ipv4) && !self.src_addr.check(dst_ipv4) {
                         return false;
                     }
-                };
+                }
                 if let IpAddr::V4(src_ipv4) = src_ip {
                     if !self.src_addr.check(src_ipv4) && !self.dst_addr.check(src_ipv4) {
                         return false;
@@ -65,9 +65,9 @@ impl SuruleDetector for TcpSurule {
         true
     }
 
-    // TODO
     fn detect_option<'a>(&self, payload: Self::Proto<'a>) -> bool {
         let mut detect_ptr = 0;
+        // detect payload options
         for payload_option in &self.payload_options {
             match payload_option {
                 SurulePayloadOption::Content(c) => {
@@ -101,14 +101,27 @@ impl SuruleDetector for TcpSurule {
                         return false;
                     }
                 }
+                SurulePayloadOption::Pcre(pcre) => {
+                    if pcre.check(payload) == false {
+                        return false;
+                    }
+                }
+                SurulePayloadOption::IsDataAt(ida) => {
+                    if ida.check(payload, detect_ptr) == false {
+                        return false;
+                    }
+                }
                 _ => {}
             }
         }
+        // detect tcp options
+        // TODO
         for tcp_option in &self.tcp_options {
             match tcp_option {
                 _ => {}
             }
         }
+        // detect flow options
         for flow_option in &self.flow_options {
             match flow_option {
                 SuruleFlowOption::Flow(_) => {}
@@ -140,7 +153,7 @@ impl SuruleDetector for UdpSurule {
                     if !self.dst_addr.check(dst_ipv4) {
                         return false;
                     }
-                };
+                }
                 if let IpAddr::V4(src_ipv4) = src_ip {
                     if !self.src_addr.check(src_ipv4) {
                         return false;
@@ -158,7 +171,7 @@ impl SuruleDetector for UdpSurule {
                     if !self.dst_addr.check(dst_ipv4) && !self.src_addr.check(dst_ipv4) {
                         return false;
                     }
-                };
+                }
                 if let IpAddr::V4(src_ipv4) = src_ip {
                     if !self.src_addr.check(src_ipv4) && !self.dst_addr.check(src_ipv4) {
                         return false;
@@ -175,10 +188,10 @@ impl SuruleDetector for UdpSurule {
         true
     }
 
-    // TODO
     fn detect_option<'a>(&self, payload: Self::Proto<'a>) -> bool {
         let mut detect_ptr = 0;
         for payload_option in &self.payload_options {
+            // detect payload options
             match payload_option {
                 SurulePayloadOption::Content(c) => {
                     if let Some(p) = c.check(payload, detect_ptr) {
@@ -209,17 +222,35 @@ impl SuruleDetector for UdpSurule {
                         return false;
                     }
                 }
+                SurulePayloadOption::Pcre(pcre) => {
+                    if pcre.check(payload) == false {
+                        return false;
+                    }
+                }
+                SurulePayloadOption::IsDataAt(ida) => {
+                    if ida.check(payload, detect_ptr) == false {
+                        return false;
+                    }
+                }
                 _ => {}
             }
         }
+        // detect udp options
+        // TODO
         for udp_option in &self.udp_options {
             match udp_option {
                 _ => {}
             }
         }
+        // detect flow options
         for flow_option in &self.flow_options {
             match flow_option {
-                _ => {}
+                SuruleFlowOption::Flow(_) => {}
+                SuruleFlowOption::Flowbits(flowbits) => {
+                    if !flowbits.check() {
+                        return false;
+                    }
+                }
             }
         }
         return true;

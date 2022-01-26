@@ -75,7 +75,7 @@ pub enum SuruleNaivePayloadOption {
     // Bool, Payload Keyword
     EndsWith,
     // Value, Payload Keyword
-    IsDataAt(String),
+    IsDataAt(elements::IsDataAt),
     // Bool, Payload Keyword
     NoCase,
     // Value, Payload Keyword
@@ -109,7 +109,7 @@ pub enum SurulePayloadOption {
     // Value, Payload Keyword
     Dsize(elements::Dsize),
     // Value, Payload Keyword
-    IsDataAt(String),
+    IsDataAt(elements::IsDataAt),
     // Value, Payload Keyword
     Pcre(elements::Pcre),
     // Bool,  Payload Keyword

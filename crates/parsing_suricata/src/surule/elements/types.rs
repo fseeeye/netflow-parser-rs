@@ -301,7 +301,7 @@ impl Default for ByteTestOp {
 }
 
 /// Dsize Type (Suricata Body Element)
-/// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#pcre-perl-compatible-regular-expressions
+/// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#dsize
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
@@ -313,15 +313,28 @@ pub enum Dsize {
     Range(usize, usize),
 }
 
+/// IsDataAt Type (Suricata Body Element)
+/// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#isdataat
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq, Default)]
+#[repr(C)]
+pub struct IsDataAt {
+    pub pos: usize,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub negate: bool,
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
+    pub relative: bool,
+}
+
 /// Pcre Type (Suricata Body Element)
 /// refs: https://suricata.readthedocs.io/en/latest/rules/payload-keywords.html#pcre-perl-compatible-regular-expressions
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, PartialEq, Debug, Default)]
 #[repr(C)]
 pub struct Pcre {
+    pub pattern: String,
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub negate: bool,
-    pub pattern: String,
     // Warning: only support patical modifiers
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "is_default"))]
     pub modifier_i: bool, // caseless

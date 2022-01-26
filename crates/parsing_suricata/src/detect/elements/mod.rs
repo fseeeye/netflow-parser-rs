@@ -8,6 +8,7 @@ mod byte_test;
 mod content;
 mod dsize;
 mod pcre;
+mod isdataat;
 
 // detect flow keywords
 mod flowbits;

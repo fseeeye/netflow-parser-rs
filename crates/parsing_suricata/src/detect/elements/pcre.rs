@@ -1,6 +1,7 @@
 use crate::surule::elements::Pcre;
 
 impl Pcre {
+    // Warning: return bool or Option<usize> ?
     pub fn check(&self, payload_slice: &[u8]) -> bool {
         let mut pcre_builder = pcre2::bytes::RegexBuilder::new();
         pcre_builder.jit(true);
