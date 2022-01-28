@@ -84,6 +84,7 @@ pub enum ApplicationLayer<'a> {
     FinsTcpRsp(FinsTcpRspHeader<'a>),
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
+    Http(HttpHeader),
     Mms(MmsHeader<'a>),
     S7comm(S7commHeader<'a>),
     Bacnet(BacnetHeader<'a>),
