@@ -13,7 +13,7 @@ use crate::ProtocolType;
 use super::{
     parse_bacnet_layer, parse_dnp3_layer, parse_fins_tcp_req_layer, parse_fins_tcp_rsp_layer,
     parse_iec104_layer, parse_iso_on_tcp_layer, parse_l4_eof_layer, parse_modbus_req_layer,
-    parse_modbus_rsp_layer, parse_opcua_layer,
+    parse_modbus_rsp_layer, parse_opcua_layer, parse_http_layer,
 };
 
 // TCP Header Format
@@ -148,6 +148,10 @@ pub fn parse_tcp_layer<'a>(
         return parse_l4_eof_layer(input, link_layer, network_layer, transport_layer, options);
     }
     match tcp_header.src_port {
+        80 => {
+            let transport_layer = TransportLayer::Tcp(tcp_header);
+            parse_http_layer(input, link_layer, network_layer, transport_layer, options)
+        }
         102 => {
             let transport_layer = TransportLayer::Tcp(tcp_header);
             parse_iso_on_tcp_layer(input, link_layer, network_layer, transport_layer, options)
@@ -177,6 +181,10 @@ pub fn parse_tcp_layer<'a>(
             parse_bacnet_layer(input, link_layer, network_layer, transport_layer, options)
         }
         _ => match tcp_header.dst_port {
+            80 => {
+                let transport_layer = TransportLayer::Tcp(tcp_header);
+                parse_http_layer(input, link_layer, network_layer, transport_layer, options)
+            }
             102 => {
                 let transport_layer = TransportLayer::Tcp(tcp_header);
                 parse_iso_on_tcp_layer(input, link_layer, network_layer, transport_layer, options)

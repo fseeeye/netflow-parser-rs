@@ -102,8 +102,17 @@ fn parse_opcua_pcap() {
 
 #[test]
 fn parse_mms_pcap() {
-    tracing_subscriber::fmt::init();
+    // tracing_subscriber::fmt::init();
     let mms_pcap_path = "./tests/mms_3.pcap";
 
     assert!(parse_pcap(mms_pcap_path).is_ok());
+}
+
+#[test]
+fn parse_http() {
+    tracing_subscriber::fmt::init();
+    let http_pcap_path = "./tests/http_simple.pcap";
+
+    assert!(parse_pcap(http_pcap_path).is_ok());
+    // assert!(false);
 }
