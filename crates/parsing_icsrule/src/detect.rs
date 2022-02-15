@@ -2,7 +2,7 @@ use parsing_parser::{L5Packet, QuinPacket};
 use parsing_rule::*;
 use tracing::debug;
 
-use super::icsrule::{Action, HmIcsRules};
+use super::icsrule::{basis::Action, HmIcsRules};
 
 pub trait IcsRuleDetector {
     fn detect(&self, l5: &L5Packet) -> bool;
@@ -12,7 +12,7 @@ impl Into<RuleAction> for Action {
     fn into(self) -> RuleAction {
         match self {
             Action::Alert => RuleAction::Alert,
-            Action::Allow => RuleAction::Pass,
+            Action::Pass => RuleAction::Pass,
             Action::Drop => RuleAction::Drop,
             Action::Reject => RuleAction::Reject,
         }

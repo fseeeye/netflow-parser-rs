@@ -8,12 +8,18 @@ use crate::detect::IcsRuleDetector;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct IcsRuleBasis {
-    pub rid: u32,
+    pub active: bool,
+    pub rid: usize,
     pub action: Action,
+    #[serde(rename = "src")]
     pub src_ip: Option<IpAddr>,
+    #[serde(rename = "sport")]
     pub src_port: Option<u16>,
+    #[serde(rename = "dire")]
     pub dir: Direction,
+    #[serde(rename = "dst")]
     pub dst_ip: Option<IpAddr>,
+    #[serde(rename = "dport")]
     pub dst_port: Option<u16>,
     pub msg: String,
 }
@@ -21,7 +27,7 @@ pub struct IcsRuleBasis {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum Action {
-    Allow,
+    Pass,
     Alert,
     Drop,
     Reject,
@@ -37,6 +43,10 @@ pub enum Direction {
 
 impl IcsRuleDetector for IcsRuleBasis {
     fn detect(&self, l5: &L5Packet) -> bool {
+        if !self.active {
+            return false;
+        }
+
         let packet_src_ip = &l5.get_src_ip();
         let packet_dst_ip = &l5.get_dst_ip();
         let packet_src_port = &l5.get_src_port();
@@ -156,6 +166,7 @@ mod tests {
         };
 
         let basis_rule = IcsRuleBasis {
+            active: true,
             rid: 1,
             action: Action::Alert,
             src_ip: Some(IpAddr::V4(Ipv4Addr::from_str("192.168.0.2").unwrap())),

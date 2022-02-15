@@ -2,31 +2,30 @@ use parsing_parser::ApplicationNaiveProtocol;
 use tracing::error;
 
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::HashMap,
     fs,
 };
 
-use super::{IcsRule, IcsRuleArgs};
+use super::{IcsRule, IcsRuleArg};
 
 /// HmIcsRules是存储规则集合的数据结构，它采用 HashMap 来存取所有规则。
 /// > Tips: 目前数据结构处于待完善阶段。
 #[derive(Debug)]
 pub struct HmIcsRules {
-    pub rules_inner: HashMap<u32, IcsRule>,
-    pub rules_map: HashMap<ApplicationNaiveProtocol, BTreeSet<u32>>,
+    pub rules_inner: HashMap<usize, IcsRule>,
+    pub rules_map: HashMap<ApplicationNaiveProtocol, Vec<usize>>,
 }
 
 impl HmIcsRules {
+    
     pub fn new() -> Self {
-        let rules_inner = HashMap::new();
-        let rules_map = HashMap::new();
         Self {
-            rules_inner,
-            rules_map,
+            rules_inner: HashMap::new(),
+            rules_map: HashMap::new()
         }
     }
 
-    pub fn init(&mut self, rule_file_path: &str) -> bool {
+    pub fn load_rules(&mut self, rule_file_path: &str) -> bool {
         // read file from sys
         let file_contents = match fs::read_to_string(rule_file_path) {
             Ok(o) => o,
@@ -45,22 +44,47 @@ impl HmIcsRules {
             }
         };
 
-        // init attributes of Rules
+        // insert Rules
         for rule in rules_vec {
             let rid = rule.basic.rid;
             let protocol_type = match rule.args {
-                IcsRuleArgs::Modbus(..) => ApplicationNaiveProtocol::Modbus,
+                IcsRuleArg::Modbus(..) => ApplicationNaiveProtocol::Modbus,
             };
             (*self
                 .rules_map
                 .entry(protocol_type)
-                .or_insert(BTreeSet::<u32>::new()))
-            .insert(rid);
+                .or_insert(Vec::<usize>::new()))
+            .push(rid);
             self.rules_inner.insert(rid, rule);
         }
 
         return true;
     }
+
+    pub fn delete_rule(&mut self, rule_rid: usize) {
+        // remove rid in rules map
+        for (_protocol, rids_vec) in &mut self.rules_map {
+            if let Some(index) = rids_vec.iter().position(|x| *x == rule_rid) {
+                rids_vec.remove(index);
+            }
+        }
+
+        // remove rule in inner rules
+        self.rules_inner.remove(&rule_rid);
+    }
+
+    pub fn active_rule(&mut self, rule_rid: usize) {
+        if let Some(target_rule) = self.rules_inner.get_mut(&rule_rid) {
+            target_rule.basic.active = true;
+        }
+    }
+
+    pub fn deactive_rule(&mut self, rule_rid: usize) {
+        if let Some(target_rule) = self.rules_inner.get_mut(&rule_rid) {
+            target_rule.basic.active = false;
+        }
+    }
+
 }
 
 #[cfg(test)]
@@ -68,71 +92,74 @@ mod tests {
     use std::{net::IpAddr, str::FromStr};
 
     use crate::{
-        icsrule::{basis::Direction, Action},
-        icsrule_arg::{ModbusArg, ModbusReqArg, ModbusRspArg},
+        icsrule::basis::{Direction, Action},
+        icsrule_arg::ModbusArg,
         IcsRuleBasis,
     };
 
     use super::*;
 
-    #[test]
-    fn parse_ics_rules() {
+    fn load_unitest_icsrule() -> HmIcsRules {
         let file_str = "./tests/unitest_ics_rules.json";
         let mut ics_rules = HmIcsRules::new();
-        assert!(ics_rules.init(file_str));
+        assert!(ics_rules.load_rules(file_str));
 
-        let mut rule_iter = ics_rules.rules_inner.iter();
-        if let Some((_, ics_rule)) = rule_iter.next() {
+        return ics_rules;
+    }
+
+    #[test]
+    fn parse_icsrules() {
+        let ics_rules = load_unitest_icsrule();
+
+        if let Some(ics_rule) = ics_rules.rules_inner.get(&1) {
             assert_eq!(
                 *ics_rule,
                 IcsRule {
                     basic: IcsRuleBasis {
+                        active: true,
                         rid: 1,
-                        action: Action::Drop,
+                        action: Action::Alert,
                         src_ip: Some(IpAddr::from_str("192.168.3.189").unwrap()),
                         src_port: None,
-                        dir: Direction::Bi,
+                        dir: Direction::Uni,
                         dst_ip: None,
-                        dst_port: None,
-                        msg: "Modbus: Read Discrete Inputs(2)".to_string(),
+                        dst_port: Some(502),
+                        msg: "Modbus Read Coils(1)".to_string(),
                     },
-                    args: IcsRuleArgs::Modbus(vec![
-                        ModbusArg::ModbusReq(ModbusReqArg {
-                            mbap_header: Some(crate::icsrule_arg::modbus_req::MbapHeader {
-                                transaction_id: None,
-                                protocol_id: None,
-                                length: None,
-                                unit_id: None,
-                            }),
-                            pdu: Some(crate::icsrule_arg::modbus_req::PDU {
-                                data: Some(
-                                    crate::icsrule_arg::modbus_req::Data::ReadDiscreteInputs {
-                                        start_address: None,
-                                        count: None
-                                    }
-                                )
-                            })
-                        }),
-                        ModbusArg::ModbusRsp(ModbusRspArg {
-                            mbap_header: Some(crate::icsrule_arg::modbus_rsp::MbapHeader {
-                                transaction_id: Some(256),
-                                protocol_id: Some(0),
-                                length: Some(4),
-                                unit_id: Some(1),
-                            }),
-                            pdu: Some(crate::icsrule_arg::modbus_rsp::PDU {
-                                data: Some(
-                                    crate::icsrule_arg::modbus_rsp::Data::ReadDiscreteInputs {
-                                        byte_count: Some(1)
-                                    }
-                                )
-                            })
-                        })
-                    ])
+                    args: IcsRuleArg::Modbus(
+                        ModbusArg::ReadCoils {
+                            start_address: Some(0),
+                            end_address: Some(10)
+                        }
+                    )
                 }
             );
         } else {
             assert!(false);
         }
+    }
+
+    #[test]
+    fn delete_icsrule() {
+        let mut ics_rules = load_unitest_icsrule();
+
+        ics_rules.delete_rule(1);
+        
+        println!("rules_map: {:?}", ics_rules.rules_map);
+        println!("rules_inner: {:?}", ics_rules.rules_inner);
+        for (_k, v) in &ics_rules.rules_map {
+            assert!(v.is_empty());
+        }
+        assert!(ics_rules.rules_inner.is_empty());
+    }
+
+    #[test]
+    fn deactive_icsrule() {
+        let mut ics_rules = load_unitest_icsrule();
+
+        ics_rules.deactive_rule(1);
+        assert!(ics_rules.rules_inner.get(&1).unwrap().basic.active == false);
+        ics_rules.active_rule(1);
+        assert!(ics_rules.rules_inner.get(&1).unwrap().basic.active == true);
     }
 }

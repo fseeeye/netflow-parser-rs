@@ -96,7 +96,7 @@ fn parse_pcap(path: &str) {
     // 初始化 ICS 规则
     let icsrule_path = "./examples/ics_rules.json";
     let mut icsrules = HmIcsRules::new();
-    assert_eq!(icsrules.init(icsrule_path), true);
+    assert_eq!(icsrules.load_rules(icsrule_path), true);
     // 初始化 Suricata 规则
     let surule_path = "./examples/suricata.rules";
     let surules = VecSurules::parse_from_file(surule_path).unwrap();

@@ -56,11 +56,39 @@ typedef struct QuinPacket QuinPacket;
  */
 typedef struct QuinPacketOptions QuinPacketOptions;
 
+/**
+ * 启用ICS规则
+ */
+bool active_ics_rule(struct HmIcsRules *rules_ptr, size_t rule_rid);
+
+bool deactive_ics_rule(struct HmIcsRules *rules_ptr, size_t rule_rid);
+
+/**
+ * 删除ICS规则
+ */
+bool delete_ics_rule(struct HmIcsRules *rules_ptr, size_t rule_rid);
+
+/**
+ * ICS规则检测
+ */
 bool detect_ics_rules(const struct HmIcsRules *rules_ptr, const struct QuinPacket *packet_ptr);
+
+/**
+ * 启用日志输出
+ */
+void enable_tracing(void);
+
+/**
+ * 初始化ICS规则结构体
+ */
+struct HmIcsRules *init_ics_rules(void);
 
 const struct QuinPacketOptions *init_parse_option(void);
 
-const struct HmIcsRules *init_rules(const char *file_ptr);
+/**
+ * 从文件加载ICS规则
+ */
+bool load_ics_rules(struct HmIcsRules *rules_ptr, const char *file_ptr);
 
 const struct QuinPacket *parse_packet(const uint8_t *input_ptr,
                                       uint16_t input_len,

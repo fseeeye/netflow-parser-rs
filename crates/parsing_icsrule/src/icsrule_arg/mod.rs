@@ -1,10 +1,6 @@
-mod modbus;
-pub(crate) mod modbus_req;
-pub(crate) mod modbus_rsp;
+pub(crate) mod modbus;
 
 pub use self::modbus::ModbusArg;
-pub use self::modbus_req::ModbusReqArg;
-pub use self::modbus_rsp::ModbusRspArg;
 
 use super::detect::IcsRuleDetector;
 use parsing_parser::L5Packet;
@@ -12,21 +8,16 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "proname", content = "args")]
-pub enum IcsRuleArgs {
-    Modbus(Vec<ModbusArg>),
+pub enum IcsRuleArg {
+    Modbus(ModbusArg),
 }
 
-impl IcsRuleDetector for IcsRuleArgs {
+impl IcsRuleDetector for IcsRuleArg {
     fn detect(&self, l5: &L5Packet) -> bool {
         match self {
-            Self::Modbus(modbus_args) => {
-                if modbus_args.is_empty() {
+            Self::Modbus(modbus_arg) => {
+                if modbus_arg.detect(l5) {
                     return true;
-                }
-                for modbus_arg in modbus_args {
-                    if modbus_arg.detect(l5) {
-                        return true;
-                    }
                 }
                 return false;
             }
