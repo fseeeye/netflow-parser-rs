@@ -5,6 +5,7 @@ pub use self::basis::IcsRuleBasis;
 pub use self::hm_rules::HmIcsRules;
 
 use super::icsrule_arg::IcsRuleArg;
+use parsing_parser::ApplicationNaiveProtocol;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -13,4 +14,12 @@ pub struct IcsRule {
     pub basic: IcsRuleBasis,
     #[serde(flatten)]
     pub args: IcsRuleArg,
+}
+
+impl IcsRule {
+    pub fn get_protocol_type(&self) -> ApplicationNaiveProtocol {
+        match self.args {
+            IcsRuleArg::Modbus(..) => ApplicationNaiveProtocol::Modbus,
+        }
+    }
 }

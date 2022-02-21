@@ -1,12 +1,11 @@
 use parsing_parser::ApplicationNaiveProtocol;
-use tracing::error;
 
 use std::{
     collections::HashMap,
     fs,
 };
 
-use super::{IcsRule, IcsRuleArg};
+use super::IcsRule;
 
 /// HmIcsRules是存储规则集合的数据结构，它采用 HashMap 来存取所有规则。
 /// > Tips: 目前数据结构处于待完善阶段。
@@ -30,7 +29,7 @@ impl HmIcsRules {
         let file_contents = match fs::read_to_string(rule_file_path) {
             Ok(o) => o,
             Err(e) => {
-                error!(target: "ICSRULE(HmIcsRules::init)", error = ?e, "occur error while reading rule string.");
+                tracing::error!(error = ?e, "error occurs while reading rule string.");
                 return false;
             }
         };
@@ -39,7 +38,7 @@ impl HmIcsRules {
         let rules_vec: Vec<IcsRule> = match serde_json::from_str(file_contents.as_str()) {
             Ok(o) => o,
             Err(e) => {
-                error!(target: "ICSRULE(HmIcsRules::init)", error = ?e, "occur error while serding rule string.");
+                tracing::error!(error = ?e, "error occurs while serding rule string.");
                 return false;
             }
         };
@@ -47,14 +46,13 @@ impl HmIcsRules {
         // insert Rules
         for rule in rules_vec {
             let rid = rule.basic.rid;
-            let protocol_type = match rule.args {
-                IcsRuleArg::Modbus(..) => ApplicationNaiveProtocol::Modbus,
-            };
-            (*self
-                .rules_map
+            let protocol_type = rule.get_protocol_type();
+
+            self.rules_map
                 .entry(protocol_type)
-                .or_insert(Vec::<usize>::new()))
-            .push(rid);
+                .or_insert(Vec::<usize>::new())
+                .push(rid);
+            
             self.rules_inner.insert(rid, rule);
         }
 
@@ -93,7 +91,7 @@ mod tests {
 
     use crate::{
         icsrule::basis::{Direction, Action},
-        icsrule_arg::ModbusArg,
+        icsrule_arg::{ModbusArg, IcsRuleArg},
         IcsRuleBasis,
     };
 

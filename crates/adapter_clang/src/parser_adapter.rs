@@ -5,12 +5,12 @@ use parsing_parser::{
 };
 
 #[no_mangle]
-pub extern "C" fn init_parse_option() -> *const QuinPacketOptions {
+pub extern "C" fn init_parse_option_rs() -> *const QuinPacketOptions {
     &QuinPacketOptions::default()
 }
 
 #[no_mangle]
-pub extern "C" fn parse_packet<'a>(
+pub extern "C" fn parse_packet_rs<'a>(
     input_ptr: *const u8,
     input_len: u16,
     option_ptr: *const QuinPacketOptions,
@@ -31,7 +31,7 @@ pub extern "C" fn parse_packet<'a>(
 }
 
 #[no_mangle]
-pub extern "C" fn show_packet(packet_ptr: *const QuinPacket) {
+pub extern "C" fn show_packet_rs(packet_ptr: *const QuinPacket) {
     let packet = unsafe {
         assert!(!packet_ptr.is_null());
         &*packet_ptr

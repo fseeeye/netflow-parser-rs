@@ -59,39 +59,54 @@ typedef struct QuinPacketOptions QuinPacketOptions;
 /**
  * 启用ICS规则
  */
-bool active_ics_rule(struct HmIcsRules *rules_ptr, size_t rule_rid);
+bool active_ics_rule_rs(struct HmIcsRules *rules_ptr, size_t rule_rid);
 
-bool deactive_ics_rule(struct HmIcsRules *rules_ptr, size_t rule_rid);
+bool deactive_ics_rule_rs(struct HmIcsRules *rules_ptr, size_t rule_rid);
 
 /**
  * 删除ICS规则
  */
-bool delete_ics_rule(struct HmIcsRules *rules_ptr, size_t rule_rid);
+bool delete_ics_rule_rs(struct HmIcsRules *rules_ptr, size_t rule_rid);
 
 /**
  * ICS规则检测
  */
-bool detect_ics_rules(const struct HmIcsRules *rules_ptr, const struct QuinPacket *packet_ptr);
+bool detect_ics_rules_rs(const struct HmIcsRules *rules_ptr, const struct QuinPacket *packet_ptr);
 
 /**
  * 启用日志输出
  */
-void enable_tracing(void);
+void enable_tracing_rs(void);
+
+/**
+ * 清空ICS规则 (recreate)
+ */
+void free_ics_rules_rs(struct HmIcsRules *rules_ptr);
+
+/**
+ * 清空ICS规则输出
+ */
+void free_show_ics_rules_rs(char *show_rules_ptr);
 
 /**
  * 初始化ICS规则结构体
  */
-struct HmIcsRules *init_ics_rules(void);
+struct HmIcsRules *init_ics_rules_rs(void);
 
-const struct QuinPacketOptions *init_parse_option(void);
+const struct QuinPacketOptions *init_parse_option_rs(void);
 
 /**
  * 从文件加载ICS规则
  */
-bool load_ics_rules(struct HmIcsRules *rules_ptr, const char *file_ptr);
+bool load_ics_rules_rs(struct HmIcsRules *rules_ptr, const char *file_ptr);
 
-const struct QuinPacket *parse_packet(const uint8_t *input_ptr,
-                                      uint16_t input_len,
-                                      const struct QuinPacketOptions *option_ptr);
+const struct QuinPacket *parse_packet_rs(const uint8_t *input_ptr,
+                                         uint16_t input_len,
+                                         const struct QuinPacketOptions *option_ptr);
 
-void show_packet(const struct QuinPacket *packet_ptr);
+/**
+ * 输出ICS规则
+ */
+char *show_ics_rules_rs(const struct HmIcsRules *rules_ptr);
+
+void show_packet_rs(const struct QuinPacket *packet_ptr);

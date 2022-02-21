@@ -7,4 +7,6 @@
 2. `$ cd /path/to/parsing-rs/crates/adapter_clang` : 进入适配器目录。
 3. `$ cargo build --release` : 编译适配器，在`/root-of-project/target/release/`目录生成 .a 和 .so文件，可以按需取用。
 4. `$ cbindgen --config cbindgen.toml --crate adapter_clang --output output/parsing_rs.h` : 会在`./output`目录生成 .h 头文件。
-5. 至此，获得了 system library 和 C header file，将它们移动至合适路径即可。
+5. 至此，获得了 system library 和 C header file，将它们移动至合适路径即可。比如 Unix 系统下可执行：
+    * `sudo cp ~/parsing-rs/target/release/libparser_rs.so /usr/local/lib/`
+    * `cp ~/parsing-rs/crates/adapter_clang/output/parser_rs.h ~/firewall-core/vpp-plugins/utils/`
