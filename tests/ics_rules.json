@@ -1,31 +1,19 @@
 [
     {
+        "active": true,
         "rid": 1,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read Discrete Inputs(2)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "transaction_id": null,
-                "protocol_id": null,
-                "length": null,
-                "unit_id": null,
-                "function_code": "0x02",
-                "data": {}
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x02",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": 502,
+        "msg": "Modbus Read Coils(1)",
+        "args": {
+            "function_code": "1",
+            "start_address": 0,
+            "end_address": 10
+        }
     }
 ]
