@@ -1,508 +1,288 @@
 [
     {
+        "active": true,
         "rid": 1,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read Coils(1)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "transaction_id": 0,
-                "protocol_id": 0,
-                "length": 0,
-                "unit_id": 0,
-                "function_code": "1",
-                "data": {
-                    "start_address": 1,
-                    "count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "transaction_id": 0,
-                "protocol_id": 0,
-                "length": 0,
-                "unit_id": 0,
-                "function_code": "0x01",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Read Coils(1)",
+        "args": {
+            "function_code": "1",
+            "start_address": 0,
+            "end_address": 10
+        }
     },
     {
+        "active": true,
         "rid": 2,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read Discrete Inputs(2)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "0x02",
-                "data": {
-                    "start_address": 1,
-                    "count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x02",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Read Discrete Inputs(2)",
+        "args": {
+            "function_code": "2",
+            "start_address": 0,
+            "end_address": 10
+        }
     },
     {
+        "active": true,
         "rid": 3,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Holding Registers(3)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "0x03",
-                "data": {
-                    "start_address": 1,
-                    "count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x03",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Holding Registers(3)",
+        "args": {
+            "function_code": "3",
+            "start_address": 0,
+            "end_address": 10
+        }
     },
     {
+        "active": true,
         "rid": 4,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read Input Registers(4)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "0x04",
-                "data": {
-                    "start_address": 1,
-                    "count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x04",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Read Input Registers(4)",
+        "args": {
+            "function_code": "4",
+            "start_address": 0,
+            "end_address": 10
+        }
     },
     {
+        "active": true,
         "rid": 5,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Write Single Coil(5)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "0x05",
-                "data": {
-                    "output_address": 1,
-                    "output_value": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x05",
-                "data": {
-                    "output_address": 1,
-                    "output_value": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Write Single Coil(5)",
+        "args": {
+            "function_code": "5",
+            "start_address": 0,
+            "end_address": 10,
+            "value": 255
+        }
     },
     {
+        "active": true,
         "rid": 6,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Write Single Register(6)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "0x06",
-                "data": {
-                    "register_address": 1,
-                    "register_value": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x06",
-                "data": {
-                    "register_address": 1,
-                    "register_value": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Write Single Register(6)",
+        "args": {
+            "function_code": "6",
+            "start_address": 0,
+            "end_address": 10,
+            "value": 257
+        }
     },
     {
+        "active": true,
         "rid": 7,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
         "msg": "Modbus: Read Exception Status(7)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "7",
-                "data": {}
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x07",
-                "data": {
-                    "output_data": 1
-                }
-            }
-        ]
+        "args": {
+            "function_code": "7"
+        }
     },
     {
+        "active": true,
         "rid": 11,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Get Comm Event Counter(11)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "11",
-                "data": {}
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x0b",
-                "data": {
-                    "status": 1,
-                    "event_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Get Comm Event Counter(11)",
+        "args": {
+            "function_code": "11"
+        }
     },
     {
+        "active": true,
         "rid": 12,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Get Comm Event Log(12)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "12",
-                "data": {}
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x0c",
-                "data": {
-                    "byte_count": 1,
-                    "status": 1,
-                    "event_count": 1,
-                    "message_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Get Comm Event Log(12)",
+        "args": {
+            "function_code": "12"
+        }
     },
     {
+        "active": true,
         "rid": 15,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Write Multiple Coils(15)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "15",
-                "data": {
-                    "start_address": 1,
-                    "output_count": 1,
-                    "byte_count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x0f",
-                "data": {
-                    "start_address": 1,
-                    "output_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Write Multiple Coils(15)",
+        "args": {
+            "function_code": "15",
+            "start_address": 0,
+            "end_address": 10,
+            "value": [1, 2]
+        }
     },
     {
+        "active": true,
         "rid": 16,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
         "msg": "Modbus: Write Multiple Registers(16)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "16",
-                "data": {
-                    "start_address": 1,
-                    "output_count": 1,
-                    "byte_count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x10",
-                "data": {
-                    "start_address": 1,
-                    "output_count": 1
-                }
-            }
-        ]
+        "args": {
+            "function_code": "16",
+            "start_address": 0,
+            "end_address": 10,
+            "value": [1, 2]
+        }
     },
     {
+        "active": true,
         "rid": 17,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Report Server ID(17)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "17",
-                "data": {}
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x11",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Report Server ID(17)",
+        "args": {
+            "function_code": "17"
+        }
     },
     {
+        "active": true,
         "rid": 20,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read File Record(20)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "20",
-                "data": {
-                    "byte_count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x14",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Read File Record(20)",
+        "args": {
+            "function_code": "20"
+        }
     },
     {
+        "active": true,
         "rid": 21,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Write File Record(21)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "21",
-                "data": {
-                    "byte_count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x15",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Write File Record(21)",
+        "args": {
+            "function_code": "21"
+        }
     },
     {
+        "active": true,
         "rid": 22,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Mask Write Register(22)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "22",
-                "data": {
-                    "ref_address": 1,
-                    "and_mask": 1,
-                    "or_mask": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x16",
-                "data": {
-                    "ref_address": 1,
-                    "and_mask": 1,
-                    "or_mask": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Mask Write Register(22)",
+        "args": {
+            "function_code": "22",
+            "start_address": 0,
+            "end_address": 10,
+            "and_mask": 1,
+            "or_mask": 2
+        }
     },
     {
+        "active": true,
         "rid": 23,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read Write Multiple Register(23)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "23",
-                "data": {
-                    "read_start_address": 1,
-                    "read_count": 1,
-                    "write_start_address": 1,
-                    "write_count": 1,
-                    "write_byte_count": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x17",
-                "data": {
-                    "byte_count": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Read Write Multiple Register(23)",
+        "args": {
+            "function_code": "23",
+            "start_address": 0,
+            "end_address": 10,
+            "start_address2": 0,
+            "end_address2": 10,
+            "value": [1, 2]
+        }
     },
     {
+        "active": true,
         "rid": 24,
+        "action": "alert",
         "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read FIFO Queue(24)",
-        "args": [
-            {
-                "args_type": "ModbusReq",
-                "function_code": "24",
-                "data": {
-                    "fifo_pointer_address": 1
-                }
-            },
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x18",
-                "data": {
-                    "byte_count": 1,
-                    "fifo_count": 1
-                }
-            }
-        ]
-    },
-    {
-        "rid": 129,
-        "proname": "Modbus",
-        "action": "drop",
-        "src_ip": "192.168.3.189",
-        "src_port": null,
-        "dir": "<>",
-        "dst_ip": null,
-        "dst_port": null,
-        "msg": "Modbus: Read Coil Exc(129)",
-        "args": [
-            {
-                "args_type": "ModbusRsp",
-                "function_code": "0x81",
-                "data": {
-                    "exception_code": 1
-                }
-            }
-        ]
+        "src": "192.168.3.189",
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "Modbus Read FIFO Queue(24)",
+        "args": {
+            "function_code": "24",
+            "start_address": 0,
+            "end_address": 10
+        }
     }
 ]

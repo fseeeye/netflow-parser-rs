@@ -1,4 +1,4 @@
-use parsing_parser::{L5Packet, QuinPacket};
+use parsing_parser::{L5Packet, QuinPacket, AppLevel};
 use parsing_rule::*;
 use tracing::debug;
 
@@ -23,16 +23,25 @@ impl RulesDetector for HmIcsRules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult {
         // ics规则要求packet为L5，否则返回false
         if let &QuinPacket::L5(l5) = &packet {
-            // Warning: demo detect code...
-            // 目前还未针对 rules 的数据结构做优化，加速规则匹配过程
-            for (_, rule) in &self.rules_inner {
-                debug!(target: "ICSRULE(HmIcsRules::detect)", "detecting ICS rule: {:?}", rule);
-                if rule.basic.detect(l5) {
-                    if rule.args.detect(l5) {
-                        return DetectResult::Hit(rule.basic.action.to_owned().into());
-                        // Warning: extra clone?
-                    }
+            let app_native_type = l5.get_app_naive_type();
+            if let Some(vec_rid) = self.rules_map.get(&app_native_type) {
+                
+                for rid in vec_rid {
+                    if let Some(rule) = self.rules_inner.get(rid) {
+                        if rule.basic.active {
+                            debug!(target: "ICSRULE(HmIcsRules::detect)", "detecting ICS rule: {:?}", rule);
+                            if rule.basic.detect(l5) {
+                                if rule.args.detect(l5) {
+                                    return DetectResult::Hit(rule.basic.action.to_owned().into());
+                                    // Warning: extra clone?
+                                }
+                            }
+                        }
+                    } else {
+                        continue;
+                    };
                 }
+
             }
         }
 

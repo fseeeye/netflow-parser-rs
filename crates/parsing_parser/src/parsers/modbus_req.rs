@@ -121,7 +121,7 @@ pub enum Data<'a> {
         write_start_address: u16,
         write_count: u16,
         write_byte_count: u8,
-        write_register_values: &'a [u8],
+        write_register_values: Vec<u16>,
     },
     ReadFIFOQueue {
         fifo_pointer_address: u16,
@@ -344,7 +344,7 @@ fn parse_read_write_multiple_registers(input: &[u8]) -> IResult<&[u8], Data> {
     let (input, write_start_address) = be_u16(input)?;
     let (input, write_count) = be_u16(input)?;
     let (input, write_byte_count) = u8(input)?;
-    let (input, write_register_values) = take(write_count * 2)(input)?;
+    let (input, write_register_values) = count(be_u16, (write_byte_count * 2) as usize)(input)?;
     Ok((
         input,
         Data::ReadWriteMultipleRegisters {
