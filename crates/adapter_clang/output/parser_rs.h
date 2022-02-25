@@ -71,7 +71,17 @@ bool delete_ics_rule_rs(struct HmIcsRules *rules_ptr, size_t rule_rid);
 /**
  * ICS规则检测
  */
-bool detect_ics_rules_rs(const struct HmIcsRules *rules_ptr, const struct QuinPacket *packet_ptr);
+bool detect_ics_rules_rs(const struct HmIcsRules *rules_ptr,
+                         const struct QuinPacket *packet_ptr,
+                         uint32_t *out_rid_ptr,
+                         uint8_t *out_action_ptr);
+
+/**
+ * ICS白名单规则检测
+ */
+bool detect_ics_whitelist_rules_rs(const struct HmIcsRules *rules_ptr,
+                                   const struct QuinPacket *packet_ptr,
+                                   uint32_t *out_rid_ptr);
 
 /**
  * 启用日志输出
@@ -79,9 +89,14 @@ bool detect_ics_rules_rs(const struct HmIcsRules *rules_ptr, const struct QuinPa
 void enable_tracing_rs(void);
 
 /**
- * 清空ICS规则 (recreate)
+ * 清空ICS规则
  */
 void free_ics_rules_rs(struct HmIcsRules *rules_ptr);
+
+/**
+ * 释放数据包解析结果内存
+ */
+void free_packet_rs(struct QuinPacket *packet_ptr);
 
 /**
  * 清空ICS规则输出
@@ -93,20 +108,34 @@ void free_show_ics_rules_rs(char *show_rules_ptr);
  */
 struct HmIcsRules *init_ics_rules_rs(void);
 
-const struct QuinPacketOptions *init_parse_option_rs(void);
+/**
+ * 初始化数据包解析选项
+ */
+struct QuinPacketOptions *init_parse_option_rs(void);
 
 /**
  * 从文件加载ICS规则
  */
 bool load_ics_rules_rs(struct HmIcsRules *rules_ptr, const char *file_ptr);
 
-const struct QuinPacket *parse_packet_rs(const uint8_t *input_ptr,
-                                         uint16_t input_len,
-                                         const struct QuinPacketOptions *option_ptr);
+/**
+ * 解析数据包
+ */
+struct QuinPacket *parse_packet_rs(const uint8_t *input_ptr,
+                                   uint16_t input_len,
+                                   const struct QuinPacketOptions *option_ptr);
+
+/**
+ * 重新生成ICS规则
+ */
+struct HmIcsRules *recreate_ics_rules_rs(struct HmIcsRules *rules_ptr);
 
 /**
  * 输出ICS规则
  */
 char *show_ics_rules_rs(const struct HmIcsRules *rules_ptr);
 
+/**
+ * 展示数据包解析结果
+ */
 void show_packet_rs(const struct QuinPacket *packet_ptr);

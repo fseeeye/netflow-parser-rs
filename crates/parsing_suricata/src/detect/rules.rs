@@ -40,7 +40,7 @@ impl RulesDetector for VecSurules {
                                 // TODO
                                 if tcp_rule.detect_option(tcp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current TCP Rule!");
-                                    return DetectResult::Hit(tcp_rule.action.clone().into());
+                                    return DetectResult::Hit(1, tcp_rule.action.clone().into());
                                 }
                             }
                         }
@@ -53,7 +53,7 @@ impl RulesDetector for VecSurules {
                                 // TODO
                                 if udp_rule.detect_option(udp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current UDP Rule: {:?}", &udp_rule);
-                                    return DetectResult::Hit(udp_rule.action.clone().into());
+                                    return DetectResult::Hit(1, udp_rule.action.clone().into());
                                 }
                             }
                         }
@@ -80,7 +80,7 @@ impl RulesDetector for VecSurules {
                                 // TODO
                                 if tcp_rule.detect_option(tcp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current TCP Rule!");
-                                    return DetectResult::Hit(tcp_rule.action.clone().into());
+                                    return DetectResult::Hit(1, tcp_rule.action.clone().into());
                                 }
                             }
                         }
@@ -93,7 +93,7 @@ impl RulesDetector for VecSurules {
                                 // TODO
                                 if udp_rule.detect_option(udp.payload) {
                                     debug!(target: "SURICATA(VecSurules::detect)", "HIT current TCP Rule: {:?}", &udp_rule);
-                                    return DetectResult::Hit(udp_rule.action.clone().into());
+                                    return DetectResult::Hit(1, udp_rule.action.clone().into());
                                 }
                             }
                         }

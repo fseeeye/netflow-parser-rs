@@ -8,9 +8,10 @@ pub enum RuleAction {
     Pass,
 }
 
+#[repr(C)]
 #[derive(Debug, PartialEq)]
 pub enum DetectResult {
-    Hit(RuleAction),
+    Hit(usize, RuleAction),
     Miss,
 }
 

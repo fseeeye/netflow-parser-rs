@@ -32,7 +32,7 @@ impl RulesDetector for HmIcsRules {
                             debug!(target: "ICSRULE(HmIcsRules::detect)", "detecting ICS rule: {:?}", rule);
                             if rule.basic.detect(l5) {
                                 if rule.args.detect(l5) {
-                                    return DetectResult::Hit(rule.basic.action.to_owned().into());
+                                    return DetectResult::Hit(rule.basic.rid, rule.basic.action.to_owned().into());
                                     // Warning: extra clone?
                                 }
                             }

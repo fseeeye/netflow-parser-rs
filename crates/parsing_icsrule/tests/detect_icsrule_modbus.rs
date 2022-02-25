@@ -64,31 +64,10 @@ fn make_modbus_req_packet(req_pdu: parsing_parser::parsers::modbus_req::PDU) -> 
     return QuinPacket::L5(l5);
 }
 
-
-#[test]
-fn detect_modbus_read_discrete_inputs() {
-    let req_pdu = parsing_parser::parsers::modbus_req::PDU {
-        function_code: 1,
-        data: parsing_parser::parsers::modbus_req::Data::ReadDiscreteInputs {
-            start_address: 1,
-            count: 1,
-        },
-    };
-    let packet_req = make_modbus_req_packet(req_pdu);
-
-    let mut modbus_rule = HmIcsRules::new();
-    assert!(modbus_rule.load_rules("./tests/ics_rules_modbus.json"));
-
-    assert_eq!(
-        modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
-    );
-}
-
 #[test]
 fn detect_modbus_read_coils() {
     let req_pdu = parsing_parser::parsers::modbus_req::PDU {
-        function_code: 2,
+        function_code: 1,
         data: parsing_parser::parsers::modbus_req::Data::ReadCoils {
             start_address: 1,
             count: 1,
@@ -101,7 +80,27 @@ fn detect_modbus_read_coils() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(1, RuleAction::Alert)
+    );
+}
+
+#[test]
+fn detect_modbus_read_discrete_inputs() {
+    let req_pdu = parsing_parser::parsers::modbus_req::PDU {
+        function_code: 2,
+        data: parsing_parser::parsers::modbus_req::Data::ReadDiscreteInputs {
+            start_address: 1,
+            count: 1,
+        },
+    };
+    let packet_req = make_modbus_req_packet(req_pdu);
+
+    let mut modbus_rule = HmIcsRules::new();
+    assert!(modbus_rule.load_rules("./tests/ics_rules_modbus.json"));
+
+    assert_eq!(
+        modbus_rule.detect(&packet_req),
+        DetectResult::Hit(2, RuleAction::Alert)
     );
 }
 
@@ -122,7 +121,7 @@ fn detect_modbus_read_holding_registers() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(3, RuleAction::Alert)
     );
 }
 
@@ -142,7 +141,7 @@ fn detect_modbus_read_input_registers() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(4, RuleAction::Alert)
     );
 }
 
@@ -163,7 +162,7 @@ fn detect_modbus_write_single_coil() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(5, RuleAction::Alert)
     );
 }
 
@@ -183,7 +182,7 @@ fn detect_modbus_write_single_register() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(6, RuleAction::Alert)
     );
 }
 
@@ -201,7 +200,7 @@ fn detect_modbus_read_exception_status() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(7, RuleAction::Alert)
     );
 }
 
@@ -219,7 +218,7 @@ fn detect_modbus_get_comm_event_counter() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(11, RuleAction::Alert)
     );
 }
 
@@ -236,7 +235,7 @@ fn detect_modbus_get_comm_event_log() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(12, RuleAction::Alert)
     );
 }
 
@@ -258,7 +257,7 @@ fn detect_modbus_write_multiple_coils() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(15, RuleAction::Alert)
     );
 }
 
@@ -280,7 +279,7 @@ fn detect_modbus_write_multiple_registers() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(16, RuleAction::Alert)
     );
 }
 
@@ -297,7 +296,7 @@ fn detect_modbus_report_server_id() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(17, RuleAction::Alert)
     );
 }
 
@@ -317,7 +316,7 @@ fn detect_modbus_read_file_record() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(20, RuleAction::Alert)
     );
 }
 
@@ -337,7 +336,7 @@ fn detect_modbus_write_file_record() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(21, RuleAction::Alert)
     );
 }
 
@@ -358,7 +357,7 @@ fn detect_modbus_mask_wirte_register() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(22, RuleAction::Alert)
     );
 }
 
@@ -382,7 +381,7 @@ fn detect_modbus_read_wirte_multiple_registers() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(23, RuleAction::Alert)
     );
 }
 
@@ -401,6 +400,6 @@ fn detect_modbus_read_fifo_queue() {
 
     assert_eq!(
         modbus_rule.detect(&packet_req),
-        DetectResult::Hit(RuleAction::Alert)
+        DetectResult::Hit(24, RuleAction::Alert)
     );
 }

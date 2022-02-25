@@ -15,7 +15,7 @@ pub extern "C" fn init_ics_rules_rs() -> *mut HmIcsRules {
     rules_ptr
 }
 
-/// 清空ICS规则 (recreate)
+/// 清空ICS规则
 #[no_mangle]
 pub extern "C" fn free_ics_rules_rs(rules_ptr: *mut HmIcsRules) {
     if rules_ptr.is_null() {
@@ -27,6 +27,23 @@ pub extern "C" fn free_ics_rules_rs(rules_ptr: *mut HmIcsRules) {
     };
 
     tracing::debug!("ICS rules free Done.");
+}
+
+/// 重新生成ICS规则
+#[no_mangle]
+pub extern "C" fn recreate_ics_rules_rs(rules_ptr: *mut HmIcsRules) -> *mut HmIcsRules {
+    if rules_ptr.is_null() {
+        tracing::warn!("ICS rule free: rules ptr is null! pass free op.");
+        return Box::into_raw(Box::new(HmIcsRules::new()));
+    }
+    let new_rules_ptr = unsafe {
+        Box::from_raw(rules_ptr);
+        Box::into_raw(Box::new(HmIcsRules::new()))
+    };
+
+    tracing::debug!("ICS rules free Done.");
+
+    new_rules_ptr
 }
 
 /// 输出ICS规则
@@ -153,6 +170,8 @@ pub extern "C" fn deactive_ics_rule_rs(rules_ptr: *mut HmIcsRules, rule_rid: usi
 pub extern "C" fn detect_ics_rules_rs(
     rules_ptr: *const HmIcsRules,
     packet_ptr: *const QuinPacket,
+    out_rid_ptr: *mut u32,
+    out_action_ptr: *mut u8
 ) -> bool {
     let rules = unsafe {
         if rules_ptr.is_null() {
@@ -168,15 +187,78 @@ pub extern "C" fn detect_ics_rules_rs(
         }
         &*packet_ptr
     };
+    let out_rid = unsafe {
+        if out_rid_ptr.is_null() {
+            tracing::warn!("ICS rule detect: out_rid ptr is null! return.");
+            return false;
+        }
+        &mut *out_rid_ptr
+    };
+    let out_action = unsafe {
+        if out_action_ptr.is_null() {
+            tracing::warn!("ICS rule detect: out_action ptr is null! return.");
+            return false;
+        }
+        &mut *out_action_ptr
+    };
 
     let rst = rules.detect(packet);
     match rst {
-        DetectResult::Hit(_) => {
+        DetectResult::Hit(rid, action) => {
+            *out_rid = rid as u32;
+            *out_action = super::common::rule_action_to_firewall_action(action);
+
             tracing::trace!("ICS Rule HIT!");
+
             true
         }
         DetectResult::Miss => {
             tracing::trace!("ICS Rule MISS.");
+            false
+        }
+    }
+}
+
+/// ICS白名单规则检测
+#[no_mangle]
+pub extern "C" fn detect_ics_whitelist_rules_rs(
+    rules_ptr: *const HmIcsRules,
+    packet_ptr: *const QuinPacket,
+    out_rid_ptr: *mut u32
+) -> bool {
+    let rules = unsafe {
+        if rules_ptr.is_null() {
+            tracing::warn!("ICS rule detect: rules ptr is null! return.");
+            return false;
+        }
+        &*rules_ptr
+    };
+    let packet = unsafe {
+        if packet_ptr.is_null() {
+            tracing::warn!("ICS rule detect: packet ptr is null! return.");
+            return false;
+        }
+        &*packet_ptr
+    };
+    let out_rid = unsafe {
+        if out_rid_ptr.is_null() {
+            tracing::warn!("ICS rule detect: out_rid ptr is null! return.");
+            return false;
+        }
+        &mut *out_rid_ptr
+    };
+
+    let rst = rules.detect(packet);
+    match rst {
+        DetectResult::Hit(rid, _) => {
+            *out_rid = rid as u32;
+
+            tracing::trace!("ICS Whitelist Rule HIT!");
+
+            true
+        }
+        DetectResult::Miss => {
+            tracing::trace!("ICS Whitelist Rule MISS.");
             false
         }
     }
