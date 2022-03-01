@@ -20,6 +20,7 @@ impl IcsRule {
     pub fn get_protocol_type(&self) -> ApplicationNaiveProtocol {
         match self.args {
             IcsRuleArg::Modbus(..) => ApplicationNaiveProtocol::Modbus,
+            IcsRuleArg::S7Comm(..) => ApplicationNaiveProtocol::S7comm
         }
     }
 }

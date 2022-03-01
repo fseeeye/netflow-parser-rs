@@ -97,17 +97,29 @@ mod tests {
 
     use super::*;
 
-    fn load_unitest_icsrule() -> HmIcsRules {
-        let file_str = "./tests/unitest_ics_rules.json";
+    fn load_modbus_icsrule() -> HmIcsRules {
         let mut ics_rules = HmIcsRules::new();
-        assert!(ics_rules.load_rules(file_str));
+        let file_str = "./tests/unitest_modbus.json";
+        ics_rules.load_rules(file_str);
 
         return ics_rules;
     }
 
     #[test]
+    fn load_unitest_icsrule() {
+        let mut ics_rules = HmIcsRules::new();
+        let file_strs = vec![
+            "./tests/unitest_modbus.json",
+            "./tests/unitest_s7comm.json"
+        ];
+        for file_str in file_strs {
+            assert!(ics_rules.load_rules(file_str));
+        }
+    }
+
+    #[test]
     fn parse_icsrules() {
-        let ics_rules = load_unitest_icsrule();
+        let ics_rules = load_modbus_icsrule();
 
         if let Some(ics_rule) = ics_rules.rules_inner.get(&1) {
             assert_eq!(
@@ -139,12 +151,12 @@ mod tests {
 
     #[test]
     fn delete_icsrule() {
-        let mut ics_rules = load_unitest_icsrule();
+        let mut ics_rules = load_modbus_icsrule();
 
         ics_rules.delete_rule(1);
         
-        println!("rules_map: {:?}", ics_rules.rules_map);
-        println!("rules_inner: {:?}", ics_rules.rules_inner);
+        // println!("rules_map: {:?}", ics_rules.rules_map);
+        // println!("rules_inner: {:?}", ics_rules.rules_inner);
         for (_k, v) in &ics_rules.rules_map {
             assert!(v.is_empty());
         }
@@ -153,7 +165,7 @@ mod tests {
 
     #[test]
     fn deactive_icsrule() {
-        let mut ics_rules = load_unitest_icsrule();
+        let mut ics_rules = load_modbus_icsrule();
 
         ics_rules.deactive_rule(1);
         assert!(ics_rules.rules_inner.get(&1).unwrap().basic.active == false);

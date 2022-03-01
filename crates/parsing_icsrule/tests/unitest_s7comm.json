@@ -1,0 +1,21 @@
+[
+    {
+        "active": true,
+        "rid": 2,
+        "action": "alert",
+        "proname": "S7Comm",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": 102,
+        "msg": "Job - Read Var (0x04)",
+        "args": {
+            "rosctr": 1,
+            "function_code": "4",
+            "area": 1,
+            "start_address": 1,
+            "end_address": 1
+        }
+    }
+]
