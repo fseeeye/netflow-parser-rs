@@ -1,4 +1,4 @@
-use crate::detect::IcsRuleDetector;
+use crate::{detect::IcsRuleDetector, detect_address};
 use parsing_parser::{L5Packet, ApplicationLayer, parsers::modbus_req};
 use serde::{Deserialize, Serialize};
 
@@ -93,21 +93,6 @@ pub enum ModbusArg {
     Unknow
 }
 
-macro_rules! detect_address {
-    ( $sa:ident, $ea:ident, $ta:ident ) => {
-        if let Some($sa) = $sa {
-            if $sa > $ta {
-                return false;
-            }
-        }
-
-        if let Some($ea) = $ea {
-            if $ea < $ta {
-                return false;
-            }
-        }
-    };
-}
 
 impl IcsRuleDetector for ModbusArg {
     fn detect(&self, l5: &L5Packet) -> bool {
@@ -402,7 +387,8 @@ mod tests {
         icsrule::basis::{Direction, Action},
         icsrule_arg::IcsRuleArg,
         IcsRuleBasis,
-        IcsRule
+        IcsRule, 
+        HmIcsRules
     };
 
     use super::*;
@@ -433,5 +419,12 @@ mod tests {
             serde_json::to_string(&modbus_rule).unwrap(),
             r#"{"active":true,"rid":1,"action":"alert","src":"192.168.3.189","sport":null,"dire":"<>","dst":null,"dport":null,"msg":"Modbus Read Coils(1)","proname":"Modbus","args":{"function_code":"1","start_address":0,"end_address":10}}"#
         )
+    }
+
+    #[test]
+    fn deserialize_modbus_icsrule() {
+        let mut ics_rules = HmIcsRules::new();
+        let file_str = "./tests/unitest_modbus.json";
+        assert!(ics_rules.load_rules(file_str));
     }
 }

@@ -6,6 +6,7 @@
 #![feature(option_result_contains)]
 
 mod detect;
+mod detect_utils;
 mod icsrule;
 mod icsrule_arg;
 

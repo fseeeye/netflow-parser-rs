@@ -106,18 +106,6 @@ mod tests {
     }
 
     #[test]
-    fn load_unitest_icsrule() {
-        let mut ics_rules = HmIcsRules::new();
-        let file_strs = vec![
-            "./tests/unitest_modbus.json",
-            "./tests/unitest_s7comm.json"
-        ];
-        for file_str in file_strs {
-            assert!(ics_rules.load_rules(file_str));
-        }
-    }
-
-    #[test]
     fn parse_icsrules() {
         let ics_rules = load_modbus_icsrule();
 

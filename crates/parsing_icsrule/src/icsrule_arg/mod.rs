@@ -21,14 +21,10 @@ impl IcsRuleDetector for IcsRuleArg {
     fn detect(&self, l5: &L5Packet) -> bool {
         match self {
             Self::Modbus(modbus_arg) => {
-                if modbus_arg.detect(l5) {
-                    return true;
-                }
-                return false;
+                modbus_arg.detect(l5)
             },
-            Self::S7Comm(_s7comm_arg) => {
-                //TODO
-                return false;
+            Self::S7Comm(s7comm_arg) => {
+                s7comm_arg.detect(l5)
             }
         }
     }

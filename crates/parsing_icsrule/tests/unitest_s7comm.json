@@ -1,6 +1,25 @@
 [
     {
         "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "S7Comm",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": 102,
+        "msg": "S7Comm Job - Read Var (0x04)",
+        "args": {
+            "rosctr": "1",
+            "function_code": "4",
+            "area": 1,
+            "start_address": 1,
+            "end_address": 2
+        }
+    },
+    {
+        "active": true,
         "rid": 2,
         "action": "alert",
         "proname": "S7Comm",
@@ -9,13 +28,33 @@
         "dire": "->",
         "dst": null,
         "dport": 102,
-        "msg": "Job - Read Var (0x04)",
+        "msg": "S7Comm Ack_Data - Read Var (0x04)",
         "args": {
-            "rosctr": 1,
+            "rosctr": "0x03",
             "function_code": "4",
+            "min_value": 22,
+            "max_value": 50
+        }
+    },
+    {
+        "active": true,
+        "rid": 3,
+        "action": "alert",
+        "proname": "S7Comm",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": 102,
+        "msg": "S7Comm Job - Write Var (0x05)",
+        "args": {
+            "rosctr": "0x01",
+            "function_code": "5",
             "area": 1,
             "start_address": 1,
-            "end_address": 1
+            "end_address": 2,
+            "min_value": 22,
+            "max_value": 50
         }
     }
 ]

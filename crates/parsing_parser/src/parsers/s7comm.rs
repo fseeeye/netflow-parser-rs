@@ -134,7 +134,7 @@ pub enum SyntaxIdEnum {
         item_length: u16,
         item_db_numer: u16,
         item_area: u8,
-        item_address: [u8; 6],
+        item_address: u32,
     },
     Dbread {
         num_areas: u8,
@@ -385,7 +385,7 @@ pub fn parse_syntax_id_enum(
         let (input, item_length) = be_u16(input)?;
         let (input, item_db_numer) = be_u16(input)?;
         let (input, item_area) = u8(input)?;
-        let (input, item_address) = slice_u4_6(input)?;
+        let (input, item_address) = be_u24(input)?;
         Ok((
             input,
             SyntaxIdEnum::S7any {
