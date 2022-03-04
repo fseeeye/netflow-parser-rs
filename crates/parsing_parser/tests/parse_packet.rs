@@ -66,6 +66,7 @@ fn parse_s7comm_pcap() {
 
 #[test]
 fn parse_dnp3_pcap() {
+    tracing_subscriber::fmt::init();
     let dnp3_pcap_path = "./tests/dnp3_all.pcap";
 
     assert!(parse_pcap(dnp3_pcap_path).is_ok());
@@ -110,7 +111,7 @@ fn parse_mms_pcap() {
 
 #[test]
 fn parse_http() {
-    tracing_subscriber::fmt::init();
+    // tracing_subscriber::fmt::init();
     let http_pcap_path = "./tests/http_simple.pcap";
 
     assert!(parse_pcap(http_pcap_path).is_ok());

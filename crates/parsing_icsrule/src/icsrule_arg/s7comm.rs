@@ -248,7 +248,7 @@ pub mod tests {
                 dst_port: None,
                 msg: "Job - Read Var (0x04)".to_string(),
             },
-            args: IcsRuleArg::S7Comm(
+            args: IcsRuleArg::S7COMM(
                 S7CommArg::Job {
                     param: S7JobParm::ReadVar {
                         area: Some(1),
@@ -261,16 +261,16 @@ pub mod tests {
 
         assert_eq!( 
             serde_json::to_string(&s7comm_rule).unwrap(),
-            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"<>","dst":null,"dport":null,"msg":"Job - Read Var (0x04)","proname":"S7Comm","args":{"rosctr":"1","function_code":"4","area":1,"start_address":1,"end_address":1}}"#
+            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"<>","dst":null,"dport":null,"msg":"Job - Read Var (0x04)","proname":"S7COMM","args":{"rosctr":"1","function_code":"4","area":1,"start_address":1,"end_address":1}}"#
         )
     }
 
     #[test]
     fn deserialize_s7comm_icsrule() {
-        let mut ics_rules = HmIcsRules::new();
+        let mut s7comm_rule = HmIcsRules::new();
         
         let file_str = "./tests/unitest_s7comm.json";
-        assert!(ics_rules.load_rules(file_str));
+        assert!(s7comm_rule.load_rules(file_str));
     }
 
 }

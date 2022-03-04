@@ -1,9 +1,11 @@
 pub(crate) mod modbus;
 pub(crate) mod s7comm;
+pub(crate) mod dnp3;
 
 pub use self::{
     modbus::ModbusArg,
-    s7comm::S7CommArg
+    s7comm::S7CommArg,
+    dnp3::Dnp3Arg
 };
 
 use super::detect::IcsRuleDetector;
@@ -14,7 +16,8 @@ use serde::{Deserialize, Serialize};
 #[serde(tag = "proname", content = "args")]
 pub enum IcsRuleArg {
     Modbus(ModbusArg),
-    S7Comm(S7CommArg)
+    S7COMM(S7CommArg),
+    DNP3(Dnp3Arg)
 }
 
 impl IcsRuleDetector for IcsRuleArg {
@@ -23,8 +26,11 @@ impl IcsRuleDetector for IcsRuleArg {
             Self::Modbus(modbus_arg) => {
                 modbus_arg.detect(l5)
             },
-            Self::S7Comm(s7comm_arg) => {
+            Self::S7COMM(s7comm_arg) => {
                 s7comm_arg.detect(l5)
+            },
+            Self::DNP3(dnp3_arg) => {
+                dnp3_arg.detect(l5)
             }
         }
     }

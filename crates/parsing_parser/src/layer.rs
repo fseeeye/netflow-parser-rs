@@ -88,7 +88,7 @@ pub enum ApplicationLayer<'a> {
     Mms(MmsHeader<'a>),
     S7comm(S7commHeader<'a>),
     Bacnet(BacnetHeader<'a>),
-    Dnp3(Dnp3Header<'a>),
+    Dnp3(Dnp3Header),
     Iec104(Iec104Header),
     Opcua(OpcuaHeader<'a>),
     IsoOnTcp(IsoOnTcpHeader),

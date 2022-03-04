@@ -1,0 +1,24 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "DNP3",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": 20000,
+        "msg": "DNP3 Read",
+        "args": {
+            "src": 1,
+            "dst": 2,
+            "link_function_code": 1,
+            "function_code": "1",
+            "objs": 4097,
+            "vsq": 1,
+            "start": 0,
+            "stop": 9
+        }
+    }
+]
