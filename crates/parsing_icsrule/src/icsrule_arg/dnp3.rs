@@ -1,7 +1,7 @@
 use parsing_parser::{L5Packet, ApplicationLayer, parsers::dnp3};
 use serde::{Serialize, Deserialize};
 
-use crate::{detect::IcsRuleDetector};
+use crate::{detect::IcsRuleDetector, detect_option_eq};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct Dnp3Arg {
@@ -84,23 +84,11 @@ pub enum Dnp3AppLayer {
 impl IcsRuleDetector for Dnp3Arg {
     fn detect(&self, l5: &L5Packet) -> bool {
         if let ApplicationLayer::Dnp3(dnp3) = &l5.application_layer {
-            if let Some(src) = self.src {
-                if src != dnp3.data_link_layer.source {
-                    return false;
-                }
-            }
+            detect_option_eq!(self.src, dnp3.data_link_layer.source);
 
-            if let Some(dst) = self.dst {
-                if dst != dnp3.data_link_layer.destination {
-                    return false;
-                }
-            }
+            detect_option_eq!(self.dst, dnp3.data_link_layer.destination);
 
-            if let Some(link_function_code) = self.link_function_code {
-                if link_function_code != dnp3.data_link_layer.dl_function {
-                    return false;
-                }
-            }
+            detect_option_eq!(self.link_function_code, dnp3.data_link_layer.dl_function);
 
             // TODO: detect objects
             match self.app_layer {

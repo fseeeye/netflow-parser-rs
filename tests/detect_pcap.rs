@@ -76,10 +76,11 @@ fn parse_pcap(path: &str) {
                         // 匹配 ICS 规则
                         // assert_eq!(icsrules.detect(&packet), DetectResult::Hit(RuleAction::Drop));
                         // 匹配 Suricata 规则
-                        assert_eq!(
-                            surules.detect(&packet),
-                            DetectResult::Hit(RuleAction::Alert)
-                        )
+                        if let DetectResult::Hit(_id, action) = surules.detect(&packet) {
+                            assert_eq!(action, RuleAction::Alert);
+                        } else {
+                            assert!(false);
+                        }
                     }
                     _ => {}
                 }

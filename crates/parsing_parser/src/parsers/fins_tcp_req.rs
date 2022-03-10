@@ -158,7 +158,13 @@ pub enum Order<'a> {
     },
     ParameterAreaWrite {
         parameter_area_code: u16,
-        beginning_word: u32,
+        beginning_word: u16,
+        words_of_bytes: u16,
+        command_data: &'a [u8],
+    },
+    ParameterAreaClear {
+        parameter_area_code: u16,
+        beginning_word: u16,
         words_of_bytes: u16,
         command_data: &'a [u8],
     },
@@ -176,21 +182,15 @@ pub enum Order<'a> {
         link_nodes: u8,
         block_data: Vec<DLTBLockDataItem>,
     },
-    ParameterAreaClear {
-        parameter_area_code: u16,
-        beginning_word: u16,
-        words_of_bytes: u16,
-        command_data: &'a [u8],
-    },
-    ParameterAreaProtect {
-        parameter_number: u16,
+    ProgramAreaProtect {
+        program_number: u16,
         protect_code: u8,
         beginning_word: u32,
         last_word: u32,
         pass_word: u32,
     },
-    ParameterAreaProtectClear {
-        parameter_number: u16,
+    ProgramAreaProtectClear {
+        program_number: u16,
         protect_code: u8,
         beginning_word: u32,
         last_word: u32,
@@ -213,9 +213,10 @@ pub enum Order<'a> {
     },
     Run {
         program_number: u16,
-        mode_code: &'a [u8],
+        mode_code: u8,
     },
     Stop {},
+    Reset {},
     ControllerDataRead {
         command_data: &'a [u8],
     },
@@ -224,6 +225,7 @@ pub enum Order<'a> {
         number_of_units: &'a [u8],
     },
     ControllerStatusRead {},
+    NetworkStatusRead {},
     DataLinkStatusRead {},
     CycleTimeRead {
         initializes_cycle_time: u8,
@@ -383,11 +385,11 @@ pub struct FH<'a> {
     pub sys_save: u8,
     pub gateway: u8,
     pub dna: u8,
-    pub da1: u8,
-    pub da2: u8,
+    pub dnn: u8,
+    pub dua: u8,
     pub sna: u8,
-    pub sa1: u8,
-    pub sa2: u8,
+    pub snn: u8,
+    pub sua: u8,
     pub sid: u8,
     pub cmd_type: CmdType<'a>,
 }
@@ -546,7 +548,7 @@ fn parse_parameter_area_read(input: &[u8]) -> IResult<&[u8], Order> {
 
 fn parse_parameter_area_write(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, parameter_area_code) = be_u16(input)?;
-    let (input, beginning_word) = be_u32(input)?;
+    let (input, beginning_word) = be_u16(input)?;
     let (input, words_of_bytes) = be_u16(input)?;
     let (input, command_data) = take(input.len() as usize)(input)?;
     Ok((
@@ -623,8 +625,8 @@ fn parse_parameter_area_protect(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, pass_word) = be_u32(input)?;
     Ok((
         input,
-        Order::ParameterAreaProtect {
-            parameter_number,
+        Order::ProgramAreaProtect {
+            program_number: parameter_number,
             protect_code,
             beginning_word,
             last_word,
@@ -641,8 +643,8 @@ fn parse_parameter_area_protect_clear(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, pass_word) = be_u32(input)?;
     Ok((
         input,
-        Order::ParameterAreaProtectClear {
-            parameter_number,
+        Order::ProgramAreaProtectClear {
+            program_number: parameter_number,
             protect_code,
             beginning_word,
             last_word,
@@ -695,7 +697,10 @@ fn parse_program_area_clear(input: &[u8]) -> IResult<&[u8], Order> {
 
 fn parse_run(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, program_number) = be_u16(input)?;
-    let (input, mode_code) = take(input.len() as usize)(input)?;
+    let (input, mode_code) = match u8::<_, nom::error::Error<&[u8]>>(input) {
+        Ok(o) => o,
+        Err(_e) => (input, 0x02) // default is Monitor mode
+    };
     Ok((
         input,
         Order::Run {
@@ -708,6 +713,10 @@ fn parse_run(input: &[u8]) -> IResult<&[u8], Order> {
 fn parse_stop(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, _) = eof(input)?;
     Ok((input, Order::Stop {}))
+}
+
+fn parse_reset(input: &[u8]) -> IResult<&[u8], Order> {
+    Ok((input, Order::Reset {}))
 }
 
 fn parse_controller_data_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -730,6 +739,10 @@ fn parse_connection_data_read(input: &[u8]) -> IResult<&[u8], Order> {
 fn parse_controller_status_read(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, _) = eof(input)?;
     Ok((input, Order::ControllerStatusRead {}))
+}
+
+fn parse_network_status_read(input: &[u8]) -> IResult<&[u8], Order> {
+    Ok((input, Order::NetworkStatusRead {}))
 }
 
 fn parse_data_link_status_read(input: &[u8]) -> IResult<&[u8], Order> {
@@ -1115,9 +1128,11 @@ fn parse_order(input: &[u8], cmd_code: u16) -> IResult<&[u8], Order> {
         0x0308 => parse_program_area_clear(input),
         0x0401 => parse_run(input),
         0x0402 => parse_stop(input),
+        0x0403 => parse_reset(input),
         0x0501 => parse_controller_data_read(input),
         0x0502 => parse_connection_data_read(input),
         0x0601 => parse_controller_status_read(input),
+        0x0602 => parse_network_status_read(input),
         0x0603 => parse_data_link_status_read(input),
         0x0620 => parse_cycle_time_read(input),
         0x0701 => parse_clcok_read(input),
@@ -1178,11 +1193,11 @@ fn parse_fh(input: &[u8]) -> IResult<&[u8], FH> {
     let (input, sys_save) = u8(input)?;
     let (input, gateway) = u8(input)?;
     let (input, dna) = u8(input)?;
-    let (input, da1) = u8(input)?;
-    let (input, da2) = u8(input)?;
+    let (input, dnn) = u8(input)?;
+    let (input, dua) = u8(input)?;
     let (input, sna) = u8(input)?;
-    let (input, sa1) = u8(input)?;
-    let (input, sa2) = u8(input)?;
+    let (input, snn) = u8(input)?;
+    let (input, sua) = u8(input)?;
     let (input, sid) = u8(input)?;
     let (input, cmd_type) = parse_cmd_type(input)?;
     Ok((
@@ -1192,11 +1207,11 @@ fn parse_fh(input: &[u8]) -> IResult<&[u8], FH> {
             sys_save,
             gateway,
             dna,
-            da1,
-            da2,
+            dnn,
+            dua,
             sna,
-            sa1,
-            sa2,
+            snn,
+            sua,
             sid,
             cmd_type,
         },

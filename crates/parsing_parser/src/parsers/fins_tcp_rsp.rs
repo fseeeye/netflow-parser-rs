@@ -539,11 +539,11 @@ pub struct FH<'a> {
     pub sys_save: u8,
     pub gateway: u8,
     pub dna: u8,
-    pub da1: u8,
-    pub da2: u8,
+    pub dnn: u8,
+    pub dua: u8,
     pub sna: u8,
-    pub sa1: u8,
-    pub sa2: u8,
+    pub snn: u8,
+    pub sua: u8,
     pub sid: u8,
     pub cmd_type: CmdType<'a>,
 }
@@ -1766,11 +1766,11 @@ pub fn parse_fh(input: &[u8]) -> IResult<&[u8], FH> {
     let (input, sys_save) = u8(input)?;
     let (input, gateway) = u8(input)?;
     let (input, dna) = u8(input)?;
-    let (input, da1) = u8(input)?;
-    let (input, da2) = u8(input)?;
+    let (input, dnn) = u8(input)?;
+    let (input, dua) = u8(input)?;
     let (input, sna) = u8(input)?;
-    let (input, sa1) = u8(input)?;
-    let (input, sa2) = u8(input)?;
+    let (input, snn) = u8(input)?;
+    let (input, sua) = u8(input)?;
     let (input, sid) = u8(input)?;
     let (input, cmd_type) = parse_cmd_type(input)?;
     Ok((
@@ -1780,11 +1780,11 @@ pub fn parse_fh(input: &[u8]) -> IResult<&[u8], FH> {
             sys_save,
             gateway,
             dna,
-            da1,
-            da2,
+            dnn,
+            dua,
             sna,
-            sa1,
-            sa2,
+            snn,
+            sua,
             sid,
             cmd_type,
         },

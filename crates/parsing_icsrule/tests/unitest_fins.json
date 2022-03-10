@@ -1,0 +1,21 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "FINS",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": 9600,
+        "msg": "Memory Area Read",
+        "args": {
+            "dna": 1,
+            "function_code": "0x0101",
+            "code": 1,
+            "start_address": 1,
+            "end_addresss": 10
+        }
+    }
+]

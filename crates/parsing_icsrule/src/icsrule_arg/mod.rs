@@ -1,7 +1,9 @@
 pub(crate) mod modbus;
 pub(crate) mod s7comm;
 pub(crate) mod dnp3;
+pub(crate) mod fins;
 
+use self::fins::FinsArg;
 pub use self::{
     modbus::ModbusArg,
     s7comm::S7CommArg,
@@ -17,7 +19,8 @@ use serde::{Deserialize, Serialize};
 pub enum IcsRuleArg {
     Modbus(ModbusArg),
     S7COMM(S7CommArg),
-    DNP3(Dnp3Arg)
+    DNP3(Dnp3Arg),
+    FINS(FinsArg)
 }
 
 impl IcsRuleDetector for IcsRuleArg {
@@ -31,6 +34,9 @@ impl IcsRuleDetector for IcsRuleArg {
             },
             Self::DNP3(dnp3_arg) => {
                 dnp3_arg.detect(l5)
+            }
+            Self::FINS(fins_arg) => {
+                fins_arg.detect(l5)
             }
         }
     }

@@ -1,14 +1,14 @@
 #[macro_export]
 macro_rules! detect_address {
-    ( $sa:ident, $ea:ident, $ta:ident ) => {
-        if let Some($sa) = $sa {
-            if $sa > $ta {
+    ( $sa:expr, $ea:expr, $ta:expr ) => {
+        if let Some(start_addr) = $sa {
+            if start_addr > $ta {
                 return false;
             }
         }
 
-        if let Some($ea) = $ea {
-            if $ea < $ta {
+        if let Some(end_addr) = $ea {
+            if end_addr < $ta {
                 return false;
             }
         }
@@ -17,9 +17,9 @@ macro_rules! detect_address {
 
 #[macro_export]
 macro_rules! detect_option_eq {
-    ( $optioner:ident, $target:ident ) => {
-        if let Some($optioner) = $optioner {
-            if $optioner != $target {
+    ( $optioner:expr, $target:expr ) => {
+        if let Some(v) = $optioner {
+            if v != $target {
                 return false;
             }
         }
