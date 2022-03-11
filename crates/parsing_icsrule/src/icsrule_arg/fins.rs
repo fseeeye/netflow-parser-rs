@@ -485,7 +485,7 @@ mod tests {
                 dir: Direction::Uni,
                 dst_ip: None,
                 dst_port: Some(9600),
-                msg: "DNP3 Read".to_string(),
+                msg: "Fins Memory Area Read".to_string(),
             },
             args: IcsRuleArg::FINS(
                 FinsArg {
@@ -506,7 +506,7 @@ mod tests {
 
         assert_eq!( 
             serde_json::to_string(&dnp3_rule).unwrap(),
-            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":9600,"msg":"DNP3 Read","proname":"FINS","args":{"dna":1,"dnn":null,"dua":null,"sna":null,"snn":null,"sua":null,"function_code":"0x0101","code":1,"start_address":1,"end_address":1}}"#
+            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":9600,"msg":"Fins Memory Area Read","proname":"FINS","args":{"dna":1,"dnn":null,"dua":null,"sna":null,"snn":null,"sua":null,"function_code":"0x0101","code":1,"start_address":1,"end_address":1}}"#
         )
     }
 

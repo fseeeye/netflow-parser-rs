@@ -22,7 +22,8 @@ impl IcsRule {
             IcsRuleArg::Modbus(..) => ApplicationNaiveProtocol::Modbus,
             IcsRuleArg::S7COMM(..) => ApplicationNaiveProtocol::S7comm,
             IcsRuleArg::DNP3(..)   => ApplicationNaiveProtocol::Dnp3,
-            IcsRuleArg::FINS(..)   => ApplicationNaiveProtocol::Fins
+            IcsRuleArg::FINS(..)   => ApplicationNaiveProtocol::Fins,
+            IcsRuleArg::OPCUA(..)  => ApplicationNaiveProtocol::Opcua
         }
     }
 }

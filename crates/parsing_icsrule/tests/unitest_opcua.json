@@ -1,0 +1,18 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "OPCUA",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "OpcUA Read",
+        "args": {
+            "type": 4,
+            "function_code": 631
+        }
+    }
+]

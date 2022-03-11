@@ -2,8 +2,9 @@ pub(crate) mod modbus;
 pub(crate) mod s7comm;
 pub(crate) mod dnp3;
 pub(crate) mod fins;
+pub(crate) mod opcua;
 
-use self::fins::FinsArg;
+use self::{fins::FinsArg, opcua::OpcuaArg};
 pub use self::{
     modbus::ModbusArg,
     s7comm::S7CommArg,
@@ -20,7 +21,8 @@ pub enum IcsRuleArg {
     Modbus(ModbusArg),
     S7COMM(S7CommArg),
     DNP3(Dnp3Arg),
-    FINS(FinsArg)
+    FINS(FinsArg),
+    OPCUA(OpcuaArg)
 }
 
 impl IcsRuleDetector for IcsRuleArg {
@@ -37,6 +39,9 @@ impl IcsRuleDetector for IcsRuleArg {
             }
             Self::FINS(fins_arg) => {
                 fins_arg.detect(l5)
+            }
+            Self::OPCUA(opcua_arg) => {
+                opcua_arg.detect(l5)
             }
         }
     }
