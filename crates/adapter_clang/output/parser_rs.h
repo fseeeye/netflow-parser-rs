@@ -56,6 +56,8 @@ typedef struct QuinPacket QuinPacket;
  */
 typedef struct QuinPacketOptions QuinPacketOptions;
 
+typedef struct VecSurules VecSurules;
+
 /**
  * 启用ICS规则
  */
@@ -82,6 +84,14 @@ bool detect_ics_rules_rs(const struct HmIcsRules *rules_ptr,
 bool detect_ics_whitelist_rules_rs(const struct HmIcsRules *rules_ptr,
                                    const struct QuinPacket *packet_ptr,
                                    uint32_t *out_rid_ptr);
+
+/**
+ * Suricata 规则检测
+ */
+bool detect_suricata_rules_rs(const struct VecSurules *rules_ptr,
+                              const struct QuinPacket *packet_ptr,
+                              uint32_t *out_sid_ptr,
+                              uint8_t *out_action_ptr);
 
 /**
  * 启用日志输出
@@ -114,9 +124,19 @@ struct HmIcsRules *init_ics_rules_rs(void);
 struct QuinPacketOptions *init_parse_option_rs(void);
 
 /**
+ * 初始化 Suricata 规则结构体
+ */
+struct VecSurules *init_suricata_rules_rs(void);
+
+/**
  * 从文件加载ICS规则
  */
 bool load_ics_rules_rs(struct HmIcsRules *rules_ptr, const char *file_ptr);
+
+/**
+ * 从文件加载 Suricata 规则
+ */
+bool load_suricata_rules_rs(struct VecSurules *rules_ptr, const char *file_ptr);
 
 /**
  * 解析数据包
@@ -139,3 +159,8 @@ char *show_ics_rules_rs(const struct HmIcsRules *rules_ptr);
  * 展示数据包解析结果
  */
 void show_packet_rs(const struct QuinPacket *packet_ptr);
+
+/**
+ * 输出 Suricata 规则
+ */
+char *show_suricata_rules_rs(const struct VecSurules *rules_ptr);

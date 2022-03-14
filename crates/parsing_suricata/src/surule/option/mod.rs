@@ -49,7 +49,7 @@ pub enum SuruleMetaOption {
     // Value, Meta Keyword
     Rev(u64),
     // Value, Meta Keyword
-    Sid(u64),
+    Sid(usize),
 }
 
 #[cfg_attr(

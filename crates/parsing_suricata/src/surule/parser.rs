@@ -8,6 +8,8 @@ use super::{
     option::parse_option_from_stream,
     // structs
     Surule,
+    SuruleOption,
+    SuruleMetaOption,
     SuruleParseError,
 };
 
@@ -61,8 +63,19 @@ impl FromStr for Surule {
             return Err(SuruleParseError::UnterminatedRule(input.to_string()).into());
         }
 
+        let mut sid: usize = 0;
+        for option in &options {
+            if let SuruleOption::Meta(SuruleMetaOption::Sid(_sid)) = option {
+                sid = *_sid;
+                break;
+            }
+        }
+        if sid == 0 {
+            return Err(SuruleParseError::NoSid.into());
+        }
+
         Ok(Surule::new(
-            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, options,
+            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, sid, options
         )
         .map_err(|e| e.into())?)
     }
@@ -125,6 +138,7 @@ mod tests {
                     accept: Some(vec![Port::Single(445), Port::Single(3389),]),
                     except: None
                 },
+                sid: 2003236,
                 meta_options: vec![
                     SuruleMetaOption::Message(
                         "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len".to_string()

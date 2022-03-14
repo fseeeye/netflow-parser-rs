@@ -36,6 +36,7 @@ pub struct TcpSurule {
     pub direction: elements::Direction,
     pub dst_addr: elements::IpAddressList,
     pub dst_port: elements::PortList,
+    pub sid: usize,
     // optional
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub meta_options: Vec<SuruleMetaOption>,
@@ -57,6 +58,7 @@ pub struct UdpSurule {
     pub direction: elements::Direction,
     pub dst_addr: elements::IpAddressList,
     pub dst_port: elements::PortList,
+    pub sid: usize,
     // optional
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub meta_options: Vec<SuruleMetaOption>,
@@ -77,14 +79,15 @@ impl Surule {
         direction: elements::Direction,
         dst_addr: elements::IpAddressList,
         dst_port: elements::PortList,
+        sid: usize,
         options: Vec<SuruleOption>,
     ) -> Result<Self, SuruleParseError> {
         match protocol {
             elements::Protocol::Tcp => Ok(Self::Tcp(TcpSurule::new(
-                action, src_addr, src_port, direction, dst_addr, dst_port, options,
+                action, src_addr, src_port, direction, dst_addr, dst_port, sid, options,
             )?)),
             elements::Protocol::Udp => Ok(Self::Udp(UdpSurule::new(
-                action, src_addr, src_port, direction, dst_addr, dst_port, options,
+                action, src_addr, src_port, direction, dst_addr, dst_port, sid, options,
             )?)),
         }
     }
@@ -98,6 +101,7 @@ pub trait InnerSurule {
         direction: elements::Direction,
         dst_addr: elements::IpAddressList,
         dst_port: elements::PortList,
+        sid: usize,
         options: Vec<SuruleOption>,
     ) -> Result<Self, SuruleParseError>
     where
@@ -112,6 +116,7 @@ impl InnerSurule for TcpSurule {
         direction: elements::Direction,
         dst_addr: elements::IpAddressList,
         dst_port: elements::PortList,
+        sid: usize,
         options: Vec<SuruleOption>,
     ) -> Result<Self, SuruleParseError> {
         let mut meta_options = Vec::new();
@@ -136,6 +141,7 @@ impl InnerSurule for TcpSurule {
             direction,
             dst_addr,
             dst_port,
+            sid,
             meta_options,
             payload_options: impl_content_modifiers(payload_naive_options)?,
             flow_options,
@@ -152,6 +158,7 @@ impl InnerSurule for UdpSurule {
         direction: elements::Direction,
         dst_addr: elements::IpAddressList,
         dst_port: elements::PortList,
+        sid: usize,
         options: Vec<SuruleOption>,
     ) -> Result<Self, SuruleParseError> {
         let mut meta_options = Vec::new();
@@ -176,6 +183,7 @@ impl InnerSurule for UdpSurule {
             direction,
             dst_addr,
             dst_port,
+            sid,
             meta_options,
             payload_options: impl_content_modifiers(payload_naive_options)?,
             flow_options,

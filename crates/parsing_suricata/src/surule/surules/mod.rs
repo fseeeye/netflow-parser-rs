@@ -10,7 +10,10 @@ use parsing_rule::RulesDetector;
 /// 方便未来扩展实现更多的 Suricata 规则集数据结构
 pub trait Surules: RulesDetector {
     // ref: https://users.rust-lang.org/t/returning-option-self-in-a-trait/28081/2
-    fn parse_from_file(filepath: &str) -> Result<Self, SuruleParseError>
+    fn init_from_file(filepath: &str) -> Result<Self, SuruleParseError>
+    where
+        Self: Sized;
+    fn load_from_file(&mut self, filepath: &str) -> Result<(), SuruleParseError>
     where
         Self: Sized;
 }

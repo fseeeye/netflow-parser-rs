@@ -205,10 +205,10 @@ pub extern "C" fn detect_ics_rules_rs(
     let rst = rules.detect(packet);
     match rst {
         DetectResult::Hit(rid, action) => {
+            tracing::trace!("ICS Rule HIT! (rid={}, action={:?})", rid, action
+        );
             *out_rid = rid as u32;
             *out_action = super::common::rule_action_to_firewall_action(action);
-
-            tracing::trace!("ICS Rule HIT!");
 
             true
         }
@@ -253,7 +253,7 @@ pub extern "C" fn detect_ics_whitelist_rules_rs(
         DetectResult::Hit(rid, _) => {
             *out_rid = rid as u32;
 
-            tracing::trace!("ICS Whitelist Rule HIT!");
+            tracing::trace!("ICS Whitelist Rule HIT! (sid={})", rid);
 
             true
         }

@@ -1,4 +1,4 @@
-use tracing::{debug, error};
+use tracing::{trace, error};
 
 use super::Surules;
 use crate::{
@@ -14,16 +14,16 @@ pub struct VecSurules {
 }
 
 impl Surules for VecSurules {
-    fn parse_from_file(filepath: &str) -> Result<Self, SuruleParseError>
+    fn init_from_file(filepath: &str) -> Result<Self, SuruleParseError>
     where
         Self: Sized,
     {
         // read rules from file
-        debug!(target: "SURICATA(VecSurules::parse_from_file)", "reading suricata rules file from: {}.", filepath);
+        trace!("reading suricata rules file from: {}.", filepath);
         let file_string = match fs::read_to_string(filepath) {
             Ok(o) => o,
             Err(e) => {
-                error!(target: "SURICATA(VecSurules::parse_from_file)", error = %e, "error occurs while reading rule file.");
+                error!(error = %e, "error occurs while reading rule file.");
                 return Err(SuruleParseError::FilepathError(filepath.to_string()));
             }
         };
@@ -31,10 +31,10 @@ impl Surules for VecSurules {
         // convert string to VecSurules
         let mut vec_surules = VecSurules::default();
         for (i, rule_line) in file_string.lines().enumerate() {
-            debug!(target: "SURICATA(VecSurules::parse_from_file)", "get No.{} suricata rule: `{}`.", i, rule_line);
+            trace!("get No.{} suricata rule: `{}`.", i, rule_line);
             let surule = Surule::from_str(rule_line)
                 .map_err(|e| {
-                    error!(target: "SURICATA(VecSurules::parse_from_file)", error = %e, "Suricata rules pasing error occurs at '{}' line{}.", filepath, i);
+                    error!(error = %e, "Suricata rules pasing error occurs at '{}' line{}.", filepath, i);
                     return e;
                 })?;
             match surule {
@@ -44,6 +44,37 @@ impl Surules for VecSurules {
         }
 
         Ok(vec_surules)
+    }
+
+    fn load_from_file(&mut self, filepath: &str) -> Result<(), SuruleParseError>
+    where
+        Self: Sized,
+    {
+        // read rules from file
+        trace!("reading suricata rules from: {}.", filepath);
+        let file_string = match fs::read_to_string(filepath) {
+            Ok(o) => o,
+            Err(e) => {
+                error!(error = %e, "error occurs while reading rule file.");
+                return Err(SuruleParseError::FilepathError(filepath.to_string()));
+            }
+        };
+
+        // convert string to VecSurules
+        for (i, rule_line) in file_string.lines().enumerate() {
+            trace!("get No.{} suricata rule: `{}`.", i, rule_line);
+            let surule = Surule::from_str(rule_line)
+                .map_err(|e| {
+                    error!(error = %e, "Suricata rules pasing error occurs at '{}' line{}.", filepath, i);
+                    return e;
+                })?;
+            match surule {
+                Surule::Tcp(tcp_surule) => self.tcp_rules.push(tcp_surule),
+                Surule::Udp(udp_surule) => self.udp_rules.push(udp_surule),
+            };
+        }
+
+        Ok(())
     }
 }
 
@@ -60,8 +91,8 @@ mod tests {
     use crate::surule::option::SurulePayloadOption;
 
     #[test]
-    fn test_parse_suricata_rule_from_file() {
-        let vec_surules = VecSurules::parse_from_file("./tests/unitest_suricata.rules").unwrap();
+    fn test_init_suricata_rules_from_file() {
+        let vec_surules = VecSurules::init_from_file("./tests/unitest_suricata.rules").unwrap();
         assert_eq!(
             vec_surules,
             VecSurules {
@@ -90,6 +121,7 @@ mod tests {
                         accept: Some(vec![Port::Single(445), Port::Single(3389),]),
                         except: None
                     },
+                    sid: 2003236,
                     meta_options: vec![
                         SuruleMetaOption::Message(
                             "ET DOS NetrWkstaUserEnum Request with large Preferred Max Len"
@@ -203,7 +235,11 @@ mod tests {
                         accept: None,
                         except: None
                     },
-                    meta_options: vec![SuruleMetaOption::Message("foo".to_string())],
+                    sid: 2003237,
+                    meta_options: vec![
+                        SuruleMetaOption::Message("foo".to_string()),
+                        SuruleMetaOption::Sid(2003237),    
+                    ],
                     payload_options: vec![],
                     flow_options: vec![],
                     udp_options: vec![]

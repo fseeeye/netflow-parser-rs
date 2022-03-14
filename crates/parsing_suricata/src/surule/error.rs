@@ -16,6 +16,8 @@ pub enum SuruleParseError {
         "unterminated name of rule option. Please confirm your suricata rule write in one line."
     )]
     UnterminatedRuleOptionName,
+    #[error("no set 'sid'.")]
+    NoSid,
     #[error("get an empty str.")]
     EmptyStr,
     #[error("not a list.")]
