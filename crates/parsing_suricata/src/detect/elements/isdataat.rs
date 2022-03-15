@@ -11,7 +11,11 @@ impl IsDataAt {
             rst = self.pos <= payload_size;
         }
 
-        if self.negate { !rst } else { rst }
+        if self.negate {
+            !rst
+        } else {
+            rst
+        }
     }
 }
 
@@ -39,7 +43,7 @@ mod tests {
         let isdataat_negative = IsDataAt {
             pos: 6,
             relative: true,
-            negate: true
+            negate: true,
         };
         assert!(!isdataat_negative.check(b"abcdefghi", 3));
         assert!(isdataat_negative.check(b"abcdefghi", 4));

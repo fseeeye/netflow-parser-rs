@@ -1,5 +1,5 @@
 use crate::{detect::IcsRuleDetector, detect_address};
-use parsing_parser::{L5Packet, ApplicationLayer, parsers::modbus_req};
+use parsing_parser::{parsers::modbus_req, ApplicationLayer, L5Packet};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -8,41 +8,39 @@ pub enum ModbusArg {
     #[serde(rename = "1", alias = "0x01")]
     ReadCoils {
         start_address: Option<u16>,
-        end_address: Option<u16>
+        end_address: Option<u16>,
     },
     #[serde(alias = "2", alias = "0x02")]
     ReadDiscreteInputs {
         start_address: Option<u16>,
-        end_address: Option<u16>
+        end_address: Option<u16>,
     },
     #[serde(alias = "3", alias = "0x03")]
     ReadHoldingRegisters {
         start_address: Option<u16>,
-        end_address: Option<u16>
+        end_address: Option<u16>,
     },
     #[serde(alias = "4", alias = "0x04")]
     ReadInputRegisters {
         start_address: Option<u16>,
-        end_address: Option<u16>
+        end_address: Option<u16>,
     },
     #[serde(rename = "5", alias = "0x05")]
     WriteSingleCoil {
         start_address: Option<u16>,
         end_address: Option<u16>,
-        value: Option<u8>
+        value: Option<u8>,
     },
     #[serde(rename = "6", alias = "0x06")]
     WriteSingleRegister {
         start_address: Option<u16>,
         end_address: Option<u16>,
-        value: Option<u16>
+        value: Option<u16>,
     },
     #[serde(rename = "7", alias = "0x07")]
     ReadExceptionStatus {},
     #[serde(rename = "8", alias = "0x08")]
-    Diagnostics {
-        subfunction: Option<u8>
-    },
+    Diagnostics { subfunction: Option<u8> },
     #[serde(rename = "11", alias = "0x11")]
     GetCommEventCounter {},
     #[serde(rename = "12", alias = "0x0c", alias = "0x0C")]
@@ -51,13 +49,13 @@ pub enum ModbusArg {
     WriteMultipleCoils {
         start_address: Option<u16>,
         end_address: Option<u16>,
-        value: Option<Vec<u8>> // 寄存器值(选填, 范围0~255, 列表数量不超过150)
+        value: Option<Vec<u8>>, // 寄存器值(选填, 范围0~255, 列表数量不超过150)
     },
     #[serde(rename = "16", alias = "0x10")]
     WriteMultipleRegisters {
         start_address: Option<u16>,
         end_address: Option<u16>,
-        value: Option<Vec<u16>>
+        value: Option<Vec<u16>>,
     },
     #[serde(rename = "17", alias = "0x11")]
     ReportServerID {},
@@ -70,7 +68,7 @@ pub enum ModbusArg {
         start_address: Option<u16>,
         end_address: Option<u16>,
         and_mask: Option<u16>,
-        or_mask: Option<u16>
+        or_mask: Option<u16>,
     },
     #[serde(rename = "23", alias = "0x17")]
     ReadWriteMultipleRegisters {
@@ -78,21 +76,18 @@ pub enum ModbusArg {
         end_address: Option<u16>,
         start_address2: Option<u16>,
         end_address2: Option<u16>,
-        value: Option<Vec<u16>>
+        value: Option<Vec<u16>>,
     },
     #[serde(rename = "24", alias = "0x18")]
-    ReadFIFOQueue { 
+    ReadFIFOQueue {
         start_address: Option<u16>,
-        end_address: Option<u16>
+        end_address: Option<u16>,
     },
     #[serde(rename = "43", alias = "0x2b", alias = "0x2B")]
-    EncapsulatedInterfaceTransport {
-        subfunction: Option<u8>
-    },
+    EncapsulatedInterfaceTransport { subfunction: Option<u8> },
     #[serde(other)]
-    Unknow
+    Unknow,
 }
-
 
 impl IcsRuleDetector for ModbusArg {
     fn detect(&self, l5: &L5Packet) -> bool {
@@ -101,65 +96,70 @@ impl IcsRuleDetector for ModbusArg {
                 match self {
                     ModbusArg::ReadCoils {
                         start_address,
-                        end_address
+                        end_address,
                     } => {
                         if let modbus_req::Data::ReadCoils {
                             start_address: _start_address,
-                            count: _count
-                        } = &modbus_req_header.pdu.data {
+                            count: _count,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::ReadDiscreteInputs {
                         start_address,
-                        end_address
+                        end_address,
                     } => {
                         if let modbus_req::Data::ReadDiscreteInputs {
                             start_address: _start_address,
-                            count: _count
-                        } = &modbus_req_header.pdu.data {
+                            count: _count,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::ReadHoldingRegisters {
                         start_address,
-                        end_address
+                        end_address,
                     } => {
                         if let modbus_req::Data::ReadHoldingRegisters {
                             start_address: _start_address,
-                            count: _count
-                        } = &modbus_req_header.pdu.data {
+                            count: _count,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::ReadInputRegisters {
                         start_address,
-                        end_address
+                        end_address,
                     } => {
                         if let modbus_req::Data::ReadInputRegisters {
                             start_address: _start_address,
-                            count: _count
-                        } = &modbus_req_header.pdu.data {
+                            count: _count,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::WriteSingleCoil {
                         start_address,
                         end_address,
-                        value
+                        value,
                     } => {
                         if let modbus_req::Data::WriteSingleCoil {
                             output_address: _output_address,
-                            output_value: _output_value
-                        } = &modbus_req_header.pdu.data {
+                            output_value: _output_value,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _output_address);
 
                             if let Some(value) = value {
@@ -170,16 +170,17 @@ impl IcsRuleDetector for ModbusArg {
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::WriteSingleRegister {
                         start_address,
                         end_address,
-                        value
+                        value,
                     } => {
                         if let modbus_req::Data::WriteSingleRegister {
                             register_address: _register_address,
-                            register_value: _register_value
-                        } = &modbus_req_header.pdu.data {
+                            register_value: _register_value,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _register_address);
 
                             if let Some(value) = value {
@@ -190,41 +191,36 @@ impl IcsRuleDetector for ModbusArg {
                         } else {
                             return false;
                         }
-                    },
-                    ModbusArg::ReadExceptionStatus {} => {
-                        match &modbus_req_header.pdu.data {
-                            modbus_req::Data::ReadExceptionStatus {} => {},
-                            _ => return false
-                        }
+                    }
+                    ModbusArg::ReadExceptionStatus {} => match &modbus_req_header.pdu.data {
+                        modbus_req::Data::ReadExceptionStatus {} => {}
+                        _ => return false,
                     },
                     ModbusArg::Diagnostics {
-                        subfunction: _subfunction
+                        subfunction: _subfunction,
                     } => {
                         // TODO: impl Modbus Diagnostics parsing
                         return false;
+                    }
+                    ModbusArg::GetCommEventCounter {} => match &modbus_req_header.pdu.data {
+                        modbus_req::Data::GetCommEventCounter {} => {}
+                        _ => return false,
                     },
-                    ModbusArg::GetCommEventCounter {} => {
-                        match &modbus_req_header.pdu.data {
-                            modbus_req::Data::GetCommEventCounter {} => {},
-                            _ => return false
-                        }
-                    },
-                    ModbusArg::GetCommEventLog {} => {
-                        match &modbus_req_header.pdu.data {
-                            modbus_req::Data::GetCommEventLog {} => {},
-                            _ => return false
-                        }
+                    ModbusArg::GetCommEventLog {} => match &modbus_req_header.pdu.data {
+                        modbus_req::Data::GetCommEventLog {} => {}
+                        _ => return false,
                     },
                     ModbusArg::WriteMultipleCoils {
                         start_address,
                         end_address,
-                        value
+                        value,
                     } => {
                         if let modbus_req::Data::WriteMultipleCoils {
                             start_address: _start_address,
                             output_values: _output_values,
                             ..
-                        } = &modbus_req_header.pdu.data {
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
 
                             if let Some(value) = value {
@@ -243,17 +239,18 @@ impl IcsRuleDetector for ModbusArg {
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::WriteMultipleRegisters {
                         start_address,
                         end_address,
-                        value
+                        value,
                     } => {
                         if let modbus_req::Data::WriteMultipleRegisters {
                             start_address: _start_address,
                             output_values: _output_values,
                             ..
-                        } = &modbus_req_header.pdu.data {
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
 
                             if let Some(value) = value {
@@ -272,36 +269,31 @@ impl IcsRuleDetector for ModbusArg {
                         } else {
                             return false;
                         }
+                    }
+                    ModbusArg::ReportServerID {} => match &modbus_req_header.pdu.data {
+                        modbus_req::Data::ReportServerID {} => {}
+                        _ => return false,
                     },
-                    ModbusArg::ReportServerID {} => {
-                        match &modbus_req_header.pdu.data {
-                            modbus_req::Data::ReportServerID {} => {},
-                            _ => return false
-                        }
+                    ModbusArg::ReadFileRecord {} => match &modbus_req_header.pdu.data {
+                        modbus_req::Data::ReadFileRecord { .. } => {}
+                        _ => return false,
                     },
-                    ModbusArg::ReadFileRecord {} => {
-                        match &modbus_req_header.pdu.data {
-                            modbus_req::Data::ReadFileRecord {..} => {},
-                            _ => return false
-                        }
-                    },
-                    ModbusArg::WriteFileRecord {} => {
-                        match &modbus_req_header.pdu.data {
-                            modbus_req::Data::WriteFileRecord {..} => {},
-                            _ => return false
-                        }
+                    ModbusArg::WriteFileRecord {} => match &modbus_req_header.pdu.data {
+                        modbus_req::Data::WriteFileRecord { .. } => {}
+                        _ => return false,
                     },
                     ModbusArg::MaskWriteRegister {
                         start_address,
                         end_address,
                         and_mask,
-                        or_mask
+                        or_mask,
                     } => {
                         if let modbus_req::Data::MaskWriteRegister {
                             ref_address: _start_address,
                             and_mask: _and_mask,
-                            or_mask: _or_mask
-                        } = &modbus_req_header.pdu.data {
+                            or_mask: _or_mask,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _start_address);
 
                             if let Some(and_mask) = and_mask {
@@ -317,20 +309,21 @@ impl IcsRuleDetector for ModbusArg {
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::ReadWriteMultipleRegisters {
                         start_address,
                         end_address,
                         start_address2,
                         end_address2,
-                        value
+                        value,
                     } => {
                         if let modbus_req::Data::ReadWriteMultipleRegisters {
                             read_start_address: _read_start_address,
                             write_start_address: _write_start_address,
                             write_register_values: _write_register_values,
-                            .. 
-                        } = &modbus_req_header.pdu.data {
+                            ..
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _read_start_address);
                             detect_address!(start_address2, end_address2, _write_start_address);
 
@@ -350,31 +343,32 @@ impl IcsRuleDetector for ModbusArg {
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::ReadFIFOQueue {
                         start_address,
-                        end_address
+                        end_address,
                     } => {
                         if let modbus_req::Data::ReadFIFOQueue {
-                            fifo_pointer_address: _fifo_pointer_address
-                        } = &modbus_req_header.pdu.data {
+                            fifo_pointer_address: _fifo_pointer_address,
+                        } = &modbus_req_header.pdu.data
+                        {
                             detect_address!(start_address, end_address, _fifo_pointer_address);
                         } else {
                             return false;
                         }
-                    },
+                    }
                     ModbusArg::EncapsulatedInterfaceTransport {
-                        subfunction: _subfunction
+                        subfunction: _subfunction,
                     } => {
                         // TODO: impl Modbus EncapsulatedInterfaceTransport parsing
                         return false;
-                    },
-                    ModbusArg::Unknow => return false
+                    }
+                    ModbusArg::Unknow => return false,
                 };
 
                 true
-            },
-            _ => false
+            }
+            _ => false,
         }
     }
 }
@@ -384,11 +378,9 @@ mod tests {
     use std::{net::IpAddr, str::FromStr};
 
     use crate::{
-        icsrule::basis::{Direction, Action},
+        icsrule::basis::{Action, Direction},
         icsrule_arg::IcsRuleArg,
-        IcsRuleBasis,
-        IcsRule, 
-        HmIcsRules
+        HmIcsRules, IcsRule, IcsRuleBasis,
     };
 
     use super::*;
@@ -407,15 +399,13 @@ mod tests {
                 dst_port: None,
                 msg: "Modbus Read Coils(1)".to_string(),
             },
-            args: IcsRuleArg::Modbus(
-                ModbusArg::ReadCoils {
-                    start_address: Some(0),
-                    end_address: Some(10)
-                }
-            )
+            args: IcsRuleArg::Modbus(ModbusArg::ReadCoils {
+                start_address: Some(0),
+                end_address: Some(10),
+            }),
         };
 
-        assert_eq!( 
+        assert_eq!(
             serde_json::to_string(&modbus_rule).unwrap(),
             r#"{"active":true,"rid":1,"action":"alert","src":"192.168.3.189","sport":null,"dire":"<>","dst":null,"dport":null,"msg":"Modbus Read Coils(1)","proname":"Modbus","args":{"function_code":"1","start_address":0,"end_address":10}}"#
         )

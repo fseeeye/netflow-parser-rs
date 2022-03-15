@@ -1,4 +1,4 @@
-mod parser_adapter;
-mod icsrule_adapter;
-mod suricata_adapter;
 mod common;
+mod icsrule_adapter;
+mod parser_adapter;
+mod suricata_adapter;

@@ -664,30 +664,29 @@ impl FromStr for IsDataAt {
         let (input, negate_op) = nom::combinator::opt(nom::bytes::complete::tag("!"))(input)?;
         let negate = negate_op.is_some();
         // pos
-        let (input, pos_str) = nom::character::complete::digit1::<_, nom::error::Error<&str>>(input.trim_start())
-            .map_err(|_| make_err(format!("no position number: {}", raw_input)))?;
+        let (input, pos_str) =
+            nom::character::complete::digit1::<_, nom::error::Error<&str>>(input.trim_start())
+                .map_err(|_| make_err(format!("no position number: {}", raw_input)))?;
         let pos = usize::from_str(pos_str)
             .map_err(|_| make_err(format!("error position number str: {}", pos_str)))?;
         // relative (optional)
-        let (input, relative_op) = nom::combinator::opt(
-            nom::sequence::preceded(
-                nom::bytes::complete::tag(","),
-                nom::sequence::preceded(
-                    nom::character::complete::multispace0, 
-                    nom::combinator::rest
-                ),
-            )
-        )(input.trim_start())?;
+        let (input, relative_op) = nom::combinator::opt(nom::sequence::preceded(
+            nom::bytes::complete::tag(","),
+            nom::sequence::preceded(nom::character::complete::multispace0, nom::combinator::rest),
+        ))(input.trim_start())?;
 
         if let Some(relative_str) = relative_op {
             if relative_str.trim() == "relative" {
                 Ok(IsDataAt {
                     pos,
                     negate,
-                    relative: true
+                    relative: true,
                 })
             } else {
-                Err(make_err(format!("unknow optional modifier: {}", relative_str)))
+                Err(make_err(format!(
+                    "unknow optional modifier: {}",
+                    relative_str
+                )))
             }
         } else {
             let (_input, _eof) = nom::combinator::eof::<_, nom::error::Error<&str>>(input)
@@ -696,7 +695,7 @@ impl FromStr for IsDataAt {
             Ok(IsDataAt {
                 pos,
                 negate,
-                relative: false
+                relative: false,
             })
         }
     }
@@ -815,7 +814,7 @@ impl FromStr for Pcre {
             return Ok(pcre);
         };
         let (input, modifiers) = nom::character::complete::alphanumeric1(input)?;
-        
+
         let mut _pcre_builder = pcre2::bytes::RegexBuilder::new();
         _pcre_builder.jit(true);
         for c in modifiers.chars() {
@@ -823,29 +822,30 @@ impl FromStr for Pcre {
                 'i' => {
                     pcre.modifier_i = true;
                     _pcre_builder.caseless(true);
-                },
+                }
                 'm' => {
                     pcre.modifier_m = true;
                     _pcre_builder.multi_line(true);
-                },
+                }
                 's' => {
                     pcre.modifier_s = true;
                     _pcre_builder.dotall(true);
-                },
+                }
                 'x' => {
                     pcre.modifier_x = true;
                     _pcre_builder.extended(true);
-                },
+                }
                 'u' => {
                     pcre.modifier_u = true;
                     _pcre_builder.utf(true);
-                },
+                }
                 _ => {
                     tracing::debug!(target: "Suricata(Pcre::from_str)", "unknow modifier `{}`", c);
                 }
             }
         }
-        _pcre_builder.build("foo")
+        _pcre_builder
+            .build("foo")
             .map_err(|_| make_err(format!("regex build failed: {:?}", _pcre_builder)))?; // try build pcre regex
 
         let (_input, _close_quote) =

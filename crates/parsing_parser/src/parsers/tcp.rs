@@ -12,8 +12,8 @@ use crate::ProtocolType;
 
 use super::{
     parse_bacnet_layer, parse_dnp3_layer, parse_fins_tcp_req_layer, parse_fins_tcp_rsp_layer,
-    parse_iec104_layer, parse_iso_on_tcp_layer, parse_l4_eof_layer, parse_modbus_req_layer,
-    parse_modbus_rsp_layer, parse_opcua_layer, parse_http_layer,
+    parse_http_layer, parse_iec104_layer, parse_iso_on_tcp_layer, parse_l4_eof_layer,
+    parse_modbus_req_layer, parse_modbus_rsp_layer, parse_opcua_layer,
 };
 
 // TCP Header Format

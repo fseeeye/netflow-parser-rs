@@ -5,8 +5,7 @@ use parsing_parser::{
     parsers::{EthernetHeader, Ipv4Header, ModbusReqHeader, TcpHeader},
     ApplicationLayer, L5Packet, LinkLayer, MacAddress, NetworkLayer, QuinPacket, TransportLayer,
 };
-use parsing_rule::{RulesDetector, DetectResult, RuleAction};
-
+use parsing_rule::{DetectResult, RuleAction, RulesDetector};
 
 fn make_modbus_req_packet(req_pdu: parsing_parser::parsers::modbus_req::PDU) -> QuinPacket {
     let app_layer = ApplicationLayer::ModbusReq(ModbusReqHeader {
@@ -115,7 +114,6 @@ fn detect_modbus_read_holding_registers() {
     };
     let packet_req = make_modbus_req_packet(req_pdu);
 
-
     let mut modbus_rule = HmIcsRules::new();
     assert!(modbus_rule.load_rules("./tests/ics_rules_modbus.json"));
 
@@ -156,7 +154,6 @@ fn detect_modbus_write_single_coil() {
     };
     let packet_req = make_modbus_req_packet(req_pdu);
 
-
     let mut modbus_rule = HmIcsRules::new();
     assert!(modbus_rule.load_rules("./tests/ics_rules_modbus.json"));
 
@@ -194,7 +191,6 @@ fn detect_modbus_read_exception_status() {
     };
     let packet_req = make_modbus_req_packet(req_pdu);
 
-
     let mut modbus_rule = HmIcsRules::new();
     assert!(modbus_rule.load_rules("./tests/ics_rules_modbus.json"));
 
@@ -211,7 +207,6 @@ fn detect_modbus_get_comm_event_counter() {
         data: parsing_parser::parsers::modbus_req::Data::GetCommEventCounter {},
     };
     let packet_req = make_modbus_req_packet(req_pdu);
-
 
     let mut modbus_rule = HmIcsRules::new();
     assert!(modbus_rule.load_rules("./tests/ics_rules_modbus.json"));

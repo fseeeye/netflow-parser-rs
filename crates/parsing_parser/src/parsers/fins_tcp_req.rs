@@ -699,7 +699,7 @@ fn parse_run(input: &[u8]) -> IResult<&[u8], Order> {
     let (input, program_number) = be_u16(input)?;
     let (input, mode_code) = match u8::<_, nom::error::Error<&[u8]>>(input) {
         Ok(o) => o,
-        Err(_e) => (input, 0x02) // default is Monitor mode
+        Err(_e) => (input, 0x02), // default is Monitor mode
     };
     Ok((
         input,

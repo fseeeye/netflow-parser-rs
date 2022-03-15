@@ -1,9 +1,6 @@
 use parsing_parser::ApplicationNaiveProtocol;
 
-use std::{
-    collections::HashMap,
-    fs,
-};
+use std::{collections::HashMap, fs};
 
 use super::IcsRule;
 
@@ -16,11 +13,10 @@ pub struct HmIcsRules {
 }
 
 impl HmIcsRules {
-    
     pub fn new() -> Self {
         Self {
             rules_inner: HashMap::new(),
-            rules_map: HashMap::new()
+            rules_map: HashMap::new(),
         }
     }
 
@@ -52,7 +48,7 @@ impl HmIcsRules {
                 .entry(protocol_type)
                 .or_insert(Vec::<usize>::new())
                 .push(rid);
-            
+
             self.rules_inner.insert(rid, rule);
         }
 
@@ -82,7 +78,6 @@ impl HmIcsRules {
             target_rule.basic.active = false;
         }
     }
-
 }
 
 #[cfg(test)]
@@ -90,8 +85,8 @@ mod tests {
     use std::{net::IpAddr, str::FromStr};
 
     use crate::{
-        icsrule::basis::{Direction, Action},
-        icsrule_arg::{ModbusArg, IcsRuleArg},
+        icsrule::basis::{Action, Direction},
+        icsrule_arg::{IcsRuleArg, ModbusArg},
         IcsRuleBasis,
     };
 
@@ -124,12 +119,10 @@ mod tests {
                         dst_port: Some(502),
                         msg: "Modbus Read Coils(1)".to_string(),
                     },
-                    args: IcsRuleArg::Modbus(
-                        ModbusArg::ReadCoils {
-                            start_address: Some(0),
-                            end_address: Some(10)
-                        }
-                    )
+                    args: IcsRuleArg::Modbus(ModbusArg::ReadCoils {
+                        start_address: Some(0),
+                        end_address: Some(10)
+                    })
                 }
             );
         } else {
@@ -142,7 +135,7 @@ mod tests {
         let mut ics_rules = load_modbus_icsrule();
 
         ics_rules.delete_rule(1);
-        
+
         // println!("rules_map: {:?}", ics_rules.rules_map);
         // println!("rules_inner: {:?}", ics_rules.rules_inner);
         for (_k, v) in &ics_rules.rules_map {

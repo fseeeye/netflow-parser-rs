@@ -1,7 +1,8 @@
 use core::slice;
 
 use parsing_parser::{
-    ApplicationLayer, LinkLevel, NetLevel, QuinPacket, QuinPacketOptions, TransLevel, L1Packet, ParseError,
+    ApplicationLayer, L1Packet, LinkLevel, NetLevel, ParseError, QuinPacket, QuinPacketOptions,
+    TransLevel,
 };
 
 /// 初始化数据包解析选项
@@ -25,7 +26,7 @@ pub extern "C" fn parse_packet_rs<'a>(
         tracing::warn!("Packet parsing: input bytes ptr is null!");
         return Box::into_raw(Box::new(QuinPacket::L1(L1Packet {
             error: Some(ParseError::Adaptor),
-            remain: &[]
+            remain: &[],
         })));
     }
 
@@ -33,17 +34,13 @@ pub extern "C" fn parse_packet_rs<'a>(
         tracing::warn!("Packet parsing: option ptr is null!");
         return Box::into_raw(Box::new(QuinPacket::L1(L1Packet {
             error: Some(ParseError::Adaptor),
-            remain: &[]
+            remain: &[],
         })));
     }
 
-    let input = unsafe {
-        slice::from_raw_parts(input_ptr, input_len.into())
-    };
+    let input = unsafe { slice::from_raw_parts(input_ptr, input_len.into()) };
 
-    let option = unsafe {
-        &*option_ptr
-    };
+    let option = unsafe { &*option_ptr };
 
     let packet = Box::into_raw(Box::new(QuinPacket::parse_from_stream(input, option)));
 
@@ -57,9 +54,7 @@ pub extern "C" fn free_packet_rs(packet_ptr: *mut QuinPacket) {
         tracing::warn!("Packet free: packet ptr is null!");
         return;
     }
-    unsafe {
-        Box::from_raw(packet_ptr)
-    };
+    unsafe { Box::from_raw(packet_ptr) };
 
     tracing::trace!("Packet free Done.");
 }
@@ -72,9 +67,7 @@ pub extern "C" fn show_packet_rs(packet_ptr: *const QuinPacket) {
         return;
     }
 
-    let packet = unsafe {
-        &*packet_ptr
-    };
+    let packet = unsafe { &*packet_ptr };
 
     match packet {
         QuinPacket::L1(_l1) => {

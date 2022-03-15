@@ -9,5 +9,5 @@ pub enum ParseError {
     ParsingPayload,
     UnknownPayload,
     NotEndPayload,
-    Adaptor
+    Adaptor,
 }

@@ -1,6 +1,8 @@
-use crate::{QuinPacket, QuinPacketOptions, ProtocolType, ApplicationProtocol, LinkLayer, NetworkLayer, TransportLayer, L4Packet, ParseError, ApplicationLayer, L5Packet};
 use super::parse_l5_eof_layer;
-
+use crate::{
+    ApplicationLayer, ApplicationProtocol, L4Packet, L5Packet, LinkLayer, NetworkLayer, ParseError,
+    ProtocolType, QuinPacket, QuinPacketOptions, TransportLayer,
+};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum HttpHeader<'a> {
@@ -9,15 +11,15 @@ pub enum HttpHeader<'a> {
         path: &'a str,
         version: u8,
         headers: [httparse::Header<'a>; 16],
-        content: &'a [u8]
+        content: &'a [u8],
     },
     Response {
         version: u8,
         code: u16,
         reason: &'a str,
         headers: [httparse::Header<'a>; 16],
-        content: &'a [u8]
-    }
+        content: &'a [u8],
+    },
 }
 
 pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
@@ -29,7 +31,8 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
     let mut headers = [httparse::EMPTY_HEADER; 16];
 
     let (_, rsp_opt) = nom::combinator::opt(nom::bytes::complete::tag(b"HTTP/"))(input)?;
-    if rsp_opt.is_none() { // HTTP Request
+    if rsp_opt.is_none() {
+        // HTTP Request
         let method;
         let path;
         let version;
@@ -40,7 +43,7 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
             match status {
                 httparse::Status::Complete(offset) => {
                     content = &input[offset..];
-                },
+                }
                 httparse::Status::Partial => {
                     // http isn't complete
                     // TODO: http flow
@@ -70,13 +73,16 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
                 return verify_error;
             }
 
-            tracing::debug!("{:?}", HttpHeader::Request {
-                method,
-                path,
-                version,
-                headers,
-                content
-            });
+            tracing::debug!(
+                "{:?}",
+                HttpHeader::Request {
+                    method,
+                    path,
+                    version,
+                    headers,
+                    content
+                }
+            );
 
             Ok((
                 input,
@@ -85,14 +91,15 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
                     path,
                     version,
                     headers,
-                    content
+                    content,
                 },
             ))
         } else {
             tracing::debug!(target: "PARSER(http::parse_http_header)", "request version error.");
             return verify_error;
         }
-    } else { // HTTP Response
+    } else {
+        // HTTP Response
         let version;
         let code;
         let reason;
@@ -103,7 +110,7 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
             match status {
                 httparse::Status::Complete(offset) => {
                     content = &input[offset..];
-                },
+                }
                 httparse::Status::Partial => {
                     // http isn't complete
                     // TODO: http flow
@@ -132,13 +139,16 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
                 return verify_error;
             }
 
-            tracing::debug!("{:?}", HttpHeader::Response {
-                version,
-                code,
-                reason,
-                headers,
-                content
-            });
+            tracing::debug!(
+                "{:?}",
+                HttpHeader::Response {
+                    version,
+                    code,
+                    reason,
+                    headers,
+                    content
+                }
+            );
 
             Ok((
                 input,
@@ -147,7 +157,7 @@ pub fn parse_http_header(input: &[u8]) -> nom::IResult<&[u8], HttpHeader> {
                     code,
                     reason,
                     headers,
-                    content
+                    content,
                 },
             ))
         } else {
@@ -179,7 +189,7 @@ pub fn parse_http_layer<'a>(
                 transport_layer,
                 error: Some(ParseError::ParsingHeader),
                 remain: input,
-            })
+            });
         }
     };
 

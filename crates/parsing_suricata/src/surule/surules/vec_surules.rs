@@ -1,4 +1,4 @@
-use tracing::{trace, error};
+use tracing::{error, trace};
 
 use super::Surules;
 use crate::{
@@ -238,7 +238,7 @@ mod tests {
                     sid: 2003237,
                     meta_options: vec![
                         SuruleMetaOption::Message("foo".to_string()),
-                        SuruleMetaOption::Sid(2003237),    
+                        SuruleMetaOption::Sid(2003237)
                     ],
                     payload_options: vec![],
                     flow_options: vec![],

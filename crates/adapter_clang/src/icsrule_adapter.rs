@@ -22,9 +22,7 @@ pub extern "C" fn free_ics_rules_rs(rules_ptr: *mut HmIcsRules) {
         tracing::warn!("ICS rule free: rules ptr is null!");
         return;
     }
-    unsafe {
-        Box::from_raw(rules_ptr)
-    };
+    unsafe { Box::from_raw(rules_ptr) };
 
     tracing::debug!("ICS rules free Done.");
 }
@@ -55,21 +53,25 @@ pub extern "C" fn show_ics_rules_rs(rules_ptr: *const HmIcsRules) -> *mut c_char
         tracing::warn!("ICS rule show: rules ptr is null!");
         return CString::new(rst).unwrap().into_raw();
     }
-    let rules = unsafe {
-        &*rules_ptr
-    };
+    let rules = unsafe { &*rules_ptr };
 
     for (rid, rule) in &rules.rules_inner {
-        rst += format!("[{}] action = {:?}, active = {}.\n", (*rid) as u32, rule.basic.action, rule.basic.active).as_str();
+        rst += format!(
+            "[{}] action = {:?}, active = {}.\n",
+            (*rid) as u32,
+            rule.basic.action,
+            rule.basic.active
+        )
+        .as_str();
     }
     // tracing::debug!("ICS rules show: {}", rst.trim());
-    
+
     CString::new(rst).unwrap().into_raw()
 }
 
 /// 清空ICS规则输出
 #[no_mangle]
-pub extern "C" fn free_show_ics_rules_rs(show_rules_ptr: *mut c_char)  {
+pub extern "C" fn free_show_ics_rules_rs(show_rules_ptr: *mut c_char) {
     if show_rules_ptr.is_null() {
         return;
     }
@@ -87,9 +89,7 @@ pub extern "C" fn load_ics_rules_rs(rules_ptr: *mut HmIcsRules, file_ptr: *const
         tracing::warn!("ICS rule load: rules ptr is null!");
         return false;
     }
-    let rules = unsafe {
-        &mut *rules_ptr
-    };
+    let rules = unsafe { &mut *rules_ptr };
 
     let file = unsafe {
         if file_ptr.is_null() {
@@ -99,7 +99,7 @@ pub extern "C" fn load_ics_rules_rs(rules_ptr: *mut HmIcsRules, file_ptr: *const
     };
     let file_str = file.to_str().unwrap();
 
-    let span = tracing::span!(tracing::Level::TRACE, "load ics rules", path=file_str);
+    let span = tracing::span!(tracing::Level::TRACE, "load ics rules", path = file_str);
     let _enter = span.enter();
 
     if rules.load_rules(file_str) {
@@ -123,7 +123,7 @@ pub extern "C" fn delete_ics_rule_rs(rules_ptr: *mut HmIcsRules, rule_rid: usize
     };
 
     rules.delete_rule(rule_rid);
-    
+
     tracing::debug!("ICS rule delete Done.");
 
     return true;
@@ -171,7 +171,7 @@ pub extern "C" fn detect_ics_rules_rs(
     rules_ptr: *const HmIcsRules,
     packet_ptr: *const QuinPacket,
     out_rid_ptr: *mut u32,
-    out_action_ptr: *mut u8
+    out_action_ptr: *mut u8,
 ) -> bool {
     let rules = unsafe {
         if rules_ptr.is_null() {
@@ -205,8 +205,7 @@ pub extern "C" fn detect_ics_rules_rs(
     let rst = rules.detect(packet);
     match rst {
         DetectResult::Hit(rid, action) => {
-            tracing::trace!("ICS Rule HIT! (rid={}, action={:?})", rid, action
-        );
+            tracing::trace!("ICS Rule HIT! (rid={}, action={:?})", rid, action);
             *out_rid = rid as u32;
             *out_action = super::common::rule_action_to_firewall_action(action);
 
@@ -224,7 +223,7 @@ pub extern "C" fn detect_ics_rules_rs(
 pub extern "C" fn detect_ics_whitelist_rules_rs(
     rules_ptr: *const HmIcsRules,
     packet_ptr: *const QuinPacket,
-    out_rid_ptr: *mut u32
+    out_rid_ptr: *mut u32,
 ) -> bool {
     let rules = unsafe {
         if rules_ptr.is_null() {

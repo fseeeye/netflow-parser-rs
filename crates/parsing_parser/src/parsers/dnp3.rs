@@ -47,7 +47,7 @@ use super::parse_l5_eof_layer;
 pub struct Dnp3Header {
     pub data_link_layer: DataLinkLayer,
     pub transport_control: TransportControl,
-    pub application_layer: Dnp3ApplicationLayer
+    pub application_layer: Dnp3ApplicationLayer,
 }
 
 pub fn parse_dnp3_header(input: &[u8]) -> IResult<&[u8], Dnp3Header> {
@@ -59,7 +59,7 @@ pub fn parse_dnp3_header(input: &[u8]) -> IResult<&[u8], Dnp3Header> {
         Dnp3Header {
             data_link_layer,
             transport_control,
-            application_layer
+            application_layer,
         },
     ))
 }
@@ -133,23 +133,20 @@ pub struct TransportControl {
 pub struct Dnp3ApplicationLayer {
     pub app_control: u8,
     pub function_code: u8,
-    pub app_data: Dnp3ApplicationData
+    pub app_data: Dnp3ApplicationData,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Qualifier {
     prefix_code: u8,
-    range_code: u8
+    range_code: u8,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum NumOfItem {
     Qualifier(u32),
-    StartStop {
-        start: u32,
-        stop: u32
-    },
-    None
+    StartStop { start: u32, stop: u32 },
+    None,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -166,15 +163,15 @@ pub enum Dnp3ApplicationData {
     Confirm,
     // 0x01
     Read {
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x02
     Write {
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x03
     Select {
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x0d
     ColdRestart,
@@ -184,26 +181,26 @@ pub enum Dnp3ApplicationData {
     StopApplication,
     // 0x14
     EnableSpontaneousMessage {
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x15
     DisableSpontaneousMessage {
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x19
     OpenFile {
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x81
     Response {
         internal_indications: u16,
-        objects: Vec<DataObject>
+        objects: Vec<DataObject>,
     },
     // 0x82
     UnsolicitedResponse {
         internal_indications: u16,
-        objects: Vec<DataObject>
-    }
+        objects: Vec<DataObject>,
+    },
 }
 
 pub fn parse_data_link_layer(input: &[u8]) -> IResult<&[u8], DataLinkLayer> {
@@ -273,10 +270,7 @@ pub fn parse_data_chunk(input: &[u8], check_size: u8) -> IResult<&[u8], &[u8]> {
             )))
         }
     };
-    Ok((
-        input,
-        data_chunk
-    ))
+    Ok((input, data_chunk))
 }
 
 pub fn parse_data_chunks(input: &[u8], length: u8) -> IResult<&[u8], Vec<u8>> {
@@ -303,65 +297,53 @@ pub fn parse_data_chunks(input: &[u8], length: u8) -> IResult<&[u8], Vec<u8>> {
     Ok((input, data_chunks))
 }
 
-pub fn parse_dnp3_application_layer<'a>(input: &'a [u8], dl_length: u8) -> IResult<&'a [u8], Dnp3ApplicationLayer> {
-    let (input, data_chunks) =
-        parse_data_chunks(input, dl_length)?;
+pub fn parse_dnp3_application_layer<'a>(
+    input: &'a [u8],
+    dl_length: u8,
+) -> IResult<&'a [u8], Dnp3ApplicationLayer> {
+    let (input, data_chunks) = parse_data_chunks(input, dl_length)?;
 
     let mut data_bytes = data_chunks.as_slice();
     data_bytes = &data_bytes[1..]; // ignore transport_control
 
-    let (data_bytes, app_control) = u8::<_, nom::error::Error<&[u8]>>(data_bytes)
-        .map_err(|_| nom::Err::Error(nom::error::Error::new(
-            input,
-            nom::error::ErrorKind::Verify,
-        )))?;
+    let (data_bytes, app_control) =
+        u8::<_, nom::error::Error<&[u8]>>(data_bytes).map_err(|_| {
+            nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))
+        })?;
 
-    let (_data_bytes, function_code) = u8::<_, nom::error::Error<&[u8]>>(data_bytes)
-        .map_err(|_| nom::Err::Error(nom::error::Error::new(
-            input,
-            nom::error::ErrorKind::Verify,
-        )))?;
+    let (_data_bytes, function_code) =
+        u8::<_, nom::error::Error<&[u8]>>(data_bytes).map_err(|_| {
+            nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify))
+        })?;
 
     // tracing::trace!("app_control: {:x?}, function_code: {:x?}, remain: {:x?}", app_control, function_code, data_bytes);
 
     // TODO: parsing objects & points
     let app_data = match function_code {
         0x00 => Dnp3ApplicationData::Confirm {},
-        0x01 => {
-            Dnp3ApplicationData::Read {
-                objects: vec![]
-            }
-        },
-        0x02 => Dnp3ApplicationData::Write {
-            objects: vec![]
-        },
-        0x03 => Dnp3ApplicationData::Select {
-            objects: vec![]
-        },
+        0x01 => Dnp3ApplicationData::Read { objects: vec![] },
+        0x02 => Dnp3ApplicationData::Write { objects: vec![] },
+        0x03 => Dnp3ApplicationData::Select { objects: vec![] },
         0x0d => Dnp3ApplicationData::ColdRestart {},
         0x0e => Dnp3ApplicationData::WarmRestart {},
         0x12 => Dnp3ApplicationData::StopApplication {},
-        0x14 => Dnp3ApplicationData::EnableSpontaneousMessage {
-            objects: vec![]
-        },
-        0x15 => Dnp3ApplicationData::DisableSpontaneousMessage {
-            objects: vec![]
-        },
-        0x19 => Dnp3ApplicationData::OpenFile {
-            objects: vec![]
-        },
+        0x14 => Dnp3ApplicationData::EnableSpontaneousMessage { objects: vec![] },
+        0x15 => Dnp3ApplicationData::DisableSpontaneousMessage { objects: vec![] },
+        0x19 => Dnp3ApplicationData::OpenFile { objects: vec![] },
         0x81 => Dnp3ApplicationData::Response {
             internal_indications: 0,
-            objects: vec![]
+            objects: vec![],
         },
         0x82 => Dnp3ApplicationData::UnsolicitedResponse {
             internal_indications: 0,
-            objects: vec![]
+            objects: vec![],
         },
-        _ => return Err(nom::Err::Error(nom::error::Error::new(
-            input,
-            nom::error::ErrorKind::Verify,
-        )))
+        _ => {
+            return Err(nom::Err::Error(nom::error::Error::new(
+                input,
+                nom::error::ErrorKind::Verify,
+            )))
+        }
     };
 
     Ok((
@@ -369,7 +351,7 @@ pub fn parse_dnp3_application_layer<'a>(input: &'a [u8], dl_length: u8) -> IResu
         Dnp3ApplicationLayer {
             app_control,
             function_code,
-            app_data
-        }
+            app_data,
+        },
     ))
 }

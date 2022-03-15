@@ -8,8 +8,8 @@ use super::{
     option::parse_option_from_stream,
     // structs
     Surule,
-    SuruleOption,
     SuruleMetaOption,
+    SuruleOption,
     SuruleParseError,
 };
 
@@ -75,7 +75,7 @@ impl FromStr for Surule {
         }
 
         Ok(Surule::new(
-            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, sid, options
+            action, protocol, src_addr, src_port, direction, dst_addr, dst_port, sid, options,
         )
         .map_err(|e| e.into())?)
     }
