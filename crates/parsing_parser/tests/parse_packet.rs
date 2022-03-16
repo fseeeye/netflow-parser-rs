@@ -116,8 +116,15 @@ fn parse_http() {
 
 #[test]
 fn parse_goose() {
-    // tracing_subscriber::fmt::init();
     let goose_pcap_path = "./tests/goose.pcap";
 
     assert!(parse_pcap(goose_pcap_path).is_ok());
+}
+
+#[test]
+fn parse_sv() {
+    // tracing_subscriber::fmt::init();
+    let sv_pcap_path = "./tests/sv.pcap";
+
+    assert!(parse_pcap(sv_pcap_path).is_ok());
 }

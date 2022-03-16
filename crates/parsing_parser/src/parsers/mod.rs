@@ -17,8 +17,10 @@ pub mod modbus_req;
 pub mod modbus_rsp;
 pub mod opcua;
 pub mod s7comm;
+pub mod sv;
 pub mod tcp;
 pub mod udp;
+pub mod vlan;
 
 pub use eof::*;
 pub use http::{parse_http_layer, HttpHeader};
@@ -39,5 +41,7 @@ pub use modbus_req::{parse_modbus_req_layer, ModbusReqHeader};
 pub use modbus_rsp::{parse_modbus_rsp_layer, ModbusRspHeader};
 pub use opcua::{parse_opcua_layer, OpcuaHeader};
 pub use s7comm::{parse_s7comm_layer, S7commHeader};
+pub use sv::{parse_sv_layer, SvHeader};
 pub use tcp::{parse_tcp_layer, TcpHeader};
 pub use udp::{parse_udp_layer, UdpHeader};
+pub use vlan::{parse_vlan_layer, VlanHeader};

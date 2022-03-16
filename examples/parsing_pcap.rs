@@ -46,8 +46,10 @@ fn main() {
         // Modbus
         // "../pcap/ICS/modbus/test/mod_2.pcap",
         // "./benches/modbus_fins_test.pcap",
-        // Goose
-        "../pcap/ICS/iec61850/goose.pcap"
+        // GOOSE
+        // "../pcap/ICS/iec61850/goose.pcap",
+        // SV
+        "../pcap/ICS/iec61850/sv.pcap",
     ];
 
     for path in paths.iter() {

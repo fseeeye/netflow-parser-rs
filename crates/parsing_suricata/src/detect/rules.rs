@@ -74,6 +74,9 @@ impl RulesDetector for VecSurules {
                             }
                         }
                     }
+                    _ => {
+                        return DetectResult::Miss
+                    }
                 }
                 // trace!(target: "SURICATA(VecSurules::detect)", "MISS current Rule!");
                 DetectResult::Miss
@@ -120,6 +123,9 @@ impl RulesDetector for VecSurules {
                                 }
                             }
                         }
+                    }
+                    _ => {
+                        return DetectResult::Miss
                     }
                 };
 

@@ -51,12 +51,14 @@ pub enum NetworkProtocol {
     Ipv4,
     Ipv6,
     Goose,
+    Vlan,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum TransportProtocol {
     Tcp,
     Udp,
+    Sv,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
@@ -157,6 +159,7 @@ impl<'a> From<NetworkLayer<'a>> for NetworkProtocol {
             NetworkLayer::Ipv4(_) => NetworkProtocol::Ipv4,
             NetworkLayer::Ipv6(_) => NetworkProtocol::Ipv6,
             NetworkLayer::Goose(_) => NetworkProtocol::Goose,
+            NetworkLayer::Vlan(_) => NetworkProtocol::Vlan,
         }
     }
 }
@@ -174,6 +177,7 @@ impl<'a> From<TransportLayer<'a>> for TransportProtocol {
         match trans_layer {
             TransportLayer::Tcp(_) => TransportProtocol::Tcp,
             TransportLayer::Udp(_) => TransportProtocol::Udp,
+            TransportLayer::Sv(_) => TransportProtocol::Sv,
         }
     }
 }

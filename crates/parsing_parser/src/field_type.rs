@@ -3,7 +3,7 @@ pub use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use nom::bytes::complete::take;
 use nom::number::complete::{be_u16, u8};
 use serde::{Deserialize, Serialize};
-use tracing::trace;
+use tracing::{trace, error};
 
 use std::convert::TryFrom;
 use std::ops::BitAnd;
@@ -137,6 +137,7 @@ impl std::fmt::Display for BerTL {
 pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
     let (input, tag) = u8(input_raw)?;
     if tag.bitand(0x1f) > 0x1e {
+        error!(target: "PARSER(ber_tl)", tag, "tag.bitand(0x1f) can't bigger than 0x1e!");
         return Err(nom::Err::Error(nom::error::Error {
             input: input_raw,
             code: nom::error::ErrorKind::Tag,
@@ -145,7 +146,7 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
     let (input, length) = u8(input)?;
     if length < 128 {
         //短形式
-        trace!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {}", tag, length);
+        trace!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {} (short length)", tag, length);
         Ok((
             input,
             BerTL {
@@ -163,7 +164,7 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
             (input, tmp) = be_u16(input)?;
             loop {
                 if tmp == 0 {
-                    trace!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {}", tag, length);
+                    trace!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {} (indefinite length)", tag, length);
                     return Ok((input, BerTL { tag, length }));
                 } else {
                     length += tmp;
@@ -173,11 +174,21 @@ pub fn ber_tl(input_raw: &[u8]) -> nom::IResult<&[u8], BerTL> {
         } else {
             // 定长
             let (input, slice) = take((length - 128) as usize)(input)?;
-            let mut length: u8 = 0;
-            for i in slice {
-                length += *i
+            let mut length: usize = 0;
+            trace!(target: "PARSER(ber_tl)", ?slice);
+            for (index, sub_len) in slice.iter().rev().enumerate() {
+                length = match length.checked_add((*sub_len as usize) * 256_usize.pow(index as u32)) {
+                    Some(o) => o,
+                    None => {
+                        error!(target: "PARSER(ber_tl)", tag, "length overflow!");
+                        return Err(nom::Err::Error(nom::error::Error {
+                            input: input_raw,
+                            code: nom::error::ErrorKind::Verify,
+                        }));
+                    }
+                }
             }
-            trace!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {}", tag, length);
+            trace!(target: "PARSER(ber_tl)", "tag: 0x{:x}, len: {} (fixed length)", tag, length);
             Ok((
                 input,
                 BerTL {
@@ -282,7 +293,7 @@ mod tests {
         let tl_long_known: &[u8] = &[0x10, 0x82, 0x01, 0x02, 0xcc, 0xcc];
         assert_eq!(
             ber_tl(tl_long_known),
-            Ok(([0xcc, 0xcc].as_slice(), BerTL { tag: 16, length: 3 }))
+            Ok(([0xcc, 0xcc].as_slice(), BerTL { tag: 16, length: 258 }))
         );
 
         let tl_error_tag: &[u8] = &[0x1f, 0xcc];

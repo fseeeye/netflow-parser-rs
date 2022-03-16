@@ -31,6 +31,7 @@ pub enum NetworkLayer<'a> {
     Ipv4(Ipv4Header<'a>),
     Ipv6(Ipv6Header<'a>),
     Goose(GooseHeader<'a>),
+    Vlan(VlanHeader),
 }
 
 impl<'a> NetworkLayer<'a> {
@@ -40,6 +41,7 @@ impl<'a> NetworkLayer<'a> {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
             NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
             NetworkLayer::Goose(_) => None,
+            NetworkLayer::Vlan(_) => None
         }
     }
 
@@ -49,6 +51,7 @@ impl<'a> NetworkLayer<'a> {
             NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
             NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
             NetworkLayer::Goose(_) => None,
+            NetworkLayer::Vlan(_) => None
         }
     }
 }
@@ -58,6 +61,7 @@ impl<'a> NetworkLayer<'a> {
 pub enum TransportLayer<'a> {
     Tcp(TcpHeader<'a>),
     Udp(UdpHeader<'a>),
+    Sv(SvHeader<'a>),
 }
 
 impl<'a> TransportLayer<'a> {
@@ -66,6 +70,7 @@ impl<'a> TransportLayer<'a> {
         match self {
             TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
             TransportLayer::Udp(udp) => Some(udp.dst_port),
+            TransportLayer::Sv(_) => None
         }
     }
 
@@ -74,6 +79,7 @@ impl<'a> TransportLayer<'a> {
         match self {
             TransportLayer::Tcp(tcp) => Some(tcp.src_port),
             TransportLayer::Udp(udp) => Some(udp.src_port),
+            TransportLayer::Sv(_) => None
         }
     }
 }
