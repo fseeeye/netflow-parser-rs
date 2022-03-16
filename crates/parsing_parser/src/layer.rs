@@ -11,16 +11,16 @@ pub enum LinkLayer {
 
 impl LinkLayer {
     #[inline]
-    pub fn get_dst_mac(&self) -> &MacAddress {
+    pub fn get_dst_mac(&self) -> Option<MacAddress> {
         match &self {
-            LinkLayer::Ethernet(eth) => &eth.dst_mac,
+            LinkLayer::Ethernet(eth) => Some(eth.dst_mac),
         }
     }
 
     #[inline]
-    pub fn get_src_mac(&self) -> &MacAddress {
+    pub fn get_src_mac(&self) -> Option<MacAddress> {
         match &self {
-            LinkLayer::Ethernet(eth) => &eth.src_mac,
+            LinkLayer::Ethernet(eth) => Some(eth.src_mac),
         }
     }
 }
@@ -30,22 +30,25 @@ impl LinkLayer {
 pub enum NetworkLayer<'a> {
     Ipv4(Ipv4Header<'a>),
     Ipv6(Ipv6Header<'a>),
+    Goose(GooseHeader<'a>),
 }
 
 impl<'a> NetworkLayer<'a> {
     #[inline]
-    pub fn get_dst_ip(&self) -> IpAddr {
+    pub fn get_dst_ip(&self) -> Option<IpAddr> {
         match self {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.dst_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.dst_ip),
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.dst_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.dst_ip)),
+            NetworkLayer::Goose(_) => None,
         }
     }
 
     #[inline]
-    pub fn get_src_ip(&self) -> IpAddr {
+    pub fn get_src_ip(&self) -> Option<IpAddr> {
         match self {
-            NetworkLayer::Ipv4(ipv4) => IpAddr::V4(ipv4.src_ip),
-            NetworkLayer::Ipv6(ipv6) => IpAddr::V6(ipv6.src_ip),
+            NetworkLayer::Ipv4(ipv4) => Some(IpAddr::V4(ipv4.src_ip)),
+            NetworkLayer::Ipv6(ipv6) => Some(IpAddr::V6(ipv6.src_ip)),
+            NetworkLayer::Goose(_) => None,
         }
     }
 }
@@ -59,18 +62,18 @@ pub enum TransportLayer<'a> {
 
 impl<'a> TransportLayer<'a> {
     #[inline]
-    pub fn get_dst_port(&self) -> u16 {
+    pub fn get_dst_port(&self) -> Option<u16> {
         match self {
-            TransportLayer::Tcp(tcp) => tcp.dst_port,
-            TransportLayer::Udp(udp) => udp.dst_port,
+            TransportLayer::Tcp(tcp) => Some(tcp.dst_port),
+            TransportLayer::Udp(udp) => Some(udp.dst_port),
         }
     }
 
     #[inline]
-    pub fn get_src_port(&self) -> u16 {
+    pub fn get_src_port(&self) -> Option<u16> {
         match self {
-            TransportLayer::Tcp(tcp) => tcp.src_port,
-            TransportLayer::Udp(udp) => udp.src_port,
+            TransportLayer::Tcp(tcp) => Some(tcp.src_port),
+            TransportLayer::Udp(udp) => Some(udp.src_port),
         }
     }
 }
@@ -84,12 +87,12 @@ pub enum ApplicationLayer<'a> {
     FinsTcpRsp(FinsTcpRspHeader<'a>),
     FinsUdpReq(FinsUdpReqHeader<'a>),
     FinsUdpRsp(FinsUdpRspHeader<'a>),
-    Http(HttpHeader<'a>),
     Mms(MmsHeader<'a>),
     S7comm(S7commHeader<'a>),
     Bacnet(BacnetHeader<'a>),
     Dnp3(Dnp3Header),
     Iec104(Iec104Header),
     Opcua(OpcuaHeader<'a>),
+    Http(HttpHeader<'a>),
     IsoOnTcp(IsoOnTcpHeader),
 }

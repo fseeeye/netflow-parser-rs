@@ -7,7 +7,7 @@ use crate::packet::{L1Packet, L2Packet, QuinPacket, QuinPacketOptions};
 use crate::protocol::LinkProtocol;
 use crate::ProtocolType;
 
-use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer};
+use super::{parse_ipv4_layer, parse_ipv6_layer, parse_l2_eof_layer, parse_goose_layer};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct EthernetHeader {
@@ -59,13 +59,17 @@ pub fn parse_ethernet_layer<'a>(input: &'a [u8], options: &QuinPacketOptions) ->
     }
     // refs: https://en.wikipedia.org/wiki/EtherType
     match eth_header.link_type {
-        0x0800 => {
+        0x0800 => { // IPv4
             let link_layer = LinkLayer::Ethernet(eth_header);
             parse_ipv4_layer(input, link_layer, options)
         }
-        0x86DD => {
+        0x86DD => { // IPv6
             let link_layer = LinkLayer::Ethernet(eth_header);
             parse_ipv6_layer(input, link_layer, options)
+        }
+        0x88B8 => { // GOOSE
+            let link_layer = LinkLayer::Ethernet(eth_header);
+            parse_goose_layer(input, link_layer, options)
         }
         _ => {
             let link_layer = LinkLayer::Ethernet(eth_header);

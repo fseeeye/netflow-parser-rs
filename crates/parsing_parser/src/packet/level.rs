@@ -14,8 +14,8 @@ pub trait PhyLevel {
 ///
 /// 实现"获取link层 MAC 字段值"等常用方法。
 pub trait LinkLevel: PhyLevel {
-    fn get_dst_mac(&self) -> &MacAddress;
-    fn get_src_mac(&self) -> &MacAddress;
+    fn get_dst_mac(&self) -> Option<MacAddress>;
+    fn get_src_mac(&self) -> Option<MacAddress>;
     fn get_link_type(&self) -> LinkProtocol;
 }
 
@@ -23,8 +23,8 @@ pub trait LinkLevel: PhyLevel {
 ///
 /// 实现"获取network层 IP 字段值"等常用方法。
 pub trait NetLevel: LinkLevel {
-    fn get_dst_ip(&self) -> IpAddr;
-    fn get_src_ip(&self) -> IpAddr;
+    fn get_dst_ip(&self) -> Option<IpAddr>;
+    fn get_src_ip(&self) -> Option<IpAddr>;
     fn get_net_type(&self) -> NetworkProtocol;
 }
 
@@ -32,8 +32,8 @@ pub trait NetLevel: LinkLevel {
 ///
 /// 实现"获取transport层常用字段值"等常用方法。
 pub trait TransLevel: NetLevel {
-    fn get_dst_port(&self) -> u16;
-    fn get_src_port(&self) -> u16;
+    fn get_dst_port(&self) -> Option<u16>;
+    fn get_src_port(&self) -> Option<u16>;
     fn get_tran_type(&self) -> TransportProtocol;
 }
 

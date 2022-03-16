@@ -50,6 +50,7 @@ pub enum LinkProtocol {
 pub enum NetworkProtocol {
     Ipv4,
     Ipv6,
+    Goose,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
@@ -66,13 +67,13 @@ pub enum ApplicationProtocol {
     FinsTcpRsp,
     FinsUdpReq,
     FinsUdpRsp,
-    Http,
     Mms,
     S7comm,
     Bacnet,
     Dnp3,
     Iec104,
     Opcua,
+    Http,
     IsoOnTcp,
 }
 
@@ -80,13 +81,13 @@ pub enum ApplicationProtocol {
 pub enum ApplicationNaiveProtocol {
     Modbus,
     Fins,
-    Http,
     Mms,
     S7comm,
     Bacnet,
     Dnp3,
     Iec104,
     Opcua,
+    Http,
     IsoOnTcp,
 }
 
@@ -99,13 +100,13 @@ impl From<ApplicationProtocol> for ApplicationNaiveProtocol {
             ApplicationProtocol::FinsTcpRsp => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpReq => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpRsp => ApplicationNaiveProtocol::Fins,
-            ApplicationProtocol::Http => ApplicationNaiveProtocol::Http,
             ApplicationProtocol::Mms => ApplicationNaiveProtocol::Mms,
             ApplicationProtocol::S7comm => ApplicationNaiveProtocol::S7comm,
             ApplicationProtocol::Bacnet => ApplicationNaiveProtocol::Bacnet,
             ApplicationProtocol::Dnp3 => ApplicationNaiveProtocol::Dnp3,
             ApplicationProtocol::Iec104 => ApplicationNaiveProtocol::Iec104,
             ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
+            ApplicationProtocol::Http => ApplicationNaiveProtocol::Http,
             ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
         }
     }
@@ -120,13 +121,13 @@ impl From<&ApplicationProtocol> for ApplicationNaiveProtocol {
             ApplicationProtocol::FinsTcpRsp => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpReq => ApplicationNaiveProtocol::Fins,
             ApplicationProtocol::FinsUdpRsp => ApplicationNaiveProtocol::Fins,
-            ApplicationProtocol::Http => ApplicationNaiveProtocol::Http,
             ApplicationProtocol::Mms => ApplicationNaiveProtocol::Mms,
             ApplicationProtocol::S7comm => ApplicationNaiveProtocol::S7comm,
             ApplicationProtocol::Bacnet => ApplicationNaiveProtocol::Bacnet,
             ApplicationProtocol::Dnp3 => ApplicationNaiveProtocol::Dnp3,
             ApplicationProtocol::Iec104 => ApplicationNaiveProtocol::Iec104,
             ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
+            ApplicationProtocol::Http => ApplicationNaiveProtocol::Http,
             ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
         }
     }
@@ -155,6 +156,7 @@ impl<'a> From<NetworkLayer<'a>> for NetworkProtocol {
         match net_layer {
             NetworkLayer::Ipv4(_) => NetworkProtocol::Ipv4,
             NetworkLayer::Ipv6(_) => NetworkProtocol::Ipv6,
+            NetworkLayer::Goose(_) => NetworkProtocol::Goose,
         }
     }
 }
@@ -193,13 +195,13 @@ impl<'a> From<ApplicationLayer<'a>> for ApplicationProtocol {
             ApplicationLayer::FinsTcpRsp(_) => ApplicationProtocol::FinsTcpRsp,
             ApplicationLayer::FinsUdpReq(_) => ApplicationProtocol::FinsUdpReq,
             ApplicationLayer::FinsUdpRsp(_) => ApplicationProtocol::FinsUdpRsp,
-            ApplicationLayer::Http(_) => ApplicationProtocol::Http,
             ApplicationLayer::Mms(_) => ApplicationProtocol::Mms,
             ApplicationLayer::S7comm(_) => ApplicationProtocol::S7comm,
             ApplicationLayer::Bacnet(_) => ApplicationProtocol::Bacnet,
             ApplicationLayer::Dnp3(_) => ApplicationProtocol::Dnp3,
             ApplicationLayer::Iec104(_) => ApplicationProtocol::Iec104,
             ApplicationLayer::Opcua(_) => ApplicationProtocol::Opcua,
+            ApplicationLayer::Http(_) => ApplicationProtocol::Http,
             ApplicationLayer::IsoOnTcp(_) => ApplicationProtocol::IsoOnTcp,
         }
     }

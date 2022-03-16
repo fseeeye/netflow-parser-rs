@@ -87,7 +87,6 @@ fn parse_iec104_pcap() {
 
 #[test]
 fn parse_opcua_pcap() {
-    // tracing_subscriber::fmt::init();
     let opcua_pcap_path = [
         "./tests/opcua_msg.pcap",
         "./tests/opcua_ack.pcap",
@@ -103,7 +102,6 @@ fn parse_opcua_pcap() {
 
 #[test]
 fn parse_mms_pcap() {
-    // tracing_subscriber::fmt::init();
     let mms_pcap_path = "./tests/mms_3.pcap";
 
     assert!(parse_pcap(mms_pcap_path).is_ok());
@@ -111,9 +109,15 @@ fn parse_mms_pcap() {
 
 #[test]
 fn parse_http() {
-    // tracing_subscriber::fmt::init();
     let http_pcap_path = "./tests/http_simple.pcap";
 
     assert!(parse_pcap(http_pcap_path).is_ok());
-    // assert!(false);
+}
+
+#[test]
+fn parse_goose() {
+    // tracing_subscriber::fmt::init();
+    let goose_pcap_path = "./tests/goose.pcap";
+
+    assert!(parse_pcap(goose_pcap_path).is_ok());
 }

@@ -61,7 +61,7 @@ fn parse_pcap(path: &str) {
     assert_eq!(icsrules.load_rules(icsrule_path), true);
     // 初始化 Suricata 规则
     let surule_path = "./tests/suricata.rules";
-    let surules = VecSurules::parse_from_file(surule_path).unwrap();
+    let surules = VecSurules::init_from_file(surule_path).unwrap();
 
     loop {
         match reader.next() {

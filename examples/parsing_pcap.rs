@@ -44,8 +44,10 @@ fn main() {
         // Ipv4 Option
         // "../pcap/ip/ipv4-options.pcap",
         // Modbus
-        "../pcap/ICS/modbus/test/mod_2.pcap",
+        // "../pcap/ICS/modbus/test/mod_2.pcap",
         // "./benches/modbus_fins_test.pcap",
+        // Goose
+        "../pcap/ICS/iec61850/goose.pcap"
     ];
 
     for path in paths.iter() {
@@ -99,7 +101,7 @@ fn parse_pcap(path: &str) {
     assert_eq!(icsrules.load_rules(icsrule_path), true);
     // 初始化 Suricata 规则
     let surule_path = "./examples/suricata.rules";
-    let surules = VecSurules::parse_from_file(surule_path).unwrap();
+    let surules = VecSurules::init_from_file(surule_path).unwrap();
 
     loop {
         match reader.next() {

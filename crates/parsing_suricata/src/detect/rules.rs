@@ -18,6 +18,15 @@ impl Into<RuleAction> for Action {
     }
 }
 
+macro_rules! unwrap_option {
+    ( $optioner:expr ) => {
+        match $optioner {
+            Some(o) => o,
+            None => return DetectResult::Miss
+        }
+    };
+}
+
 impl RulesDetector for VecSurules {
     fn detect(&self, packet: &QuinPacket) -> DetectResult {
         // Warning: 目前数据包规则匹配过程中，直接返回第一个匹配到的规则的 Action，无法设置单个规则优先级。
@@ -25,10 +34,10 @@ impl RulesDetector for VecSurules {
         // 判断该数据包为第几层协议，为其分配相应的规则
         match packet {
             QuinPacket::L4(l4) => {
-                let dst_ip = l4.get_dst_ip();
-                let dst_port = l4.get_dst_port();
-                let src_ip = l4.get_src_ip();
-                let src_port = l4.get_src_port();
+                let dst_ip = unwrap_option!(l4.get_dst_ip());
+                let dst_port = unwrap_option!(l4.get_dst_port());
+                let src_ip = unwrap_option!(l4.get_src_ip());
+                let src_port = unwrap_option!(l4.get_src_port());
 
                 match l4.transport_layer {
                     TransportLayer::Tcp(tcp) => {
@@ -71,10 +80,10 @@ impl RulesDetector for VecSurules {
             }
 
             QuinPacket::L5(l5) => {
-                let dst_ip = l5.get_dst_ip();
-                let dst_port = l5.get_dst_port();
-                let src_ip = l5.get_src_ip();
-                let src_port = l5.get_src_port();
+                let dst_ip = unwrap_option!(l5.get_dst_ip());
+                let dst_port = unwrap_option!(l5.get_dst_port());
+                let src_ip = unwrap_option!(l5.get_src_ip());
+                let src_port = unwrap_option!(l5.get_src_port());
 
                 // Warning: 传输层规则优先级高于应用层规则
                 match l5.transport_layer {

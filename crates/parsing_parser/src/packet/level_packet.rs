@@ -38,12 +38,12 @@ impl<'a> PhyLevel for L2Packet<'a> {
 
 impl<'a> LinkLevel for L2Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> &MacAddress {
+    fn get_dst_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> &MacAddress {
+    fn get_src_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_src_mac()
     }
 
@@ -72,12 +72,12 @@ impl<'a> PhyLevel for L3Packet<'a> {
 
 impl<'a> LinkLevel for L3Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> &MacAddress {
+    fn get_dst_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> &MacAddress {
+    fn get_src_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_src_mac()
     }
 
@@ -89,12 +89,12 @@ impl<'a> LinkLevel for L3Packet<'a> {
 
 impl<'a> NetLevel for L3Packet<'a> {
     #[inline(always)]
-    fn get_dst_ip(&self) -> IpAddr {
+    fn get_dst_ip(&self) -> Option<IpAddr> {
         self.network_layer.get_dst_ip()
     }
 
     #[inline(always)]
-    fn get_src_ip(&self) -> IpAddr {
+    fn get_src_ip(&self) -> Option<IpAddr> {
         self.network_layer.get_src_ip()
     }
 
@@ -124,12 +124,12 @@ impl<'a> PhyLevel for L4Packet<'a> {
 
 impl<'a> LinkLevel for L4Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> &MacAddress {
+    fn get_dst_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> &MacAddress {
+    fn get_src_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_src_mac()
     }
 
@@ -141,12 +141,12 @@ impl<'a> LinkLevel for L4Packet<'a> {
 
 impl<'a> NetLevel for L4Packet<'a> {
     #[inline(always)]
-    fn get_dst_ip(&self) -> IpAddr {
+    fn get_dst_ip(&self) -> Option<IpAddr> {
         self.network_layer.get_dst_ip()
     }
 
     #[inline(always)]
-    fn get_src_ip(&self) -> IpAddr {
+    fn get_src_ip(&self) -> Option<IpAddr> {
         self.network_layer.get_src_ip()
     }
 
@@ -158,12 +158,12 @@ impl<'a> NetLevel for L4Packet<'a> {
 
 impl<'a> TransLevel for L4Packet<'a> {
     #[inline(always)]
-    fn get_dst_port(&self) -> u16 {
+    fn get_dst_port(&self) -> Option<u16> {
         self.transport_layer.get_dst_port()
     }
 
     #[inline(always)]
-    fn get_src_port(&self) -> u16 {
+    fn get_src_port(&self) -> Option<u16> {
         self.transport_layer.get_src_port()
     }
 
@@ -194,12 +194,12 @@ impl<'a> PhyLevel for L5Packet<'a> {
 
 impl<'a> LinkLevel for L5Packet<'a> {
     #[inline(always)]
-    fn get_dst_mac(&self) -> &MacAddress {
+    fn get_dst_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_dst_mac()
     }
 
     #[inline(always)]
-    fn get_src_mac(&self) -> &MacAddress {
+    fn get_src_mac(&self) -> Option<MacAddress> {
         self.link_layer.get_src_mac()
     }
 
@@ -211,12 +211,12 @@ impl<'a> LinkLevel for L5Packet<'a> {
 
 impl<'a> NetLevel for L5Packet<'a> {
     #[inline(always)]
-    fn get_dst_ip(&self) -> IpAddr {
+    fn get_dst_ip(&self) -> Option<IpAddr> {
         self.network_layer.get_dst_ip()
     }
 
     #[inline(always)]
-    fn get_src_ip(&self) -> IpAddr {
+    fn get_src_ip(&self) -> Option<IpAddr> {
         self.network_layer.get_src_ip()
     }
 
@@ -228,12 +228,12 @@ impl<'a> NetLevel for L5Packet<'a> {
 
 impl<'a> TransLevel for L5Packet<'a> {
     #[inline(always)]
-    fn get_dst_port(&self) -> u16 {
+    fn get_dst_port(&self) -> Option<u16> {
         self.transport_layer.get_dst_port()
     }
 
     #[inline(always)]
-    fn get_src_port(&self) -> u16 {
+    fn get_src_port(&self) -> Option<u16> {
         self.transport_layer.get_src_port()
     }
 
