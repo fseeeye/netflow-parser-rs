@@ -1,0 +1,194 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/parsing_parser/src/utils.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>utils.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../parsing_parser/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../parsing_parser/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../parsing_parser/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crc16_check</span>(<span class="ident">crc16</span>: <span class="ident">u16</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="kw-2">mut</span> <span class="ident">seed</span>: <span class="ident">u16</span>, <span class="ident">table</span>: [<span class="ident">u16</span>; <span class="number">256</span>]) -&gt; <span class="ident">bool</span> {
+    <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">byte</span> <span class="kw">in</span> <span class="ident">bytes</span> {
+        <span class="ident">seed</span> <span class="op">=</span> <span class="ident">table</span>[((<span class="ident">seed</span> <span class="op">^</span> (<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">u16</span>)) <span class="op">&amp;</span> <span class="number">0xffu16</span>) <span class="kw">as</span> <span class="ident">usize</span>] <span class="op">^</span> (<span class="ident">seed</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">8</span>);
+    }
+    <span class="op">!</span><span class="ident">seed</span> <span class="op">==</span> <span class="ident">crc16</span>
+}
+
+<span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crc16_0x3d65_check</span>(<span class="ident">crc16</span>: <span class="ident">u16</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">seed</span>: <span class="ident">u16</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">let</span> <span class="ident">crc16_precompiled_3d65_reverse</span>: [<span class="ident">u16</span>; <span class="number">256</span>] <span class="op">=</span> [
+        <span class="number">0x0000</span>, <span class="number">0x365E</span>, <span class="number">0x6CBC</span>, <span class="number">0x5AE2</span>, <span class="number">0xD978</span>, <span class="number">0xEF26</span>, <span class="number">0xB5C4</span>, <span class="number">0x839A</span>, <span class="number">0xFF89</span>, <span class="number">0xC9D7</span>, <span class="number">0x9335</span>,
+        <span class="number">0xA56B</span>, <span class="number">0x26F1</span>, <span class="number">0x10AF</span>, <span class="number">0x4A4D</span>, <span class="number">0x7C13</span>, <span class="number">0xB26B</span>, <span class="number">0x8435</span>, <span class="number">0xDED7</span>, <span class="number">0xE889</span>, <span class="number">0x6B13</span>, <span class="number">0x5D4D</span>,
+        <span class="number">0x07AF</span>, <span class="number">0x31F1</span>, <span class="number">0x4DE2</span>, <span class="number">0x7BBC</span>, <span class="number">0x215E</span>, <span class="number">0x1700</span>, <span class="number">0x949A</span>, <span class="number">0xA2C4</span>, <span class="number">0xF826</span>, <span class="number">0xCE78</span>, <span class="number">0x29AF</span>,
+        <span class="number">0x1FF1</span>, <span class="number">0x4513</span>, <span class="number">0x734D</span>, <span class="number">0xF0D7</span>, <span class="number">0xC689</span>, <span class="number">0x9C6B</span>, <span class="number">0xAA35</span>, <span class="number">0xD626</span>, <span class="number">0xE078</span>, <span class="number">0xBA9A</span>, <span class="number">0x8CC4</span>,
+        <span class="number">0x0F5E</span>, <span class="number">0x3900</span>, <span class="number">0x63E2</span>, <span class="number">0x55BC</span>, <span class="number">0x9BC4</span>, <span class="number">0xAD9A</span>, <span class="number">0xF778</span>, <span class="number">0xC126</span>, <span class="number">0x42BC</span>, <span class="number">0x74E2</span>, <span class="number">0x2E00</span>,
+        <span class="number">0x185E</span>, <span class="number">0x644D</span>, <span class="number">0x5213</span>, <span class="number">0x08F1</span>, <span class="number">0x3EAF</span>, <span class="number">0xBD35</span>, <span class="number">0x8B6B</span>, <span class="number">0xD189</span>, <span class="number">0xE7D7</span>, <span class="number">0x535E</span>, <span class="number">0x6500</span>,
+        <span class="number">0x3FE2</span>, <span class="number">0x09BC</span>, <span class="number">0x8A26</span>, <span class="number">0xBC78</span>, <span class="number">0xE69A</span>, <span class="number">0xD0C4</span>, <span class="number">0xACD7</span>, <span class="number">0x9A89</span>, <span class="number">0xC06B</span>, <span class="number">0xF635</span>, <span class="number">0x75AF</span>,
+        <span class="number">0x43F1</span>, <span class="number">0x1913</span>, <span class="number">0x2F4D</span>, <span class="number">0xE135</span>, <span class="number">0xD76B</span>, <span class="number">0x8D89</span>, <span class="number">0xBBD7</span>, <span class="number">0x384D</span>, <span class="number">0x0E13</span>, <span class="number">0x54F1</span>, <span class="number">0x62AF</span>,
+        <span class="number">0x1EBC</span>, <span class="number">0x28E2</span>, <span class="number">0x7200</span>, <span class="number">0x445E</span>, <span class="number">0xC7C4</span>, <span class="number">0xF19A</span>, <span class="number">0xAB78</span>, <span class="number">0x9D26</span>, <span class="number">0x7AF1</span>, <span class="number">0x4CAF</span>, <span class="number">0x164D</span>,
+        <span class="number">0x2013</span>, <span class="number">0xA389</span>, <span class="number">0x95D7</span>, <span class="number">0xCF35</span>, <span class="number">0xF96B</span>, <span class="number">0x8578</span>, <span class="number">0xB326</span>, <span class="number">0xE9C4</span>, <span class="number">0xDF9A</span>, <span class="number">0x5C00</span>, <span class="number">0x6A5E</span>,
+        <span class="number">0x30BC</span>, <span class="number">0x06E2</span>, <span class="number">0xC89A</span>, <span class="number">0xFEC4</span>, <span class="number">0xA426</span>, <span class="number">0x9278</span>, <span class="number">0x11E2</span>, <span class="number">0x27BC</span>, <span class="number">0x7D5E</span>, <span class="number">0x4B00</span>, <span class="number">0x3713</span>,
+        <span class="number">0x014D</span>, <span class="number">0x5BAF</span>, <span class="number">0x6DF1</span>, <span class="number">0xEE6B</span>, <span class="number">0xD835</span>, <span class="number">0x82D7</span>, <span class="number">0xB489</span>, <span class="number">0xA6BC</span>, <span class="number">0x90E2</span>, <span class="number">0xCA00</span>, <span class="number">0xFC5E</span>,
+        <span class="number">0x7FC4</span>, <span class="number">0x499A</span>, <span class="number">0x1378</span>, <span class="number">0x2526</span>, <span class="number">0x5935</span>, <span class="number">0x6F6B</span>, <span class="number">0x3589</span>, <span class="number">0x03D7</span>, <span class="number">0x804D</span>, <span class="number">0xB613</span>, <span class="number">0xECF1</span>,
+        <span class="number">0xDAAF</span>, <span class="number">0x14D7</span>, <span class="number">0x2289</span>, <span class="number">0x786B</span>, <span class="number">0x4E35</span>, <span class="number">0xCDAF</span>, <span class="number">0xFBF1</span>, <span class="number">0xA113</span>, <span class="number">0x974D</span>, <span class="number">0xEB5E</span>, <span class="number">0xDD00</span>,
+        <span class="number">0x87E2</span>, <span class="number">0xB1BC</span>, <span class="number">0x3226</span>, <span class="number">0x0478</span>, <span class="number">0x5E9A</span>, <span class="number">0x68C4</span>, <span class="number">0x8F13</span>, <span class="number">0xB94D</span>, <span class="number">0xE3AF</span>, <span class="number">0xD5F1</span>, <span class="number">0x566B</span>,
+        <span class="number">0x6035</span>, <span class="number">0x3AD7</span>, <span class="number">0x0C89</span>, <span class="number">0x709A</span>, <span class="number">0x46C4</span>, <span class="number">0x1C26</span>, <span class="number">0x2A78</span>, <span class="number">0xA9E2</span>, <span class="number">0x9FBC</span>, <span class="number">0xC55E</span>, <span class="number">0xF300</span>,
+        <span class="number">0x3D78</span>, <span class="number">0x0B26</span>, <span class="number">0x51C4</span>, <span class="number">0x679A</span>, <span class="number">0xE400</span>, <span class="number">0xD25E</span>, <span class="number">0x88BC</span>, <span class="number">0xBEE2</span>, <span class="number">0xC2F1</span>, <span class="number">0xF4AF</span>, <span class="number">0xAE4D</span>,
+        <span class="number">0x9813</span>, <span class="number">0x1B89</span>, <span class="number">0x2DD7</span>, <span class="number">0x7735</span>, <span class="number">0x416B</span>, <span class="number">0xF5E2</span>, <span class="number">0xC3BC</span>, <span class="number">0x995E</span>, <span class="number">0xAF00</span>, <span class="number">0x2C9A</span>, <span class="number">0x1AC4</span>,
+        <span class="number">0x4026</span>, <span class="number">0x7678</span>, <span class="number">0x0A6B</span>, <span class="number">0x3C35</span>, <span class="number">0x66D7</span>, <span class="number">0x5089</span>, <span class="number">0xD313</span>, <span class="number">0xE54D</span>, <span class="number">0xBFAF</span>, <span class="number">0x89F1</span>, <span class="number">0x4789</span>,
+        <span class="number">0x71D7</span>, <span class="number">0x2B35</span>, <span class="number">0x1D6B</span>, <span class="number">0x9EF1</span>, <span class="number">0xA8AF</span>, <span class="number">0xF24D</span>, <span class="number">0xC413</span>, <span class="number">0xB800</span>, <span class="number">0x8E5E</span>, <span class="number">0xD4BC</span>, <span class="number">0xE2E2</span>,
+        <span class="number">0x6178</span>, <span class="number">0x5726</span>, <span class="number">0x0DC4</span>, <span class="number">0x3B9A</span>, <span class="number">0xDC4D</span>, <span class="number">0xEA13</span>, <span class="number">0xB0F1</span>, <span class="number">0x86AF</span>, <span class="number">0x0535</span>, <span class="number">0x336B</span>, <span class="number">0x6989</span>,
+        <span class="number">0x5FD7</span>, <span class="number">0x23C4</span>, <span class="number">0x159A</span>, <span class="number">0x4F78</span>, <span class="number">0x7926</span>, <span class="number">0xFABC</span>, <span class="number">0xCCE2</span>, <span class="number">0x9600</span>, <span class="number">0xA05E</span>, <span class="number">0x6E26</span>, <span class="number">0x5878</span>,
+        <span class="number">0x029A</span>, <span class="number">0x34C4</span>, <span class="number">0xB75E</span>, <span class="number">0x8100</span>, <span class="number">0xDBE2</span>, <span class="number">0xEDBC</span>, <span class="number">0x91AF</span>, <span class="number">0xA7F1</span>, <span class="number">0xFD13</span>, <span class="number">0xCB4D</span>, <span class="number">0x48D7</span>,
+        <span class="number">0x7E89</span>, <span class="number">0x246B</span>, <span class="number">0x1235</span>,
+    ];
+
+    <span class="ident">crc16_check</span>(<span class="ident">crc16</span>, <span class="ident">bytes</span>, <span class="ident">seed</span>, <span class="ident">crc16_precompiled_3d65_reverse</span>)
+}
+
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
+<span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">crc16_0x9949_check</span>(<span class="ident">crc16</span>: <span class="ident">u16</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">seed</span>: <span class="ident">u16</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">let</span> <span class="ident">crc16_precompiled_9949_reverse</span>: [<span class="ident">u16</span>; <span class="number">256</span>] <span class="op">=</span> [
+        <span class="number">0x0000</span>, <span class="number">0x0ED2</span>, <span class="number">0x1DA4</span>, <span class="number">0x1376</span>, <span class="number">0x3B48</span>, <span class="number">0x359A</span>, <span class="number">0x26EC</span>, <span class="number">0x283E</span>, <span class="number">0x7690</span>, <span class="number">0x7842</span>, <span class="number">0x6B34</span>,
+        <span class="number">0x65E6</span>, <span class="number">0x4DD8</span>, <span class="number">0x430A</span>, <span class="number">0x507C</span>, <span class="number">0x5EAE</span>, <span class="number">0xED20</span>, <span class="number">0xE3F2</span>, <span class="number">0xF084</span>, <span class="number">0xFE56</span>, <span class="number">0xD668</span>, <span class="number">0xD8BA</span>,
+        <span class="number">0xCBCC</span>, <span class="number">0xC51E</span>, <span class="number">0x9BB0</span>, <span class="number">0x9562</span>, <span class="number">0x8614</span>, <span class="number">0x88C6</span>, <span class="number">0xA0F8</span>, <span class="number">0xAE2A</span>, <span class="number">0xBD5C</span>, <span class="number">0xB38E</span>, <span class="number">0xFF73</span>,
+        <span class="number">0xF1A1</span>, <span class="number">0xE2D7</span>, <span class="number">0xEC05</span>, <span class="number">0xC43B</span>, <span class="number">0xCAE9</span>, <span class="number">0xD99F</span>, <span class="number">0xD74D</span>, <span class="number">0x89E3</span>, <span class="number">0x8731</span>, <span class="number">0x9447</span>, <span class="number">0x9A95</span>,
+        <span class="number">0xB2AB</span>, <span class="number">0xBC79</span>, <span class="number">0xAF0F</span>, <span class="number">0xA1DD</span>, <span class="number">0x1253</span>, <span class="number">0x1C81</span>, <span class="number">0x0FF7</span>, <span class="number">0x0125</span>, <span class="number">0x291B</span>, <span class="number">0x27C9</span>, <span class="number">0x34BF</span>,
+        <span class="number">0x3A6D</span>, <span class="number">0x64C3</span>, <span class="number">0x6A11</span>, <span class="number">0x7967</span>, <span class="number">0x77B5</span>, <span class="number">0x5F8B</span>, <span class="number">0x5159</span>, <span class="number">0x422F</span>, <span class="number">0x4CFD</span>, <span class="number">0xDBD5</span>, <span class="number">0xD507</span>,
+        <span class="number">0xC671</span>, <span class="number">0xC8A3</span>, <span class="number">0xE09D</span>, <span class="number">0xEE4F</span>, <span class="number">0xFD39</span>, <span class="number">0xF3EB</span>, <span class="number">0xAD45</span>, <span class="number">0xA397</span>, <span class="number">0xB0E1</span>, <span class="number">0xBE33</span>, <span class="number">0x960D</span>,
+        <span class="number">0x98DF</span>, <span class="number">0x8BA9</span>, <span class="number">0x857B</span>, <span class="number">0x36F5</span>, <span class="number">0x3827</span>, <span class="number">0x2B51</span>, <span class="number">0x2583</span>, <span class="number">0x0DBD</span>, <span class="number">0x036F</span>, <span class="number">0x1019</span>, <span class="number">0x1ECB</span>,
+        <span class="number">0x4065</span>, <span class="number">0x4EB7</span>, <span class="number">0x5DC1</span>, <span class="number">0x5313</span>, <span class="number">0x7B2D</span>, <span class="number">0x75FF</span>, <span class="number">0x6689</span>, <span class="number">0x685B</span>, <span class="number">0x24A6</span>, <span class="number">0x2A74</span>, <span class="number">0x3902</span>,
+        <span class="number">0x37D0</span>, <span class="number">0x1FEE</span>, <span class="number">0x113C</span>, <span class="number">0x024A</span>, <span class="number">0x0C98</span>, <span class="number">0x5236</span>, <span class="number">0x5CE4</span>, <span class="number">0x4F92</span>, <span class="number">0x4140</span>, <span class="number">0x697E</span>, <span class="number">0x67AC</span>,
+        <span class="number">0x74DA</span>, <span class="number">0x7A08</span>, <span class="number">0xC986</span>, <span class="number">0xC754</span>, <span class="number">0xD422</span>, <span class="number">0xDAF0</span>, <span class="number">0xF2CE</span>, <span class="number">0xFC1C</span>, <span class="number">0xEF6A</span>, <span class="number">0xE1B8</span>, <span class="number">0xBF16</span>,
+        <span class="number">0xB1C4</span>, <span class="number">0xA2B2</span>, <span class="number">0xAC60</span>, <span class="number">0x845E</span>, <span class="number">0x8A8C</span>, <span class="number">0x99FA</span>, <span class="number">0x9728</span>, <span class="number">0x9299</span>, <span class="number">0x9C4B</span>, <span class="number">0x8F3D</span>, <span class="number">0x81EF</span>,
+        <span class="number">0xA9D1</span>, <span class="number">0xA703</span>, <span class="number">0xB475</span>, <span class="number">0xBAA7</span>, <span class="number">0xE409</span>, <span class="number">0xEADB</span>, <span class="number">0xF9AD</span>, <span class="number">0xF77F</span>, <span class="number">0xDF41</span>, <span class="number">0xD193</span>, <span class="number">0xC2E5</span>,
+        <span class="number">0xCC37</span>, <span class="number">0x7FB9</span>, <span class="number">0x716B</span>, <span class="number">0x621D</span>, <span class="number">0x6CCF</span>, <span class="number">0x44F1</span>, <span class="number">0x4A23</span>, <span class="number">0x5955</span>, <span class="number">0x5787</span>, <span class="number">0x0929</span>, <span class="number">0x07FB</span>,
+        <span class="number">0x148D</span>, <span class="number">0x1A5F</span>, <span class="number">0x3261</span>, <span class="number">0x3CB3</span>, <span class="number">0x2FC5</span>, <span class="number">0x2117</span>, <span class="number">0x6DEA</span>, <span class="number">0x6338</span>, <span class="number">0x704E</span>, <span class="number">0x7E9C</span>, <span class="number">0x56A2</span>,
+        <span class="number">0x5870</span>, <span class="number">0x4B06</span>, <span class="number">0x45D4</span>, <span class="number">0x1B7A</span>, <span class="number">0x15A8</span>, <span class="number">0x06DE</span>, <span class="number">0x080C</span>, <span class="number">0x2032</span>, <span class="number">0x2EE0</span>, <span class="number">0x3D96</span>, <span class="number">0x3344</span>,
+        <span class="number">0x80CA</span>, <span class="number">0x8E18</span>, <span class="number">0x9D6E</span>, <span class="number">0x93BC</span>, <span class="number">0xBB82</span>, <span class="number">0xB550</span>, <span class="number">0xA626</span>, <span class="number">0xA8F4</span>, <span class="number">0xF65A</span>, <span class="number">0xF888</span>, <span class="number">0xEBFE</span>,
+        <span class="number">0xE52C</span>, <span class="number">0xCD12</span>, <span class="number">0xC3C0</span>, <span class="number">0xD0B6</span>, <span class="number">0xDE64</span>, <span class="number">0x494C</span>, <span class="number">0x479E</span>, <span class="number">0x54E8</span>, <span class="number">0x5A3A</span>, <span class="number">0x7204</span>, <span class="number">0x7CD6</span>,
+        <span class="number">0x6FA0</span>, <span class="number">0x6172</span>, <span class="number">0x3FDC</span>, <span class="number">0x310E</span>, <span class="number">0x2278</span>, <span class="number">0x2CAA</span>, <span class="number">0x0494</span>, <span class="number">0x0A46</span>, <span class="number">0x1930</span>, <span class="number">0x17E2</span>, <span class="number">0xA46C</span>,
+        <span class="number">0xAABE</span>, <span class="number">0xB9C8</span>, <span class="number">0xB71A</span>, <span class="number">0x9F24</span>, <span class="number">0x91F6</span>, <span class="number">0x8280</span>, <span class="number">0x8C52</span>, <span class="number">0xD2FC</span>, <span class="number">0xDC2E</span>, <span class="number">0xCF58</span>, <span class="number">0xC18A</span>,
+        <span class="number">0xE9B4</span>, <span class="number">0xE766</span>, <span class="number">0xF410</span>, <span class="number">0xFAC2</span>, <span class="number">0xB63F</span>, <span class="number">0xB8ED</span>, <span class="number">0xAB9B</span>, <span class="number">0xA549</span>, <span class="number">0x8D77</span>, <span class="number">0x83A5</span>, <span class="number">0x90D3</span>,
+        <span class="number">0x9E01</span>, <span class="number">0xC0AF</span>, <span class="number">0xCE7D</span>, <span class="number">0xDD0B</span>, <span class="number">0xD3D9</span>, <span class="number">0xFBE7</span>, <span class="number">0xF535</span>, <span class="number">0xE643</span>, <span class="number">0xE891</span>, <span class="number">0x5B1F</span>, <span class="number">0x55CD</span>,
+        <span class="number">0x46BB</span>, <span class="number">0x4869</span>, <span class="number">0x6057</span>, <span class="number">0x6E85</span>, <span class="number">0x7DF3</span>, <span class="number">0x7321</span>, <span class="number">0x2D8F</span>, <span class="number">0x235D</span>, <span class="number">0x302B</span>, <span class="number">0x3EF9</span>, <span class="number">0x16C7</span>,
+        <span class="number">0x1815</span>, <span class="number">0x0B63</span>, <span class="number">0x05B1</span>,
+    ];
+
+    <span class="ident">crc16_check</span>(<span class="ident">crc16</span>, <span class="ident">bytes</span>, <span class="ident">seed</span>, <span class="ident">crc16_precompiled_9949_reverse</span>)
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_crc16_0x3d65_check</span>() {
+        <span class="kw">let</span> <span class="ident">crc16</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0xce7a</span>;
+        <span class="kw">let</span> <span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="number">0xc0</span>, <span class="number">0xd7</span>, <span class="number">0x00</span>];
+        <span class="kw">let</span> <span class="ident">seed</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="macro">assert!</span>(<span class="ident">crc16_0x3d65_check</span>(<span class="ident">crc16</span>, <span class="ident">bytes</span>, <span class="ident">seed</span>));
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_crc16_0x9949_check</span>() {
+        <span class="kw">let</span> <span class="ident">crc16</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0x5b30</span>;
+        <span class="kw">let</span> <span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="number">0xc1</span>, <span class="number">0xd7</span>, <span class="number">0x00</span>];
+        <span class="kw">let</span> <span class="ident">seed</span>: <span class="ident">u16</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="macro">assert!</span>(<span class="ident">crc16_0x9949_check</span>(<span class="ident">crc16</span>, <span class="ident">bytes</span>, <span class="ident">seed</span>))
+    }
+}
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="parsing_parser" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (285fa7ecd 2022-03-14)" ></div>
+</body></html>

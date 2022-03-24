@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["DetectResult",""],["RuleAction",""]],"trait":[["RulesDetector",""]]});

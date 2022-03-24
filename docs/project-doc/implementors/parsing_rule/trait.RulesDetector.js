@@ -1,0 +1,4 @@
+(function() {var implementors = {};
+implementors["parsing_icsrule"] = [{"text":"impl <a class=\"trait\" href=\"parsing_rule/trait.RulesDetector.html\" title=\"trait parsing_rule::RulesDetector\">RulesDetector</a> for <a class=\"struct\" href=\"parsing_icsrule/struct.HmIcsRules.html\" title=\"struct parsing_icsrule::HmIcsRules\">HmIcsRules</a>","synthetic":false,"types":["parsing_icsrule::icsrule::hm_rules::HmIcsRules"]}];
+implementors["parsing_suricata"] = [{"text":"impl <a class=\"trait\" href=\"parsing_rule/trait.RulesDetector.html\" title=\"trait parsing_rule::RulesDetector\">RulesDetector</a> for <a class=\"struct\" href=\"parsing_suricata/struct.VecSurules.html\" title=\"struct parsing_suricata::VecSurules\">VecSurules</a>","synthetic":false,"types":["parsing_suricata::surule::surules::vec_surules::VecSurules"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
