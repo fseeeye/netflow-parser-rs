@@ -1,8 +1,9 @@
 use core::slice;
+use crate::common::AdaptProtocolId;
 
 use parsing_parser::{
     ApplicationLayer, L1Packet, LinkLevel, NetLevel, ParseError, QuinPacket, QuinPacketOptions,
-    TransLevel,
+    TransLevel, AppLevel,
 };
 
 /// 初始化数据包解析选项
@@ -112,4 +113,39 @@ pub extern "C" fn show_packet_rs(packet_ptr: *const QuinPacket) {
             println!("  error: {:?}", l5.error);
         }
     };
+}
+
+/// 获得与防火墙匹配的协议id
+#[no_mangle]
+pub extern "C" fn get_protocol_id_rs(packet_ptr: *const QuinPacket) -> u8 {
+    if packet_ptr.is_null() {
+        tracing::warn!("Get protocol ID: packet ptr is null!");
+        return 0; // TODO
+    }
+
+    let packet = unsafe { &*packet_ptr };
+
+    let id;
+    
+    match packet {
+        QuinPacket::L1(_l1) => {
+            id = 0;
+        }
+        QuinPacket::L2(l2) => {
+            id = l2.get_link_type().get_firewall_protocol_id();
+        }
+        QuinPacket::L3(l3) => {
+            id = l3.get_net_type().get_firewall_protocol_id();
+        }
+        QuinPacket::L4(l4) => {
+            id = l4.get_tran_type().get_firewall_protocol_id();
+        }
+        QuinPacket::L5(l5) => {
+            id = l5.get_app_naive_type().get_firewall_protocol_id();
+        }
+    };
+
+    tracing::trace!(id, "Get protocol ID successfully.");
+
+    return id;
 }

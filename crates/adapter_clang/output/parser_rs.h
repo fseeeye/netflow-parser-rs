@@ -114,6 +114,11 @@ void free_packet_rs(struct QuinPacket *packet_ptr);
 void free_show_ics_rules_rs(char *show_rules_ptr);
 
 /**
+ * 获得与防火墙匹配的协议id
+ */
+uint8_t get_protocol_id_rs(const struct QuinPacket *packet_ptr);
+
+/**
  * 初始化ICS规则结构体
  */
 struct HmIcsRules *init_ics_rules_rs(void);
