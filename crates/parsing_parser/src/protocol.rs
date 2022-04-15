@@ -46,6 +46,14 @@ pub enum LinkProtocol {
     Ethernet,
 }
 
+impl ToString for LinkProtocol {
+    fn to_string(&self) -> String {
+        match self {
+            LinkProtocol::Ethernet => "Ethernet"
+        }.into()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum NetworkProtocol {
     Ipv4,
@@ -54,11 +62,32 @@ pub enum NetworkProtocol {
     Vlan,
 }
 
+impl ToString for NetworkProtocol {
+    fn to_string(&self) -> String {
+        match self {
+            NetworkProtocol::Ipv4  => "Ipv4",
+            NetworkProtocol::Ipv6  => "Ipv6",
+            NetworkProtocol::Goose => "Goose",
+            NetworkProtocol::Vlan  => "VLan",
+        }.into()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum TransportProtocol {
     Tcp,
     Udp,
     Sv,
+}
+
+impl ToString for TransportProtocol {
+    fn to_string(&self) -> String {
+        match self {
+            TransportProtocol::Tcp => "TCP",
+            TransportProtocol::Udp => "UDP",
+            TransportProtocol::Sv  => "SV"
+        }.into()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
@@ -91,6 +120,23 @@ pub enum ApplicationNaiveProtocol {
     Opcua,
     Http,
     IsoOnTcp,
+}
+
+impl ToString for ApplicationNaiveProtocol {
+    fn to_string(&self) -> String {
+        match self {
+            ApplicationNaiveProtocol::Bacnet   => "BACnet",
+            ApplicationNaiveProtocol::Dnp3     => "DNP3",
+            ApplicationNaiveProtocol::Fins     => "FINS",
+            ApplicationNaiveProtocol::Http     => "HTTP",
+            ApplicationNaiveProtocol::Iec104   => "IEC104",
+            ApplicationNaiveProtocol::IsoOnTcp => "ISOonTCP",
+            ApplicationNaiveProtocol::Mms      => "MMS",
+            ApplicationNaiveProtocol::Modbus   => "Modbus",
+            ApplicationNaiveProtocol::Opcua    => "OpcUA",
+            ApplicationNaiveProtocol::S7comm   => "S7COMM"
+        }.into()
+    }
 }
 
 impl From<ApplicationProtocol> for ApplicationNaiveProtocol {

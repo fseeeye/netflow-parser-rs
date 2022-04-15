@@ -1,5 +1,5 @@
 use core::slice;
-use crate::common::AdaptProtocolId;
+use crate::common::PacketAdaptFirewall;
 
 use parsing_parser::{
     ApplicationLayer, L1Packet, LinkLevel, NetLevel, ParseError, QuinPacket, QuinPacketOptions,
@@ -148,4 +148,23 @@ pub extern "C" fn get_protocol_id_rs(packet_ptr: *const QuinPacket) -> u8 {
     tracing::trace!(id, "Get protocol ID successfully.");
 
     return id;
+}
+
+/// 判断是否为工控协议
+#[no_mangle]
+pub extern "C" fn is_ics_rs(packet_ptr: *const QuinPacket) -> bool {
+    if packet_ptr.is_null() {
+        tracing::warn!("Is ICS: packet ptr is null!");
+        return false; // TODO
+    }
+
+    let packet = unsafe { &*packet_ptr };
+
+    match packet {
+        QuinPacket::L1(_l1) => false,
+        QuinPacket::L2(l2) => l2.get_link_type().is_ics_protocol(),
+        QuinPacket::L3(l3) => l3.get_net_type().is_ics_protocol(),
+        QuinPacket::L4(l4) => l4.get_tran_type().is_ics_protocol(),
+        QuinPacket::L5(l5) => l5.get_app_naive_type().is_ics_protocol()
+    }
 }

@@ -113,6 +113,13 @@ void free_packet_rs(struct QuinPacket *packet_ptr);
  */
 void free_show_ics_rules_rs(char *show_rules_ptr);
 
+char *get_parsing_json(const struct QuinPacket *packet_ptr,
+                       bool is_match,
+                       uint8_t alert_target,
+                       uint8_t alert_type,
+                       uint8_t direction,
+                       size_t packet_len);
+
 /**
  * 获得与防火墙匹配的协议id
  */
@@ -132,6 +139,11 @@ struct QuinPacketOptions *init_parse_option_rs(void);
  * 初始化 Suricata 规则结构体
  */
 struct VecSurules *init_suricata_rules_rs(void);
+
+/**
+ * 判断是否为工控协议
+ */
+bool is_ics_rs(const struct QuinPacket *packet_ptr);
 
 /**
  * 从文件加载ICS规则

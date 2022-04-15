@@ -6,10 +6,42 @@ use serde::{Deserialize, Serialize};
 use tracing::{trace, error};
 
 use std::convert::TryFrom;
-use std::ops::BitAnd;
+use std::ops::{BitAnd, Add};
+use std::fmt;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 pub struct MacAddress(pub [u8; 6]);
+
+impl Default for MacAddress {
+    fn default() -> Self {
+        return MacAddress([0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
+    }
+}
+
+impl ToString for MacAddress {
+    fn to_string(&self) -> String {
+        let mut rst = "".to_string();
+
+        let mut flag = false;
+        for c in self.0 {
+            if flag {
+                rst.push(':');
+            }
+            else {
+                flag = true;
+            }
+            rst = rst.add(format!("{:02x}", c).as_str());
+        }
+
+        rst
+    }
+}
+
+impl fmt::Debug for MacAddress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{}\"", self.to_string())
+    }
+}
 
 #[inline(always)]
 #[allow(dead_code)]
@@ -221,6 +253,16 @@ mod tests {
                 &[0xcc][..],
                 MacAddress([0x01, 0x02, 0x03, 0x04, 0x05, 0x06])
             ))
+        );
+
+        assert_eq!(
+            MacAddress([0x01, 0x02, 0x03, 0x04, 0x05, 0x06]).to_string(),
+            "01:02:03:04:05:06".to_string()
+        );
+
+        assert_eq!(
+            format!("{:?}", MacAddress([0x01, 0x02, 0x03, 0x04, 0x05, 0x06])),
+            r#""01:02:03:04:05:06""#.to_string()
         )
     }
 

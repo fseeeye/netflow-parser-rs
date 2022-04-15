@@ -30,19 +30,26 @@ pub fn rule_action_to_ids_action(rule_action: RuleAction) -> u8 {
 }
 
 // 返回防火墙 protocol id
-pub trait AdaptProtocolId {
+pub trait PacketAdaptFirewall {
     fn get_firewall_protocol_id(&self) -> u8;
+    fn is_ics_protocol(&self) -> bool;
 }
 
-impl AdaptProtocolId for LinkProtocol {
-    fn get_firewall_protocol_id(&self) -> u8 {
+impl PacketAdaptFirewall for LinkProtocol {
+   fn get_firewall_protocol_id(&self) -> u8 {
+       match self {
+           LinkProtocol::Ethernet => 1
+       }
+   }
+
+    fn is_ics_protocol(&self) -> bool {
         match self {
-            LinkProtocol::Ethernet => 1
+            LinkProtocol::Ethernet => false
         }
     }
 }
 
-impl AdaptProtocolId for NetworkProtocol {
+impl PacketAdaptFirewall for NetworkProtocol {
     fn get_firewall_protocol_id(&self) -> u8 {
         match self {
             NetworkProtocol::Ipv4  => 3,
@@ -51,9 +58,16 @@ impl AdaptProtocolId for NetworkProtocol {
             NetworkProtocol::Vlan  => 41,
         }
     }
+
+    fn is_ics_protocol(&self) -> bool {
+        match self {
+            NetworkProtocol::Goose => true,
+            _  => false
+        }
+    }
 }
 
-impl AdaptProtocolId for TransportProtocol {
+impl PacketAdaptFirewall for TransportProtocol {
     fn get_firewall_protocol_id(&self) -> u8 {
         match self {
             TransportProtocol::Tcp => 5,
@@ -61,9 +75,16 @@ impl AdaptProtocolId for TransportProtocol {
             TransportProtocol::Sv  => 25
         }
     }
+
+    fn is_ics_protocol(&self) -> bool {
+        match self {
+            TransportProtocol::Sv  => true,
+            _ => false
+        }
+    }
 }
 
-impl AdaptProtocolId for ApplicationNaiveProtocol {
+impl PacketAdaptFirewall for ApplicationNaiveProtocol {
     fn get_firewall_protocol_id(&self) -> u8 {
         match self {
             ApplicationNaiveProtocol::Bacnet   => 34,
@@ -76,6 +97,14 @@ impl AdaptProtocolId for ApplicationNaiveProtocol {
             ApplicationNaiveProtocol::Modbus   => 22,
             ApplicationNaiveProtocol::Opcua    => 31,
             ApplicationNaiveProtocol::S7comm   => 23
+        }
+    }
+
+    fn is_ics_protocol(&self) -> bool {
+        match self {
+            ApplicationNaiveProtocol::Http     => false,
+            ApplicationNaiveProtocol::IsoOnTcp => false,
+            _ => true
         }
     }
 }
