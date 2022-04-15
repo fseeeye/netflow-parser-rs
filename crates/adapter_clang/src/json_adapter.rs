@@ -45,9 +45,9 @@ pub struct ParsingReport {
     pub fields: Option<ReportFields>
 }
 
-// 获得解析结果(json)
+/// 获得解析结果(json)
 #[no_mangle]
-pub extern "C" fn get_parsing_json(packet_ptr: *const QuinPacket, is_match: bool, alert_target: u8, alert_type: u8, direction: u8, packet_len: usize) -> *mut c_char {
+pub extern "C" fn get_parsing_json_rs(packet_ptr: *const QuinPacket, is_match: bool, alert_target: u8, alert_type: u8, direction: u8, packet_len: usize) -> *mut c_char {
     let make_empty_str = || CString::new("".to_string()).unwrap().into_raw();
 
     if packet_ptr.is_null() {
@@ -149,12 +149,20 @@ pub extern "C" fn get_parsing_json(packet_ptr: *const QuinPacket, is_match: bool
 
     let json = match serde_json::to_string(&report) {
         Ok(o) => o,
-        Err(_) => return make_empty_str()
+        Err(_) => {
+            tracing::warn!("Occurs error when report to string. returning empty.");
+            return make_empty_str()
+        }
     };
+
+    tracing::trace!("Parsing Result Json: {}", json);
 
     match CString::new(json) {
         Ok(o) => o.into_raw(),
-        Err(_) => make_empty_str()
+        Err(_) => {
+            tracing::warn!("Occurs error when creating cstring from json. returning empty.");
+            make_empty_str()
+        }
     }
 }
 

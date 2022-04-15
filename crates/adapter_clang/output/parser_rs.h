@@ -113,12 +113,15 @@ void free_packet_rs(struct QuinPacket *packet_ptr);
  */
 void free_show_ics_rules_rs(char *show_rules_ptr);
 
-char *get_parsing_json(const struct QuinPacket *packet_ptr,
-                       bool is_match,
-                       uint8_t alert_target,
-                       uint8_t alert_type,
-                       uint8_t direction,
-                       size_t packet_len);
+/**
+ * 获得解析结果(json)
+ */
+char *get_parsing_json_rs(const struct QuinPacket *packet_ptr,
+                          bool is_match,
+                          uint8_t alert_target,
+                          uint8_t alert_type,
+                          uint8_t direction,
+                          size_t packet_len);
 
 /**
  * 获得与防火墙匹配的协议id
