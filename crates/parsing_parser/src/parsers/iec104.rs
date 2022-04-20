@@ -73,6 +73,7 @@ pub fn parse_iec104_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Iec104);
+    let input_size = input.len();
 
     let (input, iec104_header) = match parse_iec104_header(input) {
         Ok(o) => o,
@@ -81,7 +82,10 @@ pub fn parse_iec104_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

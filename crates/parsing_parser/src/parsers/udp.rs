@@ -45,6 +45,7 @@ pub fn parse_udp_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Transport(TransportProtocol::Udp);
+    let input_size = input.len();
 
     let (input, udp_header) = match parse_udp_header(input) {
         Ok(o) => o,
@@ -52,7 +53,10 @@ pub fn parse_udp_layer<'a>(
             return QuinPacket::L3(L3Packet {
                 link_layer,
                 network_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

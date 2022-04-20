@@ -433,6 +433,7 @@ pub fn parse_modbus_req_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::ModbusReq);
+    let input_size = input.len();
 
     let (input, modbus_req) = match parse_modbus_req_header(input) {
         Ok(o) => o,
@@ -441,7 +442,10 @@ pub fn parse_modbus_req_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

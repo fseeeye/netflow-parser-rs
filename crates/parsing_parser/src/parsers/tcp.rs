@@ -119,6 +119,7 @@ pub fn parse_tcp_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Transport(TransportProtocol::Tcp);
+    let input_size = input.len();
 
     let (input, tcp_header) = match parse_tcp_header(input) {
         Ok(o) => o,
@@ -126,7 +127,10 @@ pub fn parse_tcp_layer<'a>(
             return QuinPacket::L3(L3Packet {
                 link_layer,
                 network_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

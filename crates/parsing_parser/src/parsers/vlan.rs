@@ -73,6 +73,7 @@ pub fn parse_vlan_header(input: &[u8]) -> IResult<&[u8], VlanHeader> {
 pub fn parse_vlan_layer<'a>(input: &'a [u8], link_layer: LinkLayer, options: &QuinPacketOptions) -> QuinPacket<'a> {
     info!(target: "PARSER(vlan::parse_vlan_layer)", "parsing Vlan protocol.");
     let current_prototype = ProtocolType::Network(NetworkProtocol::Vlan);
+    let input_size = input.len();
 
     let (input, vlan_header) = match parse_vlan_header(input) {
         Ok(o) => o,
@@ -84,7 +85,10 @@ pub fn parse_vlan_layer<'a>(input: &'a [u8], link_layer: LinkLayer, options: &Qu
             return QuinPacket::L2(
                 L2Packet {
                     link_layer,
-                    error: Some(ParseError::ParsingHeader),
+                    error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                     remain: input,
                 }
             )

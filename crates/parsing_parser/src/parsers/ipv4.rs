@@ -83,13 +83,17 @@ pub fn parse_ipv4_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Network(NetworkProtocol::Ipv4);
+    let input_size = input.len();
 
     let (input, ipv4_header) = match parse_ipv4_header(input) {
         Ok(o) => o,
         Err(_e) => {
             return QuinPacket::L2(L2Packet {
                 link_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

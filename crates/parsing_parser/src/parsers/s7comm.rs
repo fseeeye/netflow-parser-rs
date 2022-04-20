@@ -61,6 +61,7 @@ pub fn parse_s7comm_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::S7comm);
+    let input_size = input.len();
 
     let (input, s7comm_header) = match parse_s7comm_header(input) {
         Ok(o) => o,
@@ -69,7 +70,10 @@ pub fn parse_s7comm_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

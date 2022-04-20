@@ -72,6 +72,7 @@ pub fn parse_dnp3_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Dnp3);
+    let input_size = input.len();
 
     let (input, dnp3_header) = match parse_dnp3_header(input) {
         Ok(o) => o,
@@ -80,7 +81,10 @@ pub fn parse_dnp3_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

@@ -3,6 +3,7 @@ use nom::number::complete::{be_u16, u8};
 use nom::IResult;
 use tracing::error;
 
+use crate::{ApplicationProtocol, ProtocolType};
 use crate::errors::ParseError;
 use crate::layer::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use crate::packet::{L4Packet, L5Packet, QuinPacket, QuinPacketOptions};
@@ -28,6 +29,9 @@ pub fn parse_iso_on_tcp_layer<'a>(
     transport_layer: TransportLayer<'a>,
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
+    let current_prototype = ProtocolType::Application(ApplicationProtocol::IsoOnTcp);
+    let input_size = input.len();
+
     let (input, iso_header) = match parse_iso_header(input) {
         Ok(o) => o,
         Err(e) => {
@@ -39,7 +43,10 @@ pub fn parse_iso_on_tcp_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             });
         }
@@ -67,7 +74,7 @@ pub fn parse_iso_on_tcp_layer<'a>(
                         network_layer,
                         transport_layer,
                         application_layer,
-                        error: Some(ParseError::ParsingPayload),
+                        error: Some(ParseError::UnknownPayload),
                         remain: input,
                     });
                 }

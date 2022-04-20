@@ -595,6 +595,7 @@ pub fn parse_modbus_rsp_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::ModbusRsp);
+    let input_size = input.len();
 
     let (input, modbus_rsp) = match parse_modbus_rsp_header(input) {
         Ok(o) => o,
@@ -603,7 +604,10 @@ pub fn parse_modbus_rsp_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             })
         }

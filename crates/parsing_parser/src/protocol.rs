@@ -1,4 +1,4 @@
-use crate::{ApplicationLayer, LinkLayer, NetworkLayer, ParseError, TransportLayer};
+use crate::{ApplicationLayer, LinkLayer, NetworkLayer, TransportLayer};
 use serde::{Deserialize, Serialize};
 
 /// ProtocolType旨在用简单结构来表示协议类型
@@ -10,7 +10,6 @@ pub enum ProtocolType {
     Network(NetworkProtocol),
     Transport(TransportProtocol),
     Application(ApplicationProtocol),
-    Error(ParseError),
 }
 
 impl PartialEq for ProtocolType {
@@ -36,7 +35,6 @@ impl PartialEq for ProtocolType {
                 }
                 _ => return false,
             },
-            Self::Error(_) => return false,
         }
     }
 }

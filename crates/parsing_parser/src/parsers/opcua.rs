@@ -74,6 +74,7 @@ pub fn parse_opcua_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Opcua);
+    let input_size = input.len();
 
     let (input, opcua_header) = match parse_opcua_header(input) {
         Ok(o) => o,
@@ -86,7 +87,10 @@ pub fn parse_opcua_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             });
         }

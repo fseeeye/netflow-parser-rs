@@ -76,6 +76,7 @@ pub fn parse_mms_layer<'a>(
 ) -> QuinPacket<'a> {
     info!(target: "PARSER(mms::parse_mms_layer)", "parsing Mms protocol.");
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Mms);
+    let input_size = input.len();
 
     let (input, mms_header) = match parse_mms_header(input) {
         Ok(o) => o,
@@ -88,7 +89,10 @@ pub fn parse_mms_layer<'a>(
                 link_layer,
                 network_layer,
                 transport_layer,
-                error: Some(ParseError::ParsingHeader),
+                error: Some(ParseError::ParsingHeader{
+                    protocol: current_prototype,
+                    offset: input_size - input.len()
+                }),
                 remain: input,
             });
         }
