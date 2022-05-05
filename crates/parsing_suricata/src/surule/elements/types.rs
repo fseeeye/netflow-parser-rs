@@ -27,21 +27,15 @@ pub trait SurList {
 
 /// Action type (Suricata Header Element)
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
-    #[cfg_attr(feature = "serde", serde(rename = "alert"))]
     Alert,
-    #[cfg_attr(feature = "serde", serde(rename = "pass"))]
     Pass,
-    #[cfg_attr(feature = "serde", serde(rename = "drop"))]
     Drop,
-    #[cfg_attr(feature = "serde", serde(rename = "reject"))]
     Reject,
-    #[cfg_attr(feature = "serde", serde(rename = "rejectsrc"))]
     RejectSrc,
-    #[cfg_attr(feature = "serde", serde(rename = "rejectdst"))]
     RejectDst,
-    #[cfg_attr(feature = "serde", serde(rename = "rejectboth"))]
     RejectBoth,
 }
 

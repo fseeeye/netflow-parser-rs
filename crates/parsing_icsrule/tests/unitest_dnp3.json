@@ -8,7 +8,7 @@
         "sport": null,
         "dire": "->",
         "dst": null,
-        "dport": 20000,
+        "dport": ["20000"],
         "msg": "DNP3 Read",
         "args": {
             "src": 1,

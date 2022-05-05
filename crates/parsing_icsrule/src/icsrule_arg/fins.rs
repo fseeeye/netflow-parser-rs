@@ -659,10 +659,11 @@ impl IcsRuleDetector for FinsArg {
 
 #[cfg(test)]
 mod tests {
+    use parsing_rule::{RuleAction, Direction};
+
     use crate::{
-        icsrule::basis::{Action, Direction},
         icsrule_arg::IcsRuleArg,
-        HmIcsRules, IcsRule, IcsRuleBasis,
+        HmIcsRules, IcsRule, IcsRuleBasis, rule_utils::*,
     };
 
     use super::*;
@@ -673,12 +674,12 @@ mod tests {
             basic: IcsRuleBasis {
                 active: true,
                 rid: 1,
-                action: Action::Alert,
+                action: RuleAction::Alert,
                 src_ip: None,
                 src_port: None,
                 dir: Direction::Uni,
                 dst_ip: None,
-                dst_port: Some(9600),
+                dst_port: Some(NumVec(vec![Num::Single(9600u16)])),
                 msg: "Fins Memory Area Read".to_string(),
             },
             args: IcsRuleArg::FINS(FinsArg {
@@ -698,12 +699,12 @@ mod tests {
 
         assert_eq!(
             serde_json::to_string(&dnp3_rule).unwrap(),
-            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":9600,"msg":"Fins Memory Area Read","proname":"FINS","args":{"dna":1,"dnn":null,"dua":null,"sna":null,"snn":null,"sua":null,"function_code":"0x0101","code":1,"start_address":1,"end_address":1}}"#
+            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":[9600],"msg":"Fins Memory Area Read","proname":"FINS","args":{"dna":1,"dnn":null,"dua":null,"sna":null,"snn":null,"sua":null,"function_code":"0x0101","code":1,"start_address":1,"end_address":1}}"#
         )
     }
 
     #[test]
-    fn deserialize_dnp3_icsrule() {
+    fn deserialize_fins_icsrule() {
         let mut fins_rule = HmIcsRules::new();
 
         let file_str = "./tests/unitest_fins.json";

@@ -71,19 +71,24 @@ pub fn parse_bacnet_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Bacnet);
-    let input_size = input.len();
 
     let (input, bacnet_header) = match parse_bacnet_header(input) {
         Ok(o) => o,
         Err(e) => {
             error!(target: "PARSER(parse_bacnet_layer)", error = ?e, "occurs error when parsing BACNET");
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
                 transport_layer,
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             });

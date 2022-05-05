@@ -1,44 +1,27 @@
 use serde::{Deserialize, Serialize};
 
-use std::net::IpAddr;
-
+use parsing_rule::{RuleAction, Direction};
 use parsing_parser::{L5Packet, NetLevel, TransLevel};
 
-use crate::detect::IcsRuleDetector;
+use crate::{detect::IcsRuleDetector, rule_utils::*};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct IcsRuleBasis {
     pub active: bool,
     pub rid: usize,
-    pub action: Action,
+    // mac
+    pub action: RuleAction,
     #[serde(rename = "src")]
-    pub src_ip: Option<IpAddr>,
+    pub src_ip: Option<Ipv4AddressVec>,
     #[serde(rename = "sport")]
-    pub src_port: Option<u16>,
+    pub src_port: Option<NumVec<u16>>,
     #[serde(rename = "dire")]
     pub dir: Direction,
     #[serde(rename = "dst")]
-    pub dst_ip: Option<IpAddr>,
+    pub dst_ip: Option<Ipv4AddressVec>,
     #[serde(rename = "dport")]
-    pub dst_port: Option<u16>,
+    pub dst_port: Option<NumVec<u16>>,
     pub msg: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum Action {
-    Pass,
-    Alert,
-    Drop,
-    Reject,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum Direction {
-    #[serde(rename = "->")]
-    Uni,
-    #[serde(rename = "<>")]
-    Bi,
 }
 
 impl IcsRuleDetector for IcsRuleBasis {
@@ -67,33 +50,33 @@ impl IcsRuleDetector for IcsRuleBasis {
         match self.dir {
             Direction::Uni => {
                 // 如果rules该字段设置了值，并且和packet相应字段不匹配，返回false
-                if self.src_ip.is_some() && !self.src_ip.contains(&packet_src_ip) {
+                if self.src_ip.is_some() && !self.src_ip.as_ref().unwrap().contain(&packet_src_ip) {
                     return false;
                 }
-                if self.dst_ip.is_some() && !self.dst_ip.contains(&packet_dst_ip) {
+                if self.dst_ip.is_some() && !self.dst_ip.as_ref().unwrap().contain(&packet_dst_ip) {
                     return false;
                 }
-                if self.src_port.is_some() && !self.src_port.contains(&packet_src_port) {
+                if self.src_port.is_some() && !self.src_port.as_ref().unwrap().contain(packet_src_port) {
                     return false;
                 }
-                if self.dst_port.is_some() && !self.dst_port.contains(&packet_dst_port) {
+                if self.dst_port.is_some() && !self.dst_port.as_ref().unwrap().contain(packet_dst_port) {
                     return false;
                 }
             }
             Direction::Bi => {
-                if (self.src_ip.is_some() && !self.src_ip.contains(&packet_src_ip))
-                    && (self.dst_ip.is_some() && !self.dst_ip.contains(&packet_dst_ip))
+                if (self.src_ip.is_some() && !self.src_ip.as_ref().unwrap().contain(&packet_src_ip))
+                    && (self.dst_ip.is_some() && !self.dst_ip.as_ref().unwrap().contain(&packet_dst_ip))
                 {
-                    if !self.src_ip.contains(&packet_dst_ip) && !self.dst_ip.contains(&packet_src_ip)
+                    if !self.src_ip.as_ref().unwrap().contain(&packet_dst_ip) && !self.dst_ip.as_ref().unwrap().contain(&packet_src_ip)
                     {
                         return false;
                     }
                 }
-                if (self.src_port.is_some() && !self.src_port.contains(&packet_src_port))
-                    && (self.dst_port.is_some() && !self.dst_port.contains(&packet_dst_port))
+                if (self.src_port.is_some() && !self.src_port.as_ref().unwrap().contain(packet_src_port))
+                    && (self.dst_port.is_some() && !self.dst_port.as_ref().unwrap().contain(packet_dst_port))
                 {
-                    if !self.src_port.contains(&packet_dst_port)
-                        && !self.dst_port.contains(&packet_src_port)
+                    if !self.src_port.as_ref().unwrap().contain(packet_dst_port)
+                        && !self.dst_port.as_ref().unwrap().contain(packet_src_port)
                     {
                         return false;
                     }
@@ -180,12 +163,12 @@ mod tests {
         let basis_rule = IcsRuleBasis {
             active: true,
             rid: 1,
-            action: Action::Alert,
-            src_ip: Some(IpAddr::V4(Ipv4Addr::from_str("192.168.0.2").unwrap())),
-            src_port: Some(502),
+            action: RuleAction::Alert,
+            src_ip: Some(Ipv4AddressVec(vec![Ipv4Address::Addr(Ipv4Addr::from_str("192.168.0.2").unwrap())])),
+            src_port: Some(NumVec(vec![Num::Single(502u16)])),
             dir: Direction::Uni,
-            dst_ip: Some(IpAddr::V4(Ipv4Addr::from_str("192.168.0.3").unwrap())),
-            dst_port: Some(53211),
+            dst_ip: Some(Ipv4AddressVec(vec![Ipv4Address::Addr(Ipv4Addr::from_str("192.168.0.3").unwrap())])),
+            dst_port: Some(NumVec(vec![Num::Single(53211u16)])),
             msg: "".to_string(),
         };
 

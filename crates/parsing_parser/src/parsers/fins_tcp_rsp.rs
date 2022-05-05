@@ -57,18 +57,27 @@ pub fn parse_fins_tcp_rsp_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::FinsTcpRsp);
-    let input_size = input.len();
 
     let (input, fins_tcp_rsp_header) = match parse_fins_tcp_rsp_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            tracing::error!(
+                target: "PARSER(fins_tcp_rsp::parse_fins_tcp_rsp_layer)",
+                error = ?e
+            );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
                 transport_layer,
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             })

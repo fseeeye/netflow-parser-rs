@@ -8,7 +8,7 @@
         "sport": null,
         "dire": "->",
         "dst": null,
-        "dport": 102,
+        "dport": ["102"],
         "msg": "S7Comm Job - Read Var (0x04)",
         "args": {
             "rosctr": "1",
@@ -27,7 +27,7 @@
         "sport": null,
         "dire": "->",
         "dst": null,
-        "dport": 102,
+        "dport": ["102"],
         "msg": "S7Comm Ack_Data - Read Var (0x04)",
         "args": {
             "rosctr": "0x03",
@@ -45,7 +45,7 @@
         "sport": null,
         "dire": "->",
         "dst": null,
-        "dport": 102,
+        "dport": ["102"],
         "msg": "S7Comm Job - Write Var (0x05)",
         "args": {
             "rosctr": "0x01",

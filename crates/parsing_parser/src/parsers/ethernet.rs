@@ -33,15 +33,24 @@ pub fn parse_ethernet_header(input: &[u8]) -> nom::IResult<&[u8], EthernetHeader
 
 pub fn parse_ethernet_layer<'a>(input: &'a [u8], options: &QuinPacketOptions) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Link(LinkProtocol::Ethernet);
-    let input_size = input.len();
 
     let (input, eth_header) = match parse_ethernet_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            tracing::error!(
+                target: "PARSER(ethernet::parse_ethernet_layer)",
+                error = ?e
+            );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L1(L1Packet {
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             })

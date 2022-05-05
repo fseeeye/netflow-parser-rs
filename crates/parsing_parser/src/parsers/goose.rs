@@ -79,7 +79,6 @@ pub fn parse_goose_header(input: &[u8]) -> IResult<&[u8], GooseHeader> {
 pub fn parse_goose_layer<'a>(input: &'a [u8], link_layer: LinkLayer, options: &QuinPacketOptions) -> QuinPacket<'a> {
     info!(target: "PARSER(goose::parse_goose_layer)", "parsing Goose protocol.");
     let current_prototype = ProtocolType::Network(NetworkProtocol::Goose);
-    let input_size = input.len();
 
     let (input, goose_header) = match parse_goose_header(input) {
         Ok(o) => o,
@@ -88,12 +87,18 @@ pub fn parse_goose_layer<'a>(input: &'a [u8], link_layer: LinkLayer, options: &Q
                 target: "PARSER(goose::parse_goose_layer)",
                 error = ?e
             );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+            
             return QuinPacket::L2(
                 L2Packet {
                     link_layer,
                     error: Some(ParseError::ParsingHeader{
                         protocol: current_prototype,
-                        offset: input_size - input.len()
+                        offset
                     }),
                     remain: input,
                 }

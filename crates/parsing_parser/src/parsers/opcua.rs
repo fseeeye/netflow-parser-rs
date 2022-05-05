@@ -74,7 +74,6 @@ pub fn parse_opcua_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Opcua);
-    let input_size = input.len();
 
     let (input, opcua_header) = match parse_opcua_header(input) {
         Ok(o) => o,
@@ -83,13 +82,19 @@ pub fn parse_opcua_layer<'a>(
                 target: "PARSER(opcua::parse_opcua_layer)",
                 error = ?e
             );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+            
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
                 transport_layer,
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             });

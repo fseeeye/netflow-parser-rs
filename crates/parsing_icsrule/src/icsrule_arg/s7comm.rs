@@ -253,8 +253,9 @@ impl IcsRuleDetector for S7CommArg {
 
 #[cfg(test)]
 pub mod tests {
+    use parsing_rule::{RuleAction, Direction};
+
     use crate::{
-        icsrule::basis::{Action, Direction},
         icsrule_arg::IcsRuleArg,
         HmIcsRules, IcsRule, IcsRuleBasis,
     };
@@ -267,7 +268,7 @@ pub mod tests {
             basic: IcsRuleBasis {
                 active: true,
                 rid: 1,
-                action: Action::Alert,
+                action: RuleAction::Alert,
                 src_ip: None,
                 src_port: None,
                 dir: Direction::Bi,

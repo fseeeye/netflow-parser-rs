@@ -2,21 +2,10 @@ use parsing_parser::{AppLevel, L5Packet, QuinPacket};
 use parsing_rule::*;
 use tracing::debug;
 
-use super::icsrule::{basis::Action, HmIcsRules};
+use super::icsrule::HmIcsRules;
 
 pub trait IcsRuleDetector {
     fn detect(&self, l5: &L5Packet) -> bool;
-}
-
-impl Into<RuleAction> for Action {
-    fn into(self) -> RuleAction {
-        match self {
-            Action::Alert => RuleAction::Alert,
-            Action::Pass => RuleAction::Pass,
-            Action::Drop => RuleAction::Drop,
-            Action::Reject => RuleAction::Reject,
-        }
-    }
 }
 
 impl RulesDetector for HmIcsRules {
@@ -33,7 +22,7 @@ impl RulesDetector for HmIcsRules {
                                 if rule.args.detect(l5) {
                                     return DetectResult::Hit(
                                         rule.basic.rid,
-                                        rule.basic.action.to_owned().into(),
+                                        rule.basic.action.clone(),
                                     );
                                     // Warning: extra clone?
                                 }

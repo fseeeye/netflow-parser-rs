@@ -119,17 +119,26 @@ pub fn parse_tcp_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Transport(TransportProtocol::Tcp);
-    let input_size = input.len();
 
     let (input, tcp_header) = match parse_tcp_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            tracing::error!(
+                target: "PARSER(tcp::parse_tcp_layer)",
+                error = ?e
+            );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L3(L3Packet {
                 link_layer,
                 network_layer,
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             })

@@ -195,10 +195,11 @@ impl IcsRuleDetector for Dnp3Arg {
 
 #[cfg(test)]
 mod tests {
+    use parsing_rule::{RuleAction, Direction};
+
     use crate::{
-        icsrule::basis::{Action, Direction},
         icsrule_arg::IcsRuleArg,
-        HmIcsRules, IcsRule, IcsRuleBasis,
+        HmIcsRules, IcsRule, IcsRuleBasis, rule_utils::*,
     };
 
     use super::*;
@@ -209,12 +210,12 @@ mod tests {
             basic: IcsRuleBasis {
                 active: true,
                 rid: 1,
-                action: Action::Alert,
+                action: RuleAction::Alert,
                 src_ip: None,
                 src_port: None,
                 dir: Direction::Uni,
                 dst_ip: None,
-                dst_port: Some(20000),
+                dst_port: Some(NumVec(vec![Num::Single(20000u16)])),
                 msg: "DNP3 Read".to_string(),
             },
             args: IcsRuleArg::DNP3(Dnp3Arg {
@@ -232,7 +233,7 @@ mod tests {
 
         assert_eq!(
             serde_json::to_string(&dnp3_rule).unwrap(),
-            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":20000,"msg":"DNP3 Read","proname":"DNP3","args":{"src":1,"dst":2,"link_function_code":1,"function_code":"1","objs":4097,"vsq":1,"start":0,"stop":9}}"#
+            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":[20000],"msg":"DNP3 Read","proname":"DNP3","args":{"src":1,"dst":2,"link_function_code":1,"function_code":"1","objs":4097,"vsq":1,"start":0,"stop":9}}"#
         )
     }
 

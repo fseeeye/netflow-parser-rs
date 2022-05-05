@@ -16,7 +16,9 @@ use parsing_suricata::{Surules, VecSurules};
 
 fn main() {
     // init tracing subscriber
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::TRACE)
+        .init();
     // change paths by yourself.
     let paths = [
         // OPC UA

@@ -1,6 +1,8 @@
 //! Header Element 的解析函数，用于从字节流中解析出 Header Element
 use std::str::FromStr;
+use std::net::Ipv4Addr;
 
+use ipnet::Ipv4Net;
 use nom::IResult;
 
 use super::types::*;
@@ -48,7 +50,59 @@ pub(crate) fn parse_protocol_from_stream(input: &str) -> IResult<&str, Protocol,
     Ok((input, protocol))
 }
 
-/// 从字符流中解析 IpAddrress List
+/// 由字符串解析 IpAddress
+impl FromStr for IpAddress {
+    // Use nom::Err to satisfy ? in parser.
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let make_err = |reason| SuruleParseError::InvalidIpAddr(reason).into();
+
+        let ip_addr_str = handle_value(s).map_err(|_| make_err("empty value.".to_string()))?;
+
+        match ip_addr_str.parse::<Ipv4Addr>() {
+            Ok(single_addr) => Ok(IpAddress::V4Addr(single_addr)),
+            Err(_) => {
+                // maybe it's a range
+                let single_range = ip_addr_str
+                    .parse::<Ipv4Net>()
+                    .map_err(|_| make_err(ip_addr_str.to_string()))?;
+                Ok(IpAddress::V4Range(single_range))
+            }
+        }
+    }
+}
+
+/// 由字符串解析 Port
+impl FromStr for Port {
+    type Err = nom::Err<SuruleParseError>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let make_err = || SuruleParseError::InvalidPort(s.to_string()).into();
+
+        if let Some((min_str, max_str)) = s.split_once(':') {
+            // range
+            let min = min_str.parse().map_err(|_| make_err())?;
+            let max = max_str
+                .trim()
+                .parse()
+                .or_else(|e| {
+                    if max_str.trim().is_empty() {
+                        return Ok(u16::MAX);
+                    } else {
+                        return Err(e);
+                    }
+                })
+                .map_err(|_| make_err())?;
+            Ok(Self::new_range(min, max).map_err(|e| e.into())?)
+        } else {
+            // single
+            Ok(Self::Single(s.parse().map_err(|_| make_err())?))
+        }
+    }
+}
+
+/// 从字符流中解析 IpAddrress/Port List
 pub(crate) fn parse_list_from_stream<L>(input: &str) -> IResult<&str, L, SuruleParseError>
 where
     L: SurList + Default,

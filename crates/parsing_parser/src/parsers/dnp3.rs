@@ -16,6 +16,7 @@ use nom::number::complete::{be_u16, be_u24, be_u32, le_u16, le_u24, le_u32, u8};
 use nom::sequence::tuple;
 #[allow(unused)]
 use nom::IResult;
+use tracing::error;
 
 #[allow(unused)]
 use crate::errors::ParseError;
@@ -72,18 +73,27 @@ pub fn parse_dnp3_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Dnp3);
-    let input_size = input.len();
 
     let (input, dnp3_header) = match parse_dnp3_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            error!(
+                target: "PARSER(dnp3::parse_dnp3_layer)",
+                error = ?e
+            );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
                 transport_layer,
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             })

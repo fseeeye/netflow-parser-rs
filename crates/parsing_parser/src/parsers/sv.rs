@@ -81,7 +81,6 @@ pub fn parse_sv_header(input: &[u8]) -> IResult<&[u8], SvHeader> {
 pub fn parse_sv_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer: NetworkLayer<'a>, options: &QuinPacketOptions) -> QuinPacket<'a> {
     info!(target: "PARSER(sv::parse_sv_layer)", "parsing Sv protocol.");
     let current_prototype = ProtocolType::Transport(TransportProtocol::Sv);
-    let input_size = input.len();
 
     let (input, sv_header) = match parse_sv_header(input) {
         Ok(o) => o,
@@ -90,13 +89,19 @@ pub fn parse_sv_layer<'a>(input: &'a [u8], link_layer: LinkLayer, network_layer:
                 target: "PARSER(sv::parse_sv_layer)",
                 error = ?e
             );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L3(
                 L3Packet {
                     link_layer,
                     network_layer,
                     error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                     remain: input,
                 }

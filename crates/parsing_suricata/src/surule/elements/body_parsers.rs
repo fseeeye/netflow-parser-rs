@@ -1,9 +1,7 @@
 //! Body Option Element 的解析函数，用于将字符串解析成 Option Element
 use anyhow::Result;
 use bytes::BufMut;
-use ipnet::Ipv4Net;
 
-use std::net::Ipv4Addr;
 use std::ops::BitXorAssign;
 use std::str::FromStr;
 
@@ -39,58 +37,6 @@ pub(crate) fn parse_usize(input: &str) -> Result<usize, nom::Err<SuruleParseErro
 #[inline(always)]
 pub(crate) fn parse_isize(input: &str) -> Result<isize, nom::Err<SuruleParseError>> {
     parse_num::<isize>(input)
-}
-
-/// 由字符串解析 IpAddress
-impl FromStr for IpAddress {
-    // Use nom::Err to satisfy ? in parser.
-    type Err = nom::Err<SuruleParseError>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let make_err = |reason| SuruleParseError::InvalidIpAddr(reason).into();
-
-        let ip_addr_str = handle_value(s).map_err(|_| make_err("empty value.".to_string()))?;
-
-        match ip_addr_str.parse::<Ipv4Addr>() {
-            Ok(single_addr) => Ok(IpAddress::V4Addr(single_addr)),
-            Err(_) => {
-                // maybe it's a range
-                let single_range = ip_addr_str
-                    .parse::<Ipv4Net>()
-                    .map_err(|_| make_err(ip_addr_str.to_string()))?;
-                Ok(IpAddress::V4Range(single_range))
-            }
-        }
-    }
-}
-
-/// 由字符串解析 Port
-impl FromStr for Port {
-    type Err = nom::Err<SuruleParseError>;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let make_err = || SuruleParseError::InvalidPort(s.to_string()).into();
-
-        if let Some((min_str, max_str)) = s.split_once(':') {
-            // range
-            let min = min_str.parse().map_err(|_| make_err())?;
-            let max = max_str
-                .trim()
-                .parse()
-                .or_else(|e| {
-                    if max_str.trim().is_empty() {
-                        return Ok(u16::MAX);
-                    } else {
-                        return Err(e);
-                    }
-                })
-                .map_err(|_| make_err())?;
-            Ok(Self::new_range(min, max).map_err(|e| e.into())?)
-        } else {
-            // single
-            Ok(Self::Single(s.parse().map_err(|_| make_err())?))
-        }
-    }
 }
 
 /// 由字符串解析 Metadata

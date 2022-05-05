@@ -375,12 +375,13 @@ impl IcsRuleDetector for ModbusArg {
 
 #[cfg(test)]
 mod tests {
-    use std::{net::IpAddr, str::FromStr};
+    use std::{net::Ipv4Addr, str::FromStr};
+
+    use parsing_rule::{RuleAction, Direction};
 
     use crate::{
-        icsrule::basis::{Action, Direction},
         icsrule_arg::IcsRuleArg,
-        HmIcsRules, IcsRule, IcsRuleBasis,
+        HmIcsRules, IcsRule, IcsRuleBasis, rule_utils::*,
     };
 
     use super::*;
@@ -391,8 +392,8 @@ mod tests {
             basic: IcsRuleBasis {
                 active: true,
                 rid: 1,
-                action: Action::Alert,
-                src_ip: Some(IpAddr::from_str("192.168.3.189").unwrap()),
+                action: RuleAction::Alert,
+                src_ip: Some(Ipv4AddressVec(vec![Ipv4Address::Addr(Ipv4Addr::from_str("192.168.3.189").unwrap())])),
                 src_port: None,
                 dir: Direction::Bi,
                 dst_ip: None,
@@ -407,7 +408,7 @@ mod tests {
 
         assert_eq!(
             serde_json::to_string(&modbus_rule).unwrap(),
-            r#"{"active":true,"rid":1,"action":"alert","src":"192.168.3.189","sport":null,"dire":"<>","dst":null,"dport":null,"msg":"Modbus Read Coils(1)","proname":"Modbus","args":{"function_code":"1","start_address":0,"end_address":10}}"#
+            r#"{"active":true,"rid":1,"action":"alert","src":["192.168.3.189"],"sport":null,"dire":"<>","dst":null,"dport":null,"msg":"Modbus Read Coils(1)","proname":"Modbus","args":{"function_code":"1","start_address":0,"end_address":10}}"#
         )
     }
 

@@ -9,5 +9,6 @@ mod detect;
 mod detect_utils;
 mod icsrule;
 mod icsrule_arg;
+mod rule_utils;
 
 pub use icsrule::{HmIcsRules, IcsRule, IcsRuleBasis};

@@ -73,18 +73,27 @@ pub fn parse_iec104_layer<'a>(
     options: &QuinPacketOptions,
 ) -> QuinPacket<'a> {
     let current_prototype = ProtocolType::Application(ApplicationProtocol::Iec104);
-    let input_size = input.len();
 
     let (input, iec104_header) = match parse_iec104_header(input) {
         Ok(o) => o,
-        Err(_e) => {
+        Err(e) => {
+            tracing::error!(
+                target: "PARSER(iec104::parse_iec104_layer)",
+                error = ?e
+            );
+
+            let offset = match e {
+                nom::Err::Error(error) => input.len() - error.input.len(),
+                _ => usize::MAX
+            };
+
             return QuinPacket::L4(L4Packet {
                 link_layer,
                 network_layer,
                 transport_layer,
                 error: Some(ParseError::ParsingHeader{
                     protocol: current_prototype,
-                    offset: input_size - input.len()
+                    offset
                 }),
                 remain: input,
             })

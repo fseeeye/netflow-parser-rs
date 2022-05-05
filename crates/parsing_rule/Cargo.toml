@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 parsing_parser = { path = "../parsing_parser" }
+# ref: https://doc.rust-lang.org/cargo/reference/features.html#optional-dependencies
+serde = { version = "1.0", features = ["derive"], optional = true }

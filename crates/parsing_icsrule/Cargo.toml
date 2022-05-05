@@ -8,10 +8,12 @@ edition = "2021"
 [dependencies]
 # parsing-rs
 parsing_parser = { path = "../parsing_parser" }
-parsing_rule = { path = "../parsing_rule" }
+parsing_rule = { path = "../parsing_rule", features = ["serde"] }
 # other
 serde = {version = "1.0", features = ["derive"]} # https://serde.rs/
 serde_json = "1.0"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 chrono = "0.4"
+ipnet = { version = "2.5.0", features = ["serde"] }
+num = "0.4"

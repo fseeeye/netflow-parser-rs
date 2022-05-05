@@ -82,12 +82,14 @@ impl HmIcsRules {
 
 #[cfg(test)]
 mod tests {
-    use std::{net::IpAddr, str::FromStr};
+    use parsing_rule::{RuleAction, Direction};
+
+    use std::net::Ipv4Addr;
+    use std::str::FromStr;
 
     use crate::{
-        icsrule::basis::{Action, Direction},
         icsrule_arg::{IcsRuleArg, ModbusArg},
-        IcsRuleBasis,
+        IcsRuleBasis, rule_utils::*,
     };
 
     use super::*;
@@ -111,12 +113,12 @@ mod tests {
                     basic: IcsRuleBasis {
                         active: true,
                         rid: 1,
-                        action: Action::Alert,
-                        src_ip: Some(IpAddr::from_str("192.168.3.189").unwrap()),
+                        action: RuleAction::Alert,
+                        src_ip: Some(Ipv4AddressVec(vec![Ipv4Address::Addr(Ipv4Addr::from_str("192.168.3.189").unwrap())])),
                         src_port: None,
                         dir: Direction::Uni,
                         dst_ip: None,
-                        dst_port: Some(502),
+                        dst_port: Some(NumVec(vec![Num::Single(502u16)])),
                         msg: "Modbus Read Coils(1)".to_string(),
                     },
                     args: IcsRuleArg::Modbus(ModbusArg::ReadCoils {
