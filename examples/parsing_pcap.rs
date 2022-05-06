@@ -150,7 +150,7 @@ fn parse_pcap(path: &str) {
 
 fn print_parsing_rst(
     packet: &QuinPacket,
-    ics_rst: &DetectResult,
+    ics_rst: &DetectResultICS,
     suricata_rst: &DetectResult,
     time: f64,
 ) {

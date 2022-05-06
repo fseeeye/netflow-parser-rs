@@ -56,8 +56,10 @@ pub mod prelude {
     pub use crate::rule::{
         // structures
         DetectResult,
+        DetectResultICS,
         RuleAction,
         // traits
         RulesDetector,
+        RulesDetectorICS
     };
 }

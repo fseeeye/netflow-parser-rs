@@ -8,8 +8,10 @@ pub trait IcsRuleDetector {
     fn detect(&self, l5: &L5Packet) -> bool;
 }
 
-impl RulesDetector for HmIcsRules {
-    fn detect(&self, packet: &QuinPacket) -> DetectResult {
+impl RulesDetectorICS for HmIcsRules {
+    fn detect(&self, packet: &QuinPacket) -> DetectResultICS {
+        let mut is_detected_basic = false;
+
         // ics规则要求packet为L5，否则返回false
         if let &QuinPacket::L5(l5) = &packet {
             let app_native_type = l5.get_app_naive_type();
@@ -20,11 +22,16 @@ impl RulesDetector for HmIcsRules {
                             debug!(target: "ICSRULE(HmIcsRules::detect)", "detecting ICS rule: {:?}", rule);
                             if rule.basic.detect(l5) {
                                 if rule.args.detect(l5) {
-                                    return DetectResult::Hit(
+                                    return DetectResultICS::Hit(
                                         rule.basic.rid,
                                         rule.basic.action.clone(),
                                     );
                                     // Warning: extra clone?
+                                } else {
+                                    // will trigger Content Warning
+                                    if !is_detected_basic {
+                                        is_detected_basic = true;
+                                    }
                                 }
                             }
                         }
@@ -35,6 +42,10 @@ impl RulesDetector for HmIcsRules {
             }
         }
 
-        DetectResult::Miss
+        if is_detected_basic {
+            DetectResultICS::Miss(DetectMiss::Content)
+        } else {
+            DetectResultICS::Miss(DetectMiss::Behavior)
+        }
     }
 }

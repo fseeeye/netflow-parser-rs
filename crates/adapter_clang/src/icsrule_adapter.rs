@@ -3,7 +3,7 @@ use std::ffi::{CStr, CString};
 
 use parsing_icsrule::HmIcsRules;
 use parsing_parser::QuinPacket;
-use parsing_rule::{DetectResult, RulesDetector};
+use parsing_rule::{RulesDetectorICS, DetectResultICS};
 
 /// 初始化ICS规则结构体
 #[no_mangle]
@@ -204,14 +204,14 @@ pub extern "C" fn detect_ics_rules_rs(
 
     let rst = rules.detect(packet);
     match rst {
-        DetectResult::Hit(rid, action) => {
+        DetectResultICS::Hit(rid, action) => {
             tracing::trace!("ICS Rule HIT! (rid={}, action={:?})", rid, action);
             *out_rid = rid as u32;
             *out_action = super::common::rule_action_to_firewall_action(action);
 
             true
         }
-        DetectResult::Miss => {
+        DetectResultICS::Miss(_) => {
             tracing::trace!("ICS Rule MISS.");
             false
         }
@@ -249,14 +249,14 @@ pub extern "C" fn detect_ics_whitelist_rules_rs(
 
     let rst = rules.detect(packet);
     match rst {
-        DetectResult::Hit(rid, _) => {
+        DetectResultICS::Hit(rid, _) => {
             *out_rid = rid as u32;
 
             tracing::trace!("ICS Whitelist Rule HIT! (sid={})", rid);
 
             true
         }
-        DetectResult::Miss => {
+        DetectResultICS::Miss(_) => {
             tracing::trace!("ICS Whitelist Rule MISS.");
             false
         }
