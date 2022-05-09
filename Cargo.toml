@@ -28,6 +28,7 @@ colored = "2"
 walkdir = "2.3.2"
 tracing = "0.1"
 tracing-subscriber = "0.2"
+clap = { version = "3", features = ["derive"] }
 
 [[example]]
 # RUST_LOG=DEBUG cargo run --example parsing_pcap

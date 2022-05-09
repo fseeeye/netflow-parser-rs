@@ -4,7 +4,7 @@
         "rid": 1,
         "action": "alert",
         "proname": "Modbus",
-        "src": "192.168.3.189",
+        "src": ["192.168.3.189"],
         "sport": null,
         "dire": "->",
         "dst": null,

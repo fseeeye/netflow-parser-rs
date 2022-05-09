@@ -10,7 +10,7 @@
 ## Getting Started
 * 依照官方文档安装 Rust，并切换至 nightly 分支。
 * 运行测试：`cargo test --workspace`
-* 运行示例程序：`cargo run --example parsing_pcap` , 可在其中修改代码测试某 pcap 的协议解析和规则匹配正确性。
+* 运行示例程序：`cargo run --example parsing_pcap -- -p ../pcap/ICS/iec61850/sv.pcap ../pcap/ICS/iec61850/goose.pcap` , 可在其中修改代码测试某 pcap 的协议解析和规则匹配正确性。
 
 ## Documents
 * [FFI 编写文档](docs/FFI/usage.md)

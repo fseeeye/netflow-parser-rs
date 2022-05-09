@@ -3,6 +3,7 @@ use pcap_parser::traits::PcapReaderIterator;
 use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use tracing::info;
 use walkdir::{DirEntry, WalkDir};
+use clap::Parser;
 
 use std::ffi::OsStr;
 use std::fs::metadata;
@@ -17,44 +18,20 @@ use parsing_suricata::{Surules, VecSurules};
 fn main() {
     // init tracing subscriber
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::TRACE)
+        .with_max_level(tracing::Level::TRACE) // tips: change log level by yourself
         .init();
-    // change paths by yourself.
-    let paths = [
-        // OPC UA
-        // "../pcap/ICS/opcua/test/opcua_hello.pcap",
-        // "../pcap/ICS/opcua/test/opcua_ack.pcap",
-        // "../pcap/ICS/opcua/test/opcua_error.pcap",
-        // "../pcap/ICS/opcua/test/opcua_msg.pcap",
-        // IEC104
-        // "../pcap/ICS/iec104/test/iec104_i.pcap",
-        // Dnp3
-        // "../pcap/ICS/dnp3/test/dnp3_simple.pcap",
-        // BACnet
-        // "../pcap/ICS/bacnet/test/bacnet_ipv4_udp.pcap",
-        // S7comm
-        // "../pcap/ICS/s7/test/setup_comm.pcap",
-        // "../pcap/ICS/s7/test/plc_stop.pcap",
-        // "../pcap/ICS/s7/test/pi_service.pcap",
-        // "../pcap/ICS/s7/test/read_var.pcap",
-        // "../pcap/ICS/s7/test/write_var.pcap",
-        // "../pcap/ICS/s7/test/download.pcap",
-        // "../pcap/ICS/s7/test/upload.pcap",
-        // "../pcap/ICS/s7/test/read_szl.pcap"
-        // Mms
-        // "../pcap/ICS/iec61850/mms/mms_3.pcap",
-        // Ipv4 Option
-        // "../pcap/ip/ipv4-options.pcap",
-        // Modbus
-        // "../pcap/ICS/modbus/test/mod_2.pcap",
-        // "./benches/modbus_fins_test.pcap",
-        // GOOSE
-        // "../pcap/ICS/iec61850/goose.pcap",
-        // SV
-        "../pcap/ICS/iec61850/sv.pcap",
-    ];
+    
+    #[derive(Parser, Debug)]
+    #[clap(author, version, about, long_about = None)]
+    struct Args {
+        /// Pcap paths
+        #[clap(short, long, min_values(1))]
+        paths: Vec<String>
+    }
 
-    for path in paths.iter() {
+    let args = Args::parse();
+
+    for path in &args.paths {
         let path_metadata = match metadata(path) {
             Ok(f) => f,
             Err(e) => {
