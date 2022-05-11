@@ -41,7 +41,7 @@ pub enum ModbusArg {
     ReadExceptionStatus {},
     #[serde(rename = "8", alias = "0x08")]
     Diagnostics { subfunction: Option<u8> },
-    #[serde(rename = "11", alias = "0x11")]
+    #[serde(rename = "11", alias = "0x0a")]
     GetCommEventCounter {},
     #[serde(rename = "12", alias = "0x0c", alias = "0x0C")]
     GetCommEventLog {},
