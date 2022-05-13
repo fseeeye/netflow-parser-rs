@@ -121,7 +121,7 @@ mod tests {
                         dst_port: Some(NumVec(vec![Num::Single(502u16)])),
                         msg: "Modbus Read Coils(1)".to_string(),
                     },
-                    args: IcsRuleArg::Modbus(ModbusArg::ReadCoils {
+                    args: IcsRuleArg::MODBUS(ModbusArg::ReadCoils {
                         start_address: Some(0),
                         end_address: Some(10)
                     })

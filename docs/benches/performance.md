@@ -1,11 +1,15 @@
 # Benchmark Result
 
+
 ## Test Env
-* os: darwin
+
+* os: Linux(WSL2 Ubuntu)
 * arch: amd64
-* cpu: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60GHz
+* cpu: AMD Ryzen 7 4800U with Radeon Graphics 1.80 GHz
+
 
 ## Reproduction
+
 ### Parsing-rs & pypkt
 ```bash
 # install pypkt (https://gitee.com/bolean-tech/bolean-pypkt-c/)
@@ -36,15 +40,25 @@ cargo criterion --bench parsing --all-features
 * 修改 benchmark.go 文件 benchmarkLayerDecode() 函数下`&eth, &ip, &icmp, &tcp, &udp, &payload)`，变更为`&eth, &ip, &modbus, &tcp, &udp, &payload)`
 * `$ go run benchmark.go`
 
-## Pcap 10000 (Modbus)
-测试用例采用应用层协议以ModbusTcp为主的Pcap进行测试。
-* Parsing-rs(QuinPacket): about 2.5 ms / 4000000 pps (含读取pcap的损耗)
-* Parsing-rs(VecPacket): about 6.5 ms / 1540000 pps (含读取pcap的损耗)
-* [gopacket](https://github.com/google/gopacket)(PacketDecode): about 10.2ms / 980000 pps (不含读取pcap的损耗)
-* [gopacket](https://github.com/google/gopacket)(LayerDecode): about 2.7ms / 3700000 pps (不含读取pcap的损耗)
+### tshark
+* `pip3 install pyshark`
+* `python3 tshark_read.py`
 
-## Packet 1 (Modbus)
+
+## Result
+
+### Pcap 10000 (Modbus)
+测试用例采用应用层协议以ModbusTcp为主的Pcap进行测试。
+* Parsing-rs(QuinPacket): about 1.8 ms / 5550000 pps (含读取pcap的损耗)
+![parsingrs](./parsingrs_benchmark_1w.png)
+* [gopacket](https://github.com/google/gopacket)(PacketDecode): about 7.5ms / 1330000 pps (不含读取pcap的损耗)
+![gopacket](./gopacket_benchmark.png)
+* tshark: about 270ms / 37000pps (不含读取pcap的损耗)
+![tshark](./tshark_benchmark.png)
+
+### Packet 1 (Modbus)
 测试用例采用硬编码u8 slice的Modbus Packet。
 * QuinPacket: about 180 ns / 5550000 pps
-* VecPacket: about 640 ns / 1560000 pps
+![parsingrs](./parsingrs_benchmark_1.png)
 * [pypkt](https://gitee.com/bolean-tech/bolean-pypkt-c/): about 2.0 µs / 500000 pps
+![pypkt](./pypkt_benchmark.png)

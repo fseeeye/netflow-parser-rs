@@ -19,11 +19,12 @@ pub struct IcsRule {
 impl IcsRule {
     pub fn get_protocol_type(&self) -> ApplicationNaiveProtocol {
         match self.args {
-            IcsRuleArg::Modbus(..) => ApplicationNaiveProtocol::Modbus,
+            IcsRuleArg::MODBUS(..) => ApplicationNaiveProtocol::Modbus,
             IcsRuleArg::S7COMM(..) => ApplicationNaiveProtocol::S7comm,
             IcsRuleArg::DNP3(..) => ApplicationNaiveProtocol::Dnp3,
             IcsRuleArg::FINS(..) => ApplicationNaiveProtocol::Fins,
             IcsRuleArg::OPCUA(..) => ApplicationNaiveProtocol::Opcua,
+            IcsRuleArg::BACNET(..) => ApplicationNaiveProtocol::Bacnet
         }
     }
 }

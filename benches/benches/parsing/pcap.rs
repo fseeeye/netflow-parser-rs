@@ -15,7 +15,7 @@ use pcap_parser::{LegacyPcapReader, PcapBlockOwned, PcapError};
 use parsing_rs::parser::{QuinPacket, QuinPacketOptions};
 
 fn quin_parsing_benchmark_pcap(criterion: &mut Criterion) {
-    let mut group = criterion.benchmark_group("quin_parsing_benchmark");
+    let mut group = criterion.benchmark_group("quinpacket_parsing_benchmark");
     group.warm_up_time(std::time::Duration::from_millis(500));
     group.measurement_time(std::time::Duration::from_secs(20));
 
@@ -67,7 +67,7 @@ fn quin_parsing_benchmark_pcap(criterion: &mut Criterion) {
 }
 
 fn quin_parsing_benchmark_modbus(criterion: &mut Criterion) {
-    let mut group = criterion.benchmark_group("quin_parsing_benchmark");
+    let mut group = criterion.benchmark_group("quinpacket_parsing_benchmark");
     group.warm_up_time(std::time::Duration::from_millis(500));
     group.measurement_time(std::time::Duration::from_secs(10));
     group.sample_size(1000);
@@ -81,7 +81,7 @@ fn quin_parsing_benchmark_modbus(criterion: &mut Criterion) {
 }
 
 fn quin_parsing_benchmark_tcp(criterion: &mut Criterion) {
-    let mut group = criterion.benchmark_group("quin_parsing_benchmark");
+    let mut group = criterion.benchmark_group("quinpacket_parsing_benchmark");
     group.warm_up_time(std::time::Duration::from_millis(500));
     group.measurement_time(std::time::Duration::from_secs(10));
     group.sample_size(1000);
@@ -95,7 +95,7 @@ fn quin_parsing_benchmark_tcp(criterion: &mut Criterion) {
 }
 
 fn quin_parsing_benchmark_udp(criterion: &mut Criterion) {
-    let mut group = criterion.benchmark_group("quin_parsing_benchmark");
+    let mut group = criterion.benchmark_group("quinpacket_parsing_benchmark");
     group.warm_up_time(std::time::Duration::from_millis(500));
     group.measurement_time(std::time::Duration::from_secs(10));
     group.sample_size(1000);
