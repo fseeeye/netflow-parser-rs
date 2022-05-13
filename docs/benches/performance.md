@@ -58,7 +58,7 @@ cargo criterion --bench parsing --all-features
 
 ### Packet 1 (Modbus)
 测试用例采用硬编码u8 slice的Modbus Packet。
-* QuinPacket: about 180 ns / 5550000 pps
+* QuinPacket: about 140 ns / 7140000 pps
 ![parsingrs](./parsingrs_benchmark_1.png)
-* [pypkt](https://gitee.com/bolean-tech/bolean-pypkt-c/): about 2.0 µs / 500000 pps
+* [pypkt](https://gitee.com/bolean-tech/bolean-pypkt-c/): about 1.2 µs / 830000 pps
 ![pypkt](./pypkt_benchmark.png)
