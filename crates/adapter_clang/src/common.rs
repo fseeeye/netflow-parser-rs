@@ -96,7 +96,9 @@ impl PacketAdaptFirewall for ApplicationNaiveProtocol {
             ApplicationNaiveProtocol::Mms      => 42,
             ApplicationNaiveProtocol::Modbus   => 22,
             ApplicationNaiveProtocol::Opcua    => 31,
-            ApplicationNaiveProtocol::S7comm   => 23
+            ApplicationNaiveProtocol::S7comm   => 23,
+            ApplicationNaiveProtocol::Goose    => 50, // 暂定
+            ApplicationNaiveProtocol::Sv       => 51, // 暂定
         }
     }
 

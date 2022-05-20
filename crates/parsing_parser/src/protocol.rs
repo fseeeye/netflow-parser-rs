@@ -104,6 +104,8 @@ pub enum ApplicationProtocol {
     Opcua,
     Http,
     IsoOnTcp,
+    Sv,
+    Goose
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Eq, Hash)]
@@ -118,6 +120,8 @@ pub enum ApplicationNaiveProtocol {
     Opcua,
     Http,
     IsoOnTcp,
+    Sv,
+    Goose
 }
 
 impl ToString for ApplicationNaiveProtocol {
@@ -132,7 +136,9 @@ impl ToString for ApplicationNaiveProtocol {
             ApplicationNaiveProtocol::Mms      => "MMS",
             ApplicationNaiveProtocol::Modbus   => "Modbus",
             ApplicationNaiveProtocol::Opcua    => "OpcUA",
-            ApplicationNaiveProtocol::S7comm   => "S7COMM"
+            ApplicationNaiveProtocol::S7comm   => "S7COMM",
+            ApplicationNaiveProtocol::Goose   => "GOOSE",
+            ApplicationNaiveProtocol::Sv   => "SV",
         }.into()
     }
 }
@@ -154,6 +160,8 @@ impl From<ApplicationProtocol> for ApplicationNaiveProtocol {
             ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
             ApplicationProtocol::Http => ApplicationNaiveProtocol::Http,
             ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
+            ApplicationProtocol::Goose => ApplicationNaiveProtocol::Goose,
+            ApplicationProtocol::Sv => ApplicationNaiveProtocol::Sv,
         }
     }
 }
@@ -175,6 +183,8 @@ impl From<&ApplicationProtocol> for ApplicationNaiveProtocol {
             ApplicationProtocol::Opcua => ApplicationNaiveProtocol::Opcua,
             ApplicationProtocol::Http => ApplicationNaiveProtocol::Http,
             ApplicationProtocol::IsoOnTcp => ApplicationNaiveProtocol::IsoOnTcp,
+            ApplicationProtocol::Goose => ApplicationNaiveProtocol::Goose,
+            ApplicationProtocol::Sv => ApplicationNaiveProtocol::Sv,
         }
     }
 }
@@ -251,6 +261,8 @@ impl<'a> From<ApplicationLayer<'a>> for ApplicationProtocol {
             ApplicationLayer::Opcua(_) => ApplicationProtocol::Opcua,
             ApplicationLayer::Http(_) => ApplicationProtocol::Http,
             ApplicationLayer::IsoOnTcp(_) => ApplicationProtocol::IsoOnTcp,
+            ApplicationLayer::Goose(_) => ApplicationProtocol::Goose,
+            ApplicationLayer::Sv(_) => ApplicationProtocol::Sv,
         }
     }
 }

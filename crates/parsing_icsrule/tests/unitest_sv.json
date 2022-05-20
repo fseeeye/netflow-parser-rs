@@ -1,0 +1,17 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "SV",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "SV",
+        "args": {
+            "appid": 1
+        }
+    }
+]

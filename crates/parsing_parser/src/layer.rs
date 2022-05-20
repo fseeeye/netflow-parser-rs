@@ -101,4 +101,6 @@ pub enum ApplicationLayer<'a> {
     Opcua(OpcuaHeader<'a>),
     Http(HttpHeader<'a>),
     IsoOnTcp(IsoOnTcpHeader),
+    Goose(GooseHeader<'a>),
+    Sv(SvHeader<'a>)
 }

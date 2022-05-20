@@ -6,9 +6,11 @@ pub(crate) mod s7comm;
 pub(crate) mod bacnet;
 pub(crate) mod mms;
 pub(crate) mod iec104;
+pub(crate) mod goose;
+pub(crate) mod sv;
 
 pub use self::{dnp3::Dnp3Arg, modbus::ModbusArg, s7comm::S7CommArg};
-use self::{fins::FinsArg, opcua::OpcuaArg, bacnet::BacnetArg, mms::MmsArg, iec104::IEC104Arg};
+use self::{fins::FinsArg, opcua::OpcuaArg, bacnet::BacnetArg, mms::MmsArg, iec104::IEC104Arg, goose::GooseArg, sv::SvArg};
 
 use super::detect::IcsRuleDetector;
 use parsing_parser::L5Packet;
@@ -24,7 +26,9 @@ pub enum IcsRuleArg {
     OPCUA(OpcuaArg),
     BACNET(BacnetArg),
     MMS(MmsArg),
-    IEC104(IEC104Arg)
+    IEC104(IEC104Arg),
+    GOOSE(GooseArg),
+    SV(SvArg),
 }
 
 impl IcsRuleDetector for IcsRuleArg {
@@ -37,7 +41,9 @@ impl IcsRuleDetector for IcsRuleArg {
             Self::OPCUA(opcua_arg) => opcua_arg.detect(l5),
             Self::BACNET(bacnet_arg) => bacnet_arg.detect(l5),
             Self::MMS(mms_arg) => mms_arg.detect(l5),
-            Self::IEC104(iec104_arg) => iec104_arg.detect(l5)
+            Self::IEC104(iec104_arg) => iec104_arg.detect(l5),
+            Self::GOOSE(goose_arg) => goose_arg.detect(l5),
+            Self::SV(sv_arg) => sv_arg.detect(l5),
         }
     }
 }

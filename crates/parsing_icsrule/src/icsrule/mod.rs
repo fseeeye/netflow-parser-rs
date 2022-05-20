@@ -26,7 +26,9 @@ impl IcsRule {
             IcsRuleArg::OPCUA(..) => ApplicationNaiveProtocol::Opcua,
             IcsRuleArg::BACNET(..) => ApplicationNaiveProtocol::Bacnet,
             IcsRuleArg::MMS(..) => ApplicationNaiveProtocol::Mms,
-            IcsRuleArg::IEC104(..) => ApplicationNaiveProtocol::Iec104
+            IcsRuleArg::IEC104(..) => ApplicationNaiveProtocol::Iec104,
+            IcsRuleArg::GOOSE(..) => ApplicationNaiveProtocol::Goose,
+            IcsRuleArg::SV(..) => ApplicationNaiveProtocol::Sv,
         }
     }
 }
