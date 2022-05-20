@@ -59,7 +59,7 @@ mod tests {
                 dir: Direction::Uni,
                 dst_ip: None,
                 dst_port: Some(NumVec(vec![Num::Single(20000u16)])),
-                msg: "DNP3 Read".to_string(),
+                msg: "BACnet ReadProperty".to_string(),
             },
             args: IcsRuleArg::BACNET(BacnetArg {
                 apdu_type: Some(1),
@@ -69,17 +69,19 @@ mod tests {
 
         assert_eq!(
             serde_json::to_string(&bacnet_rule).unwrap(),
-            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":[20000],"msg":"DNP3 Read","proname":"DNP3","args":{"src":1,"dst":2,"link_function_code":1,"function_code":"1","objs":4097,"vsq":1,"start":0,"stop":9}}"#
+            r#"{"active":true,"rid":1,"action":"alert","src":null,"sport":null,"dire":"->","dst":null,"dport":[20000],"msg":"BACnet ReadProperty","proname":"BACNET","args":{"type":1,"service_choice":2}}"#
         )
     }
 
-    
+    #[test]
+    fn deserialize_bacnet_icsrule() {
+        tracing_subscriber::fmt()
+            .with_max_level(tracing::Level::TRACE)
+            .init();
 
-    // #[test]
-    // fn deserialize_bacnet_icsrule() {
-    //     let mut bacnet_rule = HmIcsRules::new();
+        let mut bacnet_rule = HmIcsRules::new();
 
-    //     let file_str = "./tests/unitest_bacnet.json";
-    //     assert!(bacnet_rule.load_rules(file_str));
-    // }
+        let file_str = "./tests/unitest_bacnet.json";
+        assert!(bacnet_rule.load_rules(file_str));
+    }
 }

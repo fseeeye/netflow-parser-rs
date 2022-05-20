@@ -1,0 +1,18 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "BACNET",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": ["2000"],
+        "msg": "BACnet ReadProperty",
+        "args": {
+            "type": 1,
+            "service_choice": 2
+        }
+    }
+]

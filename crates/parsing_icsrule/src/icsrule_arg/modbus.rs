@@ -400,7 +400,7 @@ mod tests {
                 dst_port: None,
                 msg: "Modbus Read Coils(1)".to_string(),
             },
-            args: IcsRuleArg::MODBUS(ModbusArg::ReadCoils {
+            args: IcsRuleArg::Modbus(ModbusArg::ReadCoils {
                 start_address: Some(0),
                 end_address: Some(10),
             }),

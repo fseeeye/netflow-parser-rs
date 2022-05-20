@@ -1,0 +1,18 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "IEC104",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "IEC104",
+        "args": {
+            "type": "U",
+            "utype": 1
+        }
+    }
+]

@@ -1,0 +1,17 @@
+[
+    {
+        "active": true,
+        "rid": 1,
+        "action": "alert",
+        "proname": "MMS",
+        "src": null,
+        "sport": null,
+        "dire": "->",
+        "dst": null,
+        "dport": null,
+        "msg": "MMS ConfirmedRequestPDU",
+        "args": {
+            "tag": "0x00"
+        }
+    }
+]
